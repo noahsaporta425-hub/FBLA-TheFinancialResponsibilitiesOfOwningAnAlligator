@@ -1,5 +1,35 @@
 int fadeOpacity = 255;
 
+// =========================
+// Minigame helper functions
+// =========================
+
+// Adds money earned in a minigame to all relevant counters
+void earnMinigameMoney(float amount) {
+  money += amount;
+  currentPlaySessionMoneyEarned += amount;
+  totalMoneyEarned += amount;
+  moneyEarnedFromMinigames += amount;
+}
+
+// Draws the stat bars overlay shown during all three minigames
+void drawMinigameStats() {
+  strokeWeight(1);
+  stroke(0);
+  rectMode(CORNER);
+  textAlign(LEFT, CENTER);
+  textFont(arcade);
+  textSize(20);
+  fill(255);
+  text("Energy:", width * 0.015, height * 0.2);
+  energybar.setValue(alligator.energy);
+  energybar.drawenergyscale();
+  fill(255);
+  text("Happiness:", width * 0.015, height * 0.15);
+  happinessbar.setValue(alligator.happiness);
+  happinessbar.drawpositive();
+}
+
 boolean onchoicescreen = false;
 boolean enterswamphop = false;
 PImage minigamechoice;
@@ -154,15 +184,7 @@ void swamphop() {
   textFont(arcade);
   fill(255);
   text("Score: " + hopscore, width*0.015, 54);
-  textSize(20);
-  fill(255);
-  text("Energy:", width * 0.015, height * 0.2);
-  energybar.setValue(alligator.energy);
-  energybar.drawenergyscale();
-  fill(255);
-  text("Happiness:", width * 0.015, height * 0.15);
-  happinessbar.setValue(alligator.happiness);
-  happinessbar.drawpositive();
+  drawMinigameStats();
   
   if (swamphoplost) {
     
@@ -174,8 +196,7 @@ void swamphop() {
       Obstacle o = obstacles.get(i);
       o.drawObstacle();
     }
-    if (selectedAlligator==1) tint(0, 255, 0, 255);
-    if (selectedAlligator == 2) tint(70, 130, 255, 255);
+    applyAlligatorTint();
     image(alligatorf1, x, y, alligatorf1.width/1.5, alligatorf1.height/1.5);
     noTint();
     if (!swamphopinstructions) {
@@ -191,8 +212,7 @@ void swamphop() {
     textSize(30);
     if (hopscore>besthopscore) besthopscore=hopscore;
     text("High Score: " + besthopscore, width/2, 180);
-    if (selectedAlligator == 1) tint(0, 255, 0, 255);
-    if (selectedAlligator == 2) tint(70, 130, 255, 255);
+    applyAlligatorTint();
     image(alligator.energeticalligator, width/2, 300, alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
     noTint();
     text("RETRY", width/2-70,436);
@@ -213,8 +233,7 @@ void swamphop() {
     textSize(25);
     if (hopscore>besthopscore) besthopscore=hopscore;
     text("Click space to hop!", width/2, 180);
-    if (selectedAlligator == 1) tint(0, 255, 0, 255);
-    if (selectedAlligator == 2) tint(70, 130, 255, 255);
+    applyAlligatorTint();
     image(alligator.energeticalligator, width/2, 300, alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
     noTint();
     textSize(30);
@@ -235,10 +254,7 @@ void swamphop() {
   hopscoreframecounter++;
   if (hopscoreframecounter % 60 == 0) {
     hopscore++;
-    money+=moneyperpt;
-    currentPlaySessionMoneyEarned += moneyperpt;
-    totalMoneyEarned+=moneyperpt;
-    moneyEarnedFromMinigames+=moneyperpt;
+    earnMinigameMoney(moneyperpt);
   }
   if (isOnGround && !swamphoplost) {
     swamphopSpeed = 16;
@@ -280,8 +296,7 @@ void swamphop() {
     }
   }
   
-  if (selectedAlligator == 1) tint(0, 255, 0, 255);
-  if (selectedAlligator == 2) tint(70, 130, 255, 255);
+  applyAlligatorTint();
   if (frameIndex == 1) {
     image(alligatorf1, x, y, alligatorf1.width/1.5, alligatorf1.height/1.5);
   } 
@@ -469,8 +484,7 @@ void snacksnatch() {
   image(mainscreen, 0, 0, width, height);
 
   imageMode(CENTER);
-  if (selectedAlligator == 1) tint(0, 255, 0, 255);
-  if (selectedAlligator == 2) tint(70, 130, 255, 255);
+  applyAlligatorTint();
   image(alligator.energeticalligator, alligatorx, 572,
         alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
   noTint();
@@ -484,15 +498,7 @@ void snacksnatch() {
   textFont(arcade);
   fill(255);
   text("Score: " + snatchscore, width*0.015, 54);
-  textSize(20);
-  fill(255);
-  text("Energy:", width * 0.015, height * 0.2);
-  energybar.setValue(alligator.energy);
-  energybar.drawenergyscale();
-  fill(255);
-  text("Happiness:", width * 0.015, height * 0.15);
-  happinessbar.setValue(alligator.happiness);
-  happinessbar.drawpositive();
+  drawMinigameStats();
   
   if (snacksnatchlost) {
   if (!snacksnatchinstructions) {
@@ -508,8 +514,7 @@ void snacksnatch() {
     textSize(30);
     if (snatchscore>bestsnatchscore) bestsnatchscore=snatchscore;
     text("High Score: " + bestsnatchscore, width/2, 180);
-    if (selectedAlligator == 1) tint(0, 255, 0, 255);
-    if (selectedAlligator == 2) tint(70, 130, 255, 255);
+    applyAlligatorTint();
     image(alligator.energeticalligator, width/2, 300, alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
     noTint();
     text("RETRY", width/2-70,436);
@@ -533,8 +538,7 @@ void snacksnatch() {
     text("Use A/D or the right and", width/2, 180);
     text("left arrow keys to move.", width/2, 200);
     textSize(30);
-    if (selectedAlligator == 1) tint(0, 255, 0, 255);
-    if (selectedAlligator == 2) tint(70, 130, 255, 255);
+    applyAlligatorTint();
     image(alligator.energeticalligator, width/2, 300, alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
     noTint();
     text("PLAY", width/2-70,436);
@@ -600,10 +604,7 @@ void updateSnackSnatchFalling() {
         snacksnatchlost = true;
       } else {
         snatchscore++;
-        money+=moneyperpt;
-        currentPlaySessionMoneyEarned += moneyperpt;
-        totalMoneyEarned+=moneyperpt;
-        moneyEarnedFromMinigames+=moneyperpt;
+        earnMinigameMoney(moneyperpt);
       }
     
       fallingFoods.remove(i);
@@ -814,10 +815,7 @@ void fetchfrenzy() {
 if (ballHitsGator && !ballHitsGatorPrev && ballExists && !waitingToLaunch) {
   ballExists = false;
   fetchscore++;
-  money+=moneyperpt;
-  currentPlaySessionMoneyEarned += moneyperpt;
-  totalMoneyEarned+=moneyperpt;
-  moneyEarnedFromMinigames+=moneyperpt;
+  earnMinigameMoney(moneyperpt);
   waitingToLaunch = true;
   launchCooldown = LAUNCH_DELAY;
 }
@@ -843,15 +841,7 @@ if (waitingToLaunch) {
   fill(255);
   text("Score: " + fetchscore, width*0.015, 30);
   text("Time: " + nf(fetchtimer, 0, 2), width*0.015, 70);
-  textSize(20);
-  fill(255);
-  text("Energy:", width * 0.015, height * 0.2);
-  energybar.setValue(alligator.energy);
-  energybar.drawenergyscale();
-  fill(255);
-  text("Happiness:", width * 0.015, height * 0.15);
-  happinessbar.setValue(alligator.happiness);
-  happinessbar.drawpositive();
+  drawMinigameStats();
   
   if (fetchscore>bestfetchscore) bestfetchscore=fetchscore;
   if (fetchtimer<=0) {
@@ -872,8 +862,7 @@ if (waitingToLaunch) {
     textSize(30);
     if (hopscore>besthopscore) besthopscore=hopscore;
     text("High Score: " + bestfetchscore, width/2, 180);
-    if (selectedAlligator == 1) tint(0, 255, 0, 255);
-    if (selectedAlligator == 2) tint(70, 130, 255, 255);
+    applyAlligatorTint();
     image(alligator.energeticalligator, width/2, 300, alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
     noTint();
     text("RETRY", width/2-70,436);
@@ -897,8 +886,7 @@ if (waitingToLaunch) {
     text("alotted time using WASD", width/2, 180);
     text("or the arrow keys!", width/2, 200);
     textSize(30);
-    if (selectedAlligator == 1) tint(0, 255, 0, 255);
-    if (selectedAlligator == 2) tint(70, 130, 255, 255);
+    applyAlligatorTint();
     image(alligator.energeticalligator, width/2, 300, alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
     noTint();
     text("PLAY", width/2-70,436);
@@ -945,8 +933,7 @@ void walkanimation() {
   }
   
   if (!fetchfrenzylost) {
-  if (selectedAlligator == 1) tint(0, 255, 0, 255);
-  if (selectedAlligator == 2) tint(70, 130, 255, 255);
+  applyAlligatorTint();
   topalligatorframecounter++;
   if (topalligatorframecounter < 7) {
     image(topalligator1, 0, 0, topalligator1.width/4, topalligator1.height/4);

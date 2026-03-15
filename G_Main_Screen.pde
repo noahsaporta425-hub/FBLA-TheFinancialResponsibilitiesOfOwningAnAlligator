@@ -680,401 +680,17 @@ int[] snackQtys = {
       image(steak,770,333,steak.width/4,steak.height/4);
       imageMode(CORNER);
 
-    } else if (selectedItem.equals("Enrofloxacin")) {
-      textSize(30);
-      text("Enrofloxacin",770,233);
-      textSize(20);
-      text("Pet with an infection? Give 1 pill daily",770,406);
-      text("for 2 days. Or your pet dies.",770,436);
-      if (enrofloxacinPresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-      image(medicine,770,333,medicine.width/9,medicine.height/9);
-      imageMode(CORNER);
+    } else {
+      int selMedIdx   = indexOf(medicinestock, selectedItem);
+      int selSnackIdx = indexOf(snackstock, selectedItem);
+      int selMeatIdx  = indexOf(meatstock, selectedItem);
 
-    } else if (selectedItem.equals("Doxycycline")) {
-      textSize(30);
-      text("Doxycycline",770,233);
-      textSize(20);
-      text("Pet with a cold? Give 1 pill daily",770,406);
-      text("for 3 days. Or your pet dies.",770,436);
-      if (doxycyclinePresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-      image(medicine,770,333,medicine.width/9,medicine.height/9);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Oseltamivir")) {
-      textSize(30);
-      text("Oseltamivir",770,233);
-      textSize(20);
-      text("Pet with a flu? Give 1 pill daily",770,406);
-      text("for 3 days.",770,436);
-      if (oseltamivirPresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-      image(medicine,770,333,medicine.width/9,medicine.height/9);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Vitamin B-Complex")) {
-      textSize(30);
-      text("Vitamin B-Complex",770,233);
-      textSize(20);
-      text("Pet malnourished? Give 1 pill daily",770,406);
-      text("for 3 days.",770,436);
-      if (vitaminBComplexPresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-      image(medicine,770,333,medicine.width/9,medicine.height/9);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Cyproheptadine")) {
-      textSize(30);
-      text("Cyproheptadine",770,233);
-      textSize(20);
-      text("Pet is starving? Give 1 pill daily",770,406);
-      text("for 2 days.",770,436);
-      if (cyproheptadinePresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-      image(medicine,770,333,medicine.width/9,medicine.height/9);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Potassium Chloride")) {
-      textSize(30);
-      text("Potassium Chloride",770,233);
-      textSize(20);
-      text("Pet has low energy? Give 1 pill daily",770,406);
-      text("for 2 days.",770,436);
-      if (potassiumChloridePresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-      image(medicine,770,333,medicine.width/9,medicine.height/9);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Coenzyme Q10")) {
-      textSize(30);
-      text("Coenzyme Q10",770,233);
-      textSize(20);
-      text("Pet exhausted? Give 1 pill daily",770,406);
-      text("for 2 days.",770,436);
-      if (coenzymeQ10Presc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-      image(medicine,770,333,medicine.width/9,medicine.height/9);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Fluoxetine")) {
-      textSize(30);
-      text("Fluoxetine",770,233);
-      textSize(20);
-      text("Pet depressed? Give 1 pill daily",770,406);
-      text("for 4 days.",770,436);
-      if (fluoxetinePresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-      image(medicine,770,333,medicine.width/9,medicine.height/9);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Trazodone")) {
-      textSize(30);
-      text("Trazodone",770,233);
-      textSize(20);
-      text("Pet stressed? Give 1 pill daily",770,406);
-      text("for 3 days.",770,436);
-      if (trazodonePresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-      image(medicine,770,333,medicine.width/9,medicine.height/9);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Meloxicam")) {
-      textSize(30);
-      text("Meloxicam",770,233);
-      textSize(20);
-      text("Pet injured? Give 1 pill daily",770,406);
-      text("for 2 days.",770,436);
-      if (meloxicamPresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-      image(medicine,770,333,medicine.width/9,medicine.height/9);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Calcium Carbonate")) {
-      textSize(30);
-      text("Calcium Carbonate",770,233);
-      textSize(20);
-      text("Pet has weak bones? Give 1 pill daily",770,406);
-      text("for 3 days.",770,436);
-      if (calciumCarbonatePresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-      image(medicine,770,333,medicine.width/9,medicine.height/9);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Activated Charcoal")) {
-      textSize(30);
-      text("Activated Charcoal",770,233);
-      textSize(20);
-      text("Pet is food poisoned? Give 1 pill",770,406);
-      text("immediately to remove toxins.",770,436);
-      if (activatedCharcoalPresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-      image(medicine,770,333,medicine.width/9,medicine.height/9);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Nachos")) {
-      textSize(30);
-      text("Nachos",770,233);
-      textSize(20);
-      text("Messy cheesy chips with heavy seasoning.",770,406);
-      text("Tasty, but definitely not healthy.",770,436);
-      textSize(15);
-      text("-40 Hunger   -15 Health   +5 Happiness   +30 Energy",770,258);
-      image(nachos,770,333,nachos.width/6,nachos.height/6);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Cheesepuffs")) {
-      textSize(30);
-      text("Cheesepuffs",770,233);
-      textSize(20);
-      text("Crunchy cheese puffs packed with salt",770,406);
-      text("and artificial flavoring.",770,436);
-      textSize(15);
-      text("-25 Hunger   -5 Health   +20 Happiness   +10 Energy",770,258);
-      image(cheesepuffs,770,333,cheesepuffs.width/6,cheesepuffs.height/6);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Chips")) {
-      textSize(30);
-      text("Chips",770,233);
-      textSize(20);
-      text("Crispy potato chips loaded with oil",770,406);
-      text("and sodium.",770,436);
-      textSize(15);
-      text("-30 Hunger   -10 Health   +10 Happiness   +10 Energy",770,258);
-      image(chips,770,333,chips.width/5,chips.height/5);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Chocolate Bar")) {
-      textSize(30);
-      text("Chocolate Bar",770,233);
-      textSize(20);
-      text("Sugary chocolate bar with lots of",770,406);
-      text("processed sweeteners.",770,436);
-      textSize(15);
-      text("-7 Hunger   -5 Health   +20 Happiness   +5 Energy",770,258);
-      image(chocolatebar,770,333,chocolatebar.width/9,chocolatebar.height/9);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Cookies")) {
-      textSize(30);
-      text("Cookies",770,233);
-      textSize(20);
-      text("Sweet baked cookies full of sugar",770,406);
-      text("and refined carbs.",770,436);
-      textSize(15);
-      text("-30 Hunger   -5 Health   +10 Happiness   +5 Energy",770,258);
-      image(cookies,770,333,cookies.width/5,cookies.height/5);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Crackers")) {
-      textSize(30);
-      text("Crackers",770,233);
-      textSize(20);
-      text("Light crunchy crackers that are",770,406);
-      text("salty and not very filling.",770,436);
-      textSize(15);
-      text("-5 Hunger   +20 Energy",770,258);
-      image(crackers,770,333,crackers.width/5,crackers.height/5);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Energy Drink")) {
-      textSize(30);
-      text("Energy Drink",770,233);
-      textSize(20);
-      text("Very high caffeine and sugar.",770,406);
-      text("A terrible choice for a pet.",770,436);
-      textSize(15);
-      text("+20 Hunger   -35 Health   -10 Happiness   +70 Energy",770,258);
-      image(energydrink,770,333,energydrink.width/9.5f,energydrink.height/9.5f);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Granola Bar")) {
-      textSize(30);
-      text("Granola Bar",770,233);
-      textSize(20);
-      text("A packaged granola bar that seems",770,406);
-      text("healthy, but still processed.",770,436);
-      textSize(15);
-      text("-15 Hunger   -5 Health   +5 Happiness   +20 Energy",770,258);
-      image(granolabar,770,333,granolabar.width/5,granolabar.height/5);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Popcorn")) {
-      textSize(30);
-      text("Popcorn",770,233);
-      textSize(20);
-      text("Buttery popcorn with lots of salt",770,406);
-      text("and flavor dust.",770,436);
-      textSize(15);
-      text("-10 Hunger   -10 Health   +30 Happiness   +10 Energy",770,258);
-      image(popcorn,770,333,popcorn.width/6,popcorn.height/6);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Pretzels")) {
-      textSize(30);
-      text("Pretzels",770,233);
-      textSize(20);
-      text("Twisty salty pretzels with lots of",770,406);
-      text("sodium.",770,436);
-      textSize(15);
-      text("-10 Hunger   -5 Health   +5 Happiness   +15 Energy",770,258);
-      image(pretzels,770,333,pretzels.width/4,pretzels.height/4);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Soda")) {
-      textSize(30);
-      text("Soda",770,233);
-      textSize(20);
-      text("Pure sugar and fizz.",770,406);
-      text("Not suitable for an alligator.",770,436);
-      textSize(15);
-      text("+30 Hunger   -30 Health   +5 Happiness   +40 Energy",770,258);
-      image(soda,770,333,soda.width/11,soda.height/11);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Trail Mix")) {
-      textSize(30);
-      text("Trail Mix",770,233);
-      textSize(20);
-      text("A snack mix with salty and sweet",770,406);
-      text("bits all combined together.",770,436);
-      textSize(15);
-      text("-10 Hunger   -5 Health   +5 Happiness   +20 Energy",770,258);
-      image(trailmix,770,333,trailmix.width/6.5f,trailmix.height/6.5f);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Bluegill")) {
-      textSize(30);
-      text("Bluegill",770,233);
-      textSize(20);
-      text("A nutritious freshwater fish with",770,406);
-      text("solid protein and moderate fat.",770,436);
-      textSize(15);
-      text("-55 Hunger   +15 Health   +10 Happiness   +20 Energy",770,258);
-      image(bluegill,770,333,bluegill.width/7,bluegill.height/7);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Bass")) {
-      textSize(30);
-      text("Bass",770,233);
-      textSize(20);
-      text("A filling fish meal packed with",770,406);
-      text("protein and natural oils.",770,436);
-      textSize(15);
-      text("-60 Hunger   +20 Health   +10 Happiness   +25 Energy",770,258);
-      image(bass,770,333,bass.width/7,bass.height/7);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Perch")) {
-      textSize(30);
-      text("Perch",770,233);
-      textSize(20);
-      text("A lean fish choice that's healthy",770,406);
-      text("and easy to digest.",770,436);
-      textSize(15);
-      text("-50 Hunger   +20 Health   +5 Happiness   +15 Energy",770,258);
-      image(perch,770,333,perch.width/7,perch.height/7);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Goldfish")) {
-      textSize(30);
-      text("Goldfish",770,233);
-      textSize(20);
-      text("A small prey-sized bite that gives",770,406);
-      text("a quick little meal.",770,436);
-      textSize(15);
-      text("-30 Hunger   +5 Health   +15 Happiness   +10 Energy",770,258);
-      image(goldfish,770,333,goldfish.width/7,goldfish.height/7);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Crab")) {
-      textSize(30);
-      text("Crab",770,233);
-      textSize(20);
-      text("Rich shellfish meat with minerals",770,406);
-      text("and lots of flavor.",770,436);
-      textSize(15);
-      text("-50 Hunger   +25 Health   +20 Happiness   +15 Energy",770,258);
-      image(crab,770,333,crab.width/7,crab.height/7);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Lamb Chop")) {
-      textSize(30);
-      text("Lamb Chop",770,233);
-      textSize(20);
-      text("A heavy red meat meal that is very",770,406);
-      text("filling and energy dense.",770,436);
-      textSize(15);
-      text("-70 Hunger   +10 Health   +15 Happiness   +35 Energy",770,258);
-      image(lambchop,770,333,lambchop.width/7,lambchop.height/7);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Pork Chop")) {
-      textSize(30);
-      text("Pork Chop",770,233);
-      textSize(20);
-      text("A hearty cut of pork with lots of",770,406);
-      text("protein and fat.",770,436);
-      textSize(15);
-      text("-65 Hunger   +10 Health   +10 Happiness   +30 Energy",770,258);
-      image(porkchop,770,333,porkchop.width/7,porkchop.height/7);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Steak")) {
-      textSize(30);
-      text("Steak",770,233);
-      textSize(20);
-      text("A premium meat cut that gives huge",770,406);
-      text("nutrition and energy.",770,436);
-      textSize(15);
-      text("-80 Hunger   +20 Health   +20 Happiness   +40 Energy",770,258);
-      image(steak,770,333,steak.width/7,steak.height/7);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Chicken")) {
-      textSize(30);
-      text("Chicken",770,233);
-      textSize(20);
-      text("Lean poultry meat that's balanced,",770,406);
-      text("healthy, and reliable.",770,436);
-      textSize(15);
-      text("-60 Hunger   +20 Health   +10 Happiness   +20 Energy",770,258);
-      image(chicken,770,333,chicken.width/7,chicken.height/7);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Catfish")) {
-      textSize(30);
-      text("Catfish",770,233);
-      textSize(20);
-      text("A dense fish meal with strong",770,406);
-      text("protein and rich flavor.",770,436);
-      textSize(15);
-      text("-60 Hunger   +15 Health   +10 Happiness   +25 Energy",770,258);
-      image(catfish,770,333,catfish.width/7,catfish.height/7);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Frog")) {
-      textSize(30);
-      text("Frog",770,233);
-      textSize(20);
-      text("A natural prey option that feels",770,406);
-      text("especially satisfying to eat.",770,436);
-      textSize(15);
-      text("-45 Hunger   +15 Health   +25 Happiness   +20 Energy",770,258);
-      image(frog,770,333,frog.width/7,frog.height/7);
-      imageMode(CORNER);
-
-    } else if (selectedItem.equals("Shrimp")) {
-      textSize(30);
-      text("Shrimp",770,233);
-      textSize(20);
-      text("A light seafood bite that boosts",770,406);
-      text("health more than fullness.",770,436);
-      textSize(15);
-      text("-35 Hunger   +25 Health   +15 Happiness   +10 Energy",770,258);
-      image(shrimp,770,333,shrimp.width/7,shrimp.height/7);
-      imageMode(CORNER);
+      if (selMedIdx >= 0) {
+        drawMedicineDetail(selMedIdx);
+      } else if (selSnackIdx >= 0) {
+        drawSnackDetail(selSnackIdx);
+      } else if (selMeatIdx >= 0) {
+        drawMeatDetail(selMeatIdx);
     }
   }
 
@@ -2118,32 +1734,15 @@ void store(){
   if (!firstbuymedicine && !buymedicine && !buysnacks && !buymeat) redarrow(545, 59, "right");
   
   if (buymedicine == true) {
-    rectMode(CORNERS);
-    stroke(169);
-    strokeWeight(5);
-    fill(80,220);
-    rect(110, 122.5f, 990, 572.5f); //Box
-    noFill();
-    rect(933,132,976,171.5f); //X box
-    textAlign(LEFT, CENTER);
-    textSize(40);
-    fill(255);
-    text("X",942,151.75f);
-    fill(169);
-    line(width/2,182,width/2,572.5f); //Middle of box
-    line(110,182,990,182); //Line enclosing text
-
+    drawStorePanelFrame("MEDICINE:");
     float[] xs = {110, 256.66f, 403.32f, width/2};
     float[] ys = {182, 279.625f, 377.25f, 474.875f, 572.5f};
-
-    noFill();
-    stroke(169);
-    strokeWeight(5);
-    strokeCap(SQUARE);
-
-    for (int i = 0; i < xs.length; i++) line(xs[i], ys[0], xs[i], ys[ys.length-1]);
-    for (int j = 0; j < ys.length; j++) line(xs[0], ys[j], xs[xs.length-1], ys[j]);
+    drawStoreGrid(xs, ys);
+    fill(169);
+    line(width/2,182,width/2,572.5f);
+    line(110,182,990,182);
     canBuyMedicine = inventoryHasRoomFor(medicinestock[selectedSlot]) && (((!presc[selectedSlot] && money>=5) || presc[selectedSlot]));
+    rectMode(CORNERS);
 
     if (selectedSlot != -1) {
       if (((!presc[selectedSlot] && money>=5) || presc[selectedSlot]) && canBuyMedicine) {
@@ -2188,12 +1787,6 @@ void store(){
       text("and purchase it!",770,390);
     }
 
-    rectMode(CORNER);
-    strokeWeight(1);
-    textAlign(CENTER);
-    fill(255);
-    textSize(35);
-    text("MEDICINE:", width/2,height*0.235f);
     imageMode(CENTER);
 
     for (int row = 0; row < 4; row++) {
@@ -2210,136 +1803,20 @@ void store(){
       }
     }
 
-    textSize(30);
-    if (selectedSlot==0) {
-      text("Enrofloxacin",770,233);
-      textSize(20);
-      text("Pet with an infection? Give 1 pill daily",770,406);
-      text("for 2 days. Or your pet dies.",770,436);
-      if (enrofloxacinPresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-
-    } else if (selectedSlot==1) {
-      text("Doxycycline",770,233);
-      textSize(20);
-      text("Pet with a cold? Give 1 pill daily",770,406);
-      text("for 3 days. Or your pet dies.",770,436);
-      if (doxycyclinePresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-
-    } else if (selectedSlot==2) {
-      text("Oseltamivir",770,233);
-      textSize(20);
-      text("Pet with a flu? Give 1 pill daily",770,406);
-      text("for 3 days.",770,436);
-      if (oseltamivirPresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-
-    } else if (selectedSlot==3) {
-      text("Vitamin B-Complex",770,233);
-      textSize(20);
-      text("Pet malnourished? Give 1 pill daily",770,406);
-      text("for 3 days.",770,436);
-      if (vitaminBComplexPresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-
-    } else if (selectedSlot==4) {
-      text("Cyproheptadine",770,233);
-      textSize(20);
-      text("Pet is starving? Give 1 pill daily",770,406);
-      text("for 2 days.",770,436);
-      if (cyproheptadinePresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-
-    } else if (selectedSlot==5) {
-      text("Potassium Chloride",770,233);
-      textSize(20);
-      text("Pet has low energy? Give 1 pill daily",770,406);
-      text("for 2 days.",770,436);
-      if (potassiumChloridePresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-
-    } else if (selectedSlot==6) {
-      text("Coenzyme Q10",770,233);
-      textSize(20);
-      text("Pet exhausted? Give 1 pill daily",770,406);
-      text("for 2 days.",770,436);
-      if (coenzymeQ10Presc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-
-    } else if (selectedSlot==7) {
-      text("Fluoxetine",770,233);
-      textSize(20);
-      text("Pet depressed? Give 1 pill daily",770,406);
-      text("for 4 days.",770,436);
-      if (fluoxetinePresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-
-    } else if (selectedSlot==8) {
-      text("Trazodone",770,233);
-      textSize(20);
-      text("Pet stressed? Give 1 pill daily",770,406);
-      text("for 3 days.",770,436);
-      if (trazodonePresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-
-    } else if (selectedSlot==9) {
-      text("Meloxicam",770,233);
-      textSize(20);
-      text("Pet injured? Give 1 pill daily",770,406);
-      text("for 2 days.",770,436);
-      if (meloxicamPresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-
-    } else if (selectedSlot==10) {
-      text("Calcium Carbonate",770,233);
-      textSize(20);
-      text("Pet has weak bones? Give 1 pill daily",770,406);
-      text("for 3 days.",770,436);
-      if (calciumCarbonatePresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-
-    } else if (selectedSlot==11) {
-      text("Activated Charcoal",770,233);
-      textSize(20);
-      text("Pet is food poisoned? Give 1 pill",770,406);
-      text("immediately to remove toxins.",770,436);
-      if (activatedCharcoalPresc) text("Prescribed: Yes",770,258);
-      else text("Prescribed: No",770,258);
-    }
-
-    if (selectedSlot!=-1) {
-      image(medicine,770,333,medicine.width/9,medicine.height/9);
-      imageMode(CORNER);
+    if (selectedSlot >= 0 && selectedSlot < medicinestock.length) {
+      drawMedicineDetail(selectedSlot);
     }
   }
 
   if (buysnacks == true) {
-    rectMode(CORNERS);
-    stroke(169);
-    strokeWeight(5);
-    fill(80,220);
-    rect(110, 122.5f, 990, 572.5f); //Box
-    noFill();
-    rect(933,132,976,171.5f); //X box
-    textAlign(LEFT, CENTER);
-    textSize(40);
-    fill(255);
-    text("X",942,151.75f);
-    fill(169);
-    line(width/2,182,width/2,572.5f); //Middle of box
-    line(110,182,990,182); //Line enclosing text
-
+    drawStorePanelFrame("SNACKS:");
     float[] xs = {110, 256.66f, 403.32f, width/2};
     float[] ys = {182, 279.625f, 377.25f, 474.875f, 572.5f};
-
-    noFill();
-    stroke(169);
-    strokeWeight(5);
-    strokeCap(SQUARE);
-
-    for (int i = 0; i < xs.length; i++) line(xs[i], ys[0], xs[i], ys[ys.length-1]);
-    for (int j = 0; j < ys.length; j++) line(xs[0], ys[j], xs[xs.length-1], ys[j]);
+    drawStoreGrid(xs, ys);
+    fill(169);
+    line(width/2,182,width/2,572.5f);
+    line(110,182,990,182);
+    rectMode(CORNERS);
 
     if (selectedSlot != -1) {
       if (inventoryHasRoomFor(snackstock[selectedSlot]) && money >= snackCosts[selectedSlot]) fill(0,255,0,65);
@@ -2375,12 +1852,6 @@ void store(){
       text("and purchase it!",770,390);
     }
 
-    rectMode(CORNER);
-    strokeWeight(1);
-    textAlign(CENTER);
-    fill(255);
-    textSize(35);
-    text("SNACKS:", width/2,height*0.235f);
     imageMode(CENTER);
 
     for (int row = 0; row < 4; row++) {
@@ -2395,162 +1866,26 @@ void store(){
         float cx = (x1 + x2) / 2;
         float cy = (y1 + y2) / 2;
 
-        if (snackIndex == 0) image(nachos, cx, cy, nachos.width/9, nachos.height/9);
-        else if (snackIndex == 1) image(cheesepuffs, cx, cy+5, cheesepuffs.width/8, cheesepuffs.height/8);
-        else if (snackIndex == 2) image(chips, cx, cy+10, chips.width/8, chips.height/8);
-        else if (snackIndex == 3) image(chocolatebar, cx, cy, chocolatebar.width/12, chocolatebar.height/12);
-        else if (snackIndex == 4) image(cookies, cx, cy-2, cookies.width/6.5f, cookies.height/6.5f);
-        else if (snackIndex == 5) image(crackers, cx, cy+2, crackers.width/7, crackers.height/7);
-        else if (snackIndex == 6) image(energydrink, cx, cy, energydrink.width/11.5f, energydrink.height/11.5f);
-        else if (snackIndex == 7) image(granolabar, cx, cy+10, granolabar.width/7, granolabar.height/7);
-        else if (snackIndex == 8) image(popcorn, cx, cy+1.5f, popcorn.width/8, popcorn.height/8);
-        else if (snackIndex == 9) image(pretzels, cx, cy+3, pretzels.width/6, pretzels.height/6);
-        else if (snackIndex == 10) image(soda, cx, cy, soda.width/14, soda.height/14);
-        else if (snackIndex == 11) image(trailmix, cx, cy+6, trailmix.width/8, trailmix.height/8);
+        image(snackImages[snackIndex], cx, cy + snackOffsetY[snackIndex],
+              snackImages[snackIndex].width/snackScales[snackIndex],
+              snackImages[snackIndex].height/snackScales[snackIndex]);
       }
     }
 
-    textSize(30);
-    if (selectedSlot==0) {
-        text("Nachos",770,233);
-        textSize(20);
-        text("Messy cheesy chips with heavy seasoning.",770,406);
-        text("Tasty, but definitely not healthy.",770,436);
-        textSize(15);
-        text("-40 Hunger   -15 Health   +5 Happiness   +30 Energy",770,258);
-      
-      } else if (selectedSlot==1) {
-        text("Cheesepuffs",770,233);
-        textSize(20);
-        text("Crunchy cheese puffs packed with salt",770,406);
-        text("and artificial flavoring.",770,436);
-        textSize(15);
-        text("-25 Hunger   -5 Health   +20 Happiness   +10 Energy",770,258);
-      
-      } else if (selectedSlot==2) {
-        text("Chips",770,233);
-        textSize(20);
-        text("Crispy potato chips loaded with oil",770,406);
-        text("and sodium.",770,436);
-        textSize(15);
-        text("-30 Hunger   -10 Health   +10 Happiness   +10 Energy",770,258);
-      
-      } else if (selectedSlot==3) {
-        text("Chocolate Bar",770,233);
-        textSize(20);
-        text("Sugary chocolate bar with lots of",770,406);
-        text("processed sweeteners.",770,436);
-        textSize(15);
-        text("-7 Hunger   -5 Health   +20 Happiness   +5 Energy",770,258);
-      
-      } else if (selectedSlot==4) {
-        text("Cookies",770,233);
-        textSize(20);
-        text("Sweet baked cookies full of sugar",770,406);
-        text("and refined carbs.",770,436);
-        textSize(15);
-        text("-30 Hunger   -5 Health   +10 Happiness   +5 Energy",770,258);
-      
-      } else if (selectedSlot==5) {
-        text("Crackers",770,233);
-        textSize(20);
-        text("Light crunchy crackers that are",770,406);
-        text("salty and not very filling.",770,436);
-        textSize(15);
-        text("-5 Hunger   +20 Energy",770,258);
-      
-      } else if (selectedSlot==6) {
-        text("Energy Drink",770,233);
-        textSize(20);
-        text("Very high caffeine and sugar.",770,406);
-        text("A terrible choice for a pet.",770,436);
-        textSize(15);
-        text("+20 Hunger   -35 Health   -10 Happiness   +70 Energy",770,258);
-      
-      } else if (selectedSlot==7) {
-        text("Granola Bar",770,233);
-        textSize(20);
-        text("A packaged granola bar that seems",770,406);
-        text("healthy, but still processed.",770,436);
-        textSize(15);
-        text("-15 Hunger   -5 Health   +5 Happiness   +20 Energy",770,258);
-      
-      } else if (selectedSlot==8) {
-        text("Popcorn",770,233);
-        textSize(20);
-        text("Buttery popcorn with lots of salt",770,406);
-        text("and flavor dust.",770,436);
-        textSize(15);
-        text("-10 Hunger   -10 Health   +30 Happiness   +10 Energy",770,258);
-      
-      } else if (selectedSlot==9) {
-        text("Pretzels",770,233);
-        textSize(20);
-        text("Twisty salty pretzels with lots of",770,406);
-        text("sodium.",770,436);
-        textSize(15);
-        text("-10 Hunger   -5 Health   +5 Happiness   +15 Energy",770,258);
-      
-      } else if (selectedSlot==10) {
-        text("Soda",770,233);
-        textSize(20);
-        text("Pure sugar and fizz.",770,406);
-        text("Not suitable for an alligator.",770,436);
-        textSize(15);
-        text("+30 Hunger   -30 Health   +5 Happiness   +40 Energy",770,258);
-      
-      } else if (selectedSlot==11) {
-        text("Trail Mix",770,233);
-        textSize(20);
-        text("A snack mix with salty and sweet",770,406);
-        text("bits all combined together.",770,436);
-        textSize(15);
-        text("-10 Hunger   -5 Health   +5 Happiness   +20 Energy",770,258);
-      }
-
-    if (selectedSlot!=-1) {
-      if (selectedSlot == 0) image(nachos,770,329,nachos.width/6,nachos.height/6);
-      else if (selectedSlot == 1) image(cheesepuffs,770,333,cheesepuffs.width/6,cheesepuffs.height/6);
-      else if (selectedSlot == 2) image(chips,770,333,chips.width/5,chips.height/5);
-      else if (selectedSlot == 3) image(chocolatebar,770,327,chocolatebar.width/9,chocolatebar.height/9);
-      else if (selectedSlot == 4) image(cookies,770,333,cookies.width/5,cookies.height/5);
-      else if (selectedSlot == 5) image(crackers,770,333,crackers.width/5,crackers.height/5);
-      else if (selectedSlot == 6) image(energydrink,770,333,energydrink.width/9.5f,energydrink.height/9.5f);
-      else if (selectedSlot == 7) image(granolabar,770,333,granolabar.width/5,granolabar.height/5);
-      else if (selectedSlot == 8) image(popcorn,770,333,popcorn.width/6,popcorn.height/6);
-      else if (selectedSlot == 9) image(pretzels,770,333,pretzels.width/4,pretzels.height/4);
-      else if (selectedSlot == 10) image(soda,770,333,soda.width/11,soda.height/11);
-      else if (selectedSlot == 11) image(trailmix,770,336,trailmix.width/6.5f,trailmix.height/6.5f);
-      imageMode(CORNER);
+    if (selectedSlot >= 0 && selectedSlot < snackstock.length) {
+      drawSnackDetail(selectedSlot);
     }
   }
   
     if (buymeat == true) {
-    rectMode(CORNERS);
-    stroke(169);
-    strokeWeight(5);
-    fill(80,220);
-    rect(110, 122.5f, 990, 572.5f); //Box
-    noFill();
-    rect(933,132,976,171.5f); //X box
-    textAlign(LEFT, CENTER);
-    textSize(40);
-    fill(255);
-    text("X",942,151.75f);
-    fill(169);
-    line(width/2,182,width/2,572.5f); //Middle of box
-    line(110,182,990,182); //Line enclosing text
-
+    drawStorePanelFrame("MEAT:");
     float[] xs = {110, 256.66f, 403.32f, width/2};
     float[] ys = {182, 279.625f, 377.25f, 474.875f, 572.5f};
-
-    noFill();
-    stroke(169);
-    strokeWeight(5);
-    strokeCap(SQUARE);
-
-    for (int i = 0; i < xs.length; i++) line(xs[i], ys[0], xs[i], ys[ys.length-1]);
-    for (int j = 0; j < ys.length; j++) line(xs[0], ys[j], xs[xs.length-1], ys[j]);
+    drawStoreGrid(xs, ys);
+    fill(169);
+    line(width/2,182,width/2,572.5f);
+    line(110,182,990,182);
+    rectMode(CORNERS);
 
     if (selectedSlot != -1) {
     if (inventoryHasRoomFor(meatstock[selectedSlot]) && money >= meatCosts[selectedSlot]) fill(0,255,0,65);
@@ -2586,12 +1921,6 @@ void store(){
       text("and purchase it!",770,390);
     }
 
-    rectMode(CORNER);
-    strokeWeight(1);
-    textAlign(CENTER);
-    fill(255);
-    textSize(35);
-    text("MEAT:", width/2,height*0.235f);
     imageMode(CENTER);
 
     for (int row = 0; row < 4; row++) {
@@ -2606,133 +1935,13 @@ void store(){
         float cx = (x1 + x2) / 2;
         float cy = (y1 + y2) / 2;
 
-        if (meatIndex == 0) image(bluegill, cx, cy, bluegill.width/8, bluegill.height/8);
-        else if (meatIndex == 1) image(bass, cx, cy, bass.width/8, bass.height/8);
-        else if (meatIndex == 2) image(perch, cx, cy, perch.width/8, perch.height/8);
-        else if (meatIndex == 3) image(goldfish, cx, cy, goldfish.width/8, goldfish.height/8);
-        else if (meatIndex == 4) image(crab, cx, cy, crab.width/8, crab.height/8);
-        else if (meatIndex == 5) image(lambchop, cx, cy, lambchop.width/8, lambchop.height/8);
-        else if (meatIndex == 6) image(porkchop, cx, cy, porkchop.width/8, porkchop.height/8);
-        else if (meatIndex == 7) image(steak, cx, cy, steak.width/8, steak.height/8);
-        else if (meatIndex == 8) image(chicken, cx, cy, chicken.width/8, chicken.height/8);
-        else if (meatIndex == 9) image(catfish, cx, cy, catfish.width/8, catfish.height/8);
-        else if (meatIndex == 10) image(frog, cx, cy, frog.width/8, frog.height/8);
-        else if (meatIndex == 11) image(shrimp, cx, cy, shrimp.width/8, shrimp.height/8);
+        image(meatImages[meatIndex], cx, cy,
+              meatImages[meatIndex].width/8, meatImages[meatIndex].height/8);
       }
     }
 
-    textSize(30);
-    if (selectedSlot==0) {
-      text("Bluegill",770,233);
-      textSize(20);
-      text("A nutritious freshwater fish with",770,406);
-      text("solid protein and moderate fat.",770,436);
-      textSize(15);
-      text("-55 Hunger   +15 Health   +10 Happiness   +20 Energy",770,258);
-
-    } else if (selectedSlot==1) {
-      text("Bass",770,233);
-      textSize(20);
-      text("A filling fish meal packed with",770,406);
-      text("protein and natural oils.",770,436);
-      textSize(15);
-      text("-60 Hunger   +20 Health   +10 Happiness   +25 Energy",770,258);
-
-    } else if (selectedSlot==2) {
-      text("Perch",770,233);
-      textSize(20);
-      text("A lean fish choice that's healthy",770,406);
-      text("and easy to digest.",770,436);
-      textSize(15);
-      text("-50 Hunger   +20 Health   +5 Happiness   +15 Energy",770,258);
-
-    } else if (selectedSlot==3) {
-      text("Goldfish",770,233);
-      textSize(20);
-      text("A small prey-sized bite that gives",770,406);
-      text("a quick little meal.",770,436);
-      textSize(15);
-      text("-30 Hunger   +5 Health   +15 Happiness   +10 Energy",770,258);
-
-    } else if (selectedSlot==4) {
-      text("Crab",770,233);
-      textSize(20);
-      text("Rich shellfish meat with minerals",770,406);
-      text("and lots of flavor.",770,436);
-      textSize(15);
-      text("-50 Hunger   +25 Health   +20 Happiness   +15 Energy",770,258);
-
-    } else if (selectedSlot==5) {
-      text("Lamb Chop",770,233);
-      textSize(20);
-      text("A heavy red meat meal that is very",770,406);
-      text("filling and energy dense.",770,436);
-      textSize(15);
-      text("-70 Hunger   +10 Health   +15 Happiness   +35 Energy",770,258);
-
-    } else if (selectedSlot==6) {
-      text("Pork Chop",770,233);
-      textSize(20);
-      text("A hearty cut of pork with lots of",770,406);
-      text("protein and fat.",770,436);
-      textSize(15);
-      text("-65 Hunger   +10 Health   +10 Happiness   +30 Energy",770,258);
-
-    } else if (selectedSlot==7) {
-      text("Steak",770,233);
-      textSize(20);
-      text("A premium meat cut that gives huge",770,406);
-      text("nutrition and energy.",770,436);
-      textSize(15);
-      text("-70 Hunger   +20 Health   +20 Happiness   +40 Energy",770,258);
-
-    } else if (selectedSlot==8) {
-      text("Chicken",770,233);
-      textSize(20);
-      text("Lean poultry meat that's balanced,",770,406);
-      text("healthy, and reliable.",770,436);
-      textSize(15);
-      text("-60 Hunger   +20 Health   +10 Happiness   +20 Energy",770,258);
-
-    } else if (selectedSlot==9) {
-      text("Catfish",770,233);
-      textSize(20);
-      text("A dense fish meal with strong",770,406);
-      text("protein and rich flavor.",770,436);
-      textSize(15);
-      text("-60 Hunger   +15 Health   +10 Happiness   +25 Energy",770,258);
-
-    } else if (selectedSlot==10) {
-      text("Frog",770,233);
-      textSize(20);
-      text("A natural prey option that feels",770,406);
-      text("especially satisfying to eat.",770,436);
-      textSize(15);
-      text("-45 Hunger   +15 Health   +25 Happiness   +20 Energy",770,258);
-
-    } else if (selectedSlot==11) {
-      text("Shrimp",770,233);
-      textSize(20);
-      text("A light seafood bite that boosts",770,406);
-      text("health more than fullness.",770,436);
-      textSize(15);
-      text("-35 Hunger   +25 Health   +15 Happiness   +10 Energy",770,258);
-    }
-
-    if (selectedSlot!=-1) {
-      if (selectedSlot == 0) image(bluegill,770,333,bluegill.width/6,bluegill.height/6);
-      else if (selectedSlot == 1) image(bass,770,333,bass.width/6,bass.height/6);
-      else if (selectedSlot == 2) image(perch,770,333,perch.width/6,perch.height/6);
-      else if (selectedSlot == 3) image(goldfish,770,333,goldfish.width/6,goldfish.height/6);
-      else if (selectedSlot == 4) image(crab,770,333,crab.width/6,crab.height/6);
-      else if (selectedSlot == 5) image(lambchop,770,333,lambchop.width/6,lambchop.height/6);
-      else if (selectedSlot == 6) image(porkchop,770,333,porkchop.width/6,porkchop.height/6);
-      else if (selectedSlot == 7) image(steak,770,333,steak.width/6,steak.height/6);
-      else if (selectedSlot == 8) image(chicken,770,333,chicken.width/6,chicken.height/6);
-      else if (selectedSlot == 9) image(catfish,770,333,catfish.width/6,catfish.height/6);
-      else if (selectedSlot == 10) image(frog,770,333,frog.width/6,frog.height/6);
-      else if (selectedSlot == 11) image(shrimp,770,333,shrimp.width/6,shrimp.height/6);
-      imageMode(CORNER);
+    if (selectedSlot >= 0 && selectedSlot < meatstock.length) {
+      drawMeatDetail(selectedSlot);
     }
   }
 

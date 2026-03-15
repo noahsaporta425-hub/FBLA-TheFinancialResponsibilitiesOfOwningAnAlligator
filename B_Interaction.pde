@@ -811,19 +811,8 @@ if (money >= 5 && vetclicked &&
   timesUsedVetCare++;
   lowQualityCareCount++;
 
-  boolean alreadyPrescribed =
-    enrofloxacinPresc ||
-    doxycyclinePresc ||
-    oseltamivirPresc ||
-    vitaminBComplexPresc ||
-    cyproheptadinePresc ||
-    potassiumChloridePresc ||
-    coenzymeQ10Presc ||
-    fluoxetinePresc ||
-    trazodonePresc ||
-    meloxicamPresc ||
-    calciumCarbonatePresc ||
-    activatedCharcoalPresc;
+  boolean alreadyPrescribed = false;
+  for (int _pi = 0; _pi < presc.length; _pi++) { if (presc[_pi]) { alreadyPrescribed = true; break; } }
 
   if (!sick || alreadyPrescribed) {
     alligator.health = min(100, alligator.health + 30);
@@ -1021,19 +1010,8 @@ if (money >= 5 && vetclicked &&
     highQualityCareCount++;
     vetclicked = false;
   
-    boolean alreadyPrescribed =
-      enrofloxacinPresc ||
-      doxycyclinePresc ||
-      oseltamivirPresc ||
-      vitaminBComplexPresc ||
-      cyproheptadinePresc ||
-      potassiumChloridePresc ||
-      coenzymeQ10Presc ||
-      fluoxetinePresc ||
-      trazodonePresc ||
-      meloxicamPresc ||
-      calciumCarbonatePresc ||
-      activatedCharcoalPresc;
+    boolean alreadyPrescribed = false;
+    for (int _pi = 0; _pi < presc.length; _pi++) { if (presc[_pi]) { alreadyPrescribed = true; break; } }
   
     if (!sick || alreadyPrescribed) {
       alligator.health = min(100, alligator.health + 30);

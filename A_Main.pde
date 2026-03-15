@@ -2,8 +2,6 @@
 // Imports & Libraries
 // =========================
 
-import processing.data.JSONObject;
-import processing.data.JSONArray;
 
 // Sound playback for music and effects
 import processing.sound.*;
@@ -42,7 +40,6 @@ void setup() {
   // Runs all essential code required in the setup function
   fileWork();
   
-  loadGame();
 
   // Initialize music volume, playback, and settings
   musicAdjusters();

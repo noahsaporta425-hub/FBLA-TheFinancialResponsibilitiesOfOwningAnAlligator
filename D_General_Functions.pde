@@ -100,7 +100,13 @@ void fileWork() {
   catfish = loadImage("catfish.png");
   frog = loadImage("frog.png");
   shrimp = loadImage("shrimp.png");
-  
+
+  // Initialize image arrays for store/inventory grid drawing
+  snackImages = new PImage[]{nachos, cheesepuffs, chips, chocolatebar, cookies, crackers,
+                              energydrink, granolabar, popcorn, pretzels, soda, trailmix};
+  meatImages  = new PImage[]{bluegill, bass, perch, goldfish, crab, lambchop,
+                              porkchop, steak, chicken, catfish, frog, shrimp};
+
   // --- Background Music ---
   music = new SoundFile(this, "music.mp3");
   music.loop();
@@ -359,19 +365,11 @@ void saveGame() {
   save.setBoolean("bankpopupshown", bankpopupshown);
   save.setBoolean("showplayarrow", showplayarrow);
 
-  // prescriptions
-  save.setBoolean("enrofloxacinPresc", enrofloxacinPresc);
-  save.setBoolean("doxycyclinePresc", doxycyclinePresc);
-  save.setBoolean("oseltamivirPresc", oseltamivirPresc);
-  save.setBoolean("vitaminBComplexPresc", vitaminBComplexPresc);
-  save.setBoolean("cyproheptadinePresc", cyproheptadinePresc);
-  save.setBoolean("potassiumChloridePresc", potassiumChloridePresc);
-  save.setBoolean("coenzymeQ10Presc", coenzymeQ10Presc);
-  save.setBoolean("fluoxetinePresc", fluoxetinePresc);
-  save.setBoolean("trazodonePresc", trazodonePresc);
-  save.setBoolean("meloxicamPresc", meloxicamPresc);
-  save.setBoolean("calciumCarbonatePresc", calciumCarbonatePresc);
-  save.setBoolean("activatedCharcoalPresc", activatedCharcoalPresc);
+  // prescriptions — save both named fields (for backward compat) and array
+  String[] prescNames = {"enrofloxacinPresc","doxycyclinePresc","oseltamivirPresc","vitaminBComplexPresc",
+    "cyproheptadinePresc","potassiumChloridePresc","coenzymeQ10Presc","fluoxetinePresc",
+    "trazodonePresc","meloxicamPresc","calciumCarbonatePresc","activatedCharcoalPresc"};
+  for (int i = 0; i < prescNames.length; i++) save.setBoolean(prescNames[i], presc[i]);
   save.setJSONArray("presc", booleanArrayToJson(presc));
 
   // inventory
@@ -496,20 +494,11 @@ void loadGame() {
   bankpopupshown = save.getBoolean("bankpopupshown", bankpopupshown);
   showplayarrow = save.getBoolean("showplayarrow", showplayarrow);
 
-  // prescriptions
-  enrofloxacinPresc = save.getBoolean("enrofloxacinPresc", enrofloxacinPresc);
-  doxycyclinePresc = save.getBoolean("doxycyclinePresc", doxycyclinePresc);
-  oseltamivirPresc = save.getBoolean("oseltamivirPresc", oseltamivirPresc);
-  vitaminBComplexPresc = save.getBoolean("vitaminBComplexPresc", vitaminBComplexPresc);
-  cyproheptadinePresc = save.getBoolean("cyproheptadinePresc", cyproheptadinePresc);
-  potassiumChloridePresc = save.getBoolean("potassiumChloridePresc", potassiumChloridePresc);
-  coenzymeQ10Presc = save.getBoolean("coenzymeQ10Presc", coenzymeQ10Presc);
-  fluoxetinePresc = save.getBoolean("fluoxetinePresc", fluoxetinePresc);
-  trazodonePresc = save.getBoolean("trazodonePresc", trazodonePresc);
-  meloxicamPresc = save.getBoolean("meloxicamPresc", meloxicamPresc);
-  calciumCarbonatePresc = save.getBoolean("calciumCarbonatePresc", calciumCarbonatePresc);
-  activatedCharcoalPresc = save.getBoolean("activatedCharcoalPresc", activatedCharcoalPresc);
-
+  // prescriptions — load from named fields first, then override with presc[] array if present
+  String[] prescNames = {"enrofloxacinPresc","doxycyclinePresc","oseltamivirPresc","vitaminBComplexPresc",
+    "cyproheptadinePresc","potassiumChloridePresc","coenzymeQ10Presc","fluoxetinePresc",
+    "trazodonePresc","meloxicamPresc","calciumCarbonatePresc","activatedCharcoalPresc"};
+  for (int i = 0; i < prescNames.length; i++) presc[i] = save.getBoolean(prescNames[i], presc[i]);
   JSONArray prescArr = save.getJSONArray("presc");
   if (prescArr != null) {
     for (int i = 0; i < min(presc.length, prescArr.size()); i++) {
