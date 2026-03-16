@@ -18,7 +18,7 @@ void volume(float v) {
   applyVolume(v);
 
   // If volume is basically 0, force toggle OFF (but without triggering its callback)
-  if (v <= 0.001) {
+  if (v <= 0.001) { // floating-point comparison: treat any volume below 0.001 as effectively silent to fully mute the track
     setToggleValueNoEvent(0);
   }
   // Otherwise, remember volume and force toggle ON
@@ -36,7 +36,7 @@ void volume(float v) {
 void applyVolume(float v) {
 
   // Map 0–100 slider range to a safe amp range
-  float ampValue = map(v, 0, 100, 0.0, 0.25);
+  float ampValue = map(v, 0, 100, 0.0, 0.25); // map slider range 0–100 to amplitude 0.0–0.25; capped at 0.25 to prevent audio distortion
   music.amp(ampValue);
 }
 

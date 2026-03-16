@@ -8,122 +8,199 @@
 Fade minigameFade = new Fade(255);  // starts black on minigame entry; fades to clear as game begins
 
 // =========================
-// Minigame helper functions
+// Minigame Shared Helpers
+// earnMinigameMoney(), tickMinigameStats(), drawMinigameModal(), drawMinigameStats()
+// are defined below and used by all three minigames.
 // =========================
 
-// Adds money earned in a minigame to all relevant counters
+// =========================
+// Minigame Choice Screen
+// =========================
+boolean isOnChoiceScreen = false;   // true while the player is on the game selection screen
 
 // =========================
-// Additional Global State (moved to top for clarity)
+// Swamp Hop — Assets & Sprites
 // =========================
-boolean isOnChoiceScreen = false;   // true while the player is on the minigame selection screen
-boolean isEnterSwampHop = false;    // set true when player picks Swamp Hop
-PImage minigamechoice;            // background image for the minigame selection screen
-PImage alligatorf1;
-PImage alligatorf2;
-PImage alligatorf3;
-PImage alligatorf4;
-PImage log;
-PImage rock;
-PImage vine;
-PImage mud;
-int walkAnimFrameDelay = 6;    // frames to hold each sprite before advancing
-float x = 224;          // Alligator's fixed horizontal position on screen
-float y = 500;          // Vertical position; changes during jumps
-float hopGravity = 1.2;    // Acceleration applied to hopVelocityY each frame
-float hopJumpStrength = 20; // Upward impulse applied when SPACE is pressed
-boolean isSwampHopOnGround = true;           // Prevents double-jumping
-boolean isSwampHopRetry        = false;        // Set true when player clicks RETRY
-boolean isExitingMinigame = false;                // Set true when player clicks EXIT to return to main screen
-boolean isSwampHopFirstPlay = true; // True on first entry — shows "WELCOME!" modal instead of "YOU LOST!"
-boolean isEnterFetchFrenzy = false;    // Set true when player picks Fetch Frenzy
-int swampHopGraceFrames = 0;            // Prevents immediate collision detection on isSwampHopRetry
-int swampHopSpawnDelay = 0;       // Delays first obstacle spawn after a isSwampHopRetry
-boolean isEnterSnackSnatch = false;    // Set true when player picks Snack Snatch
-ArrayList<Obstacle> swampHopObstacles = new ArrayList<Obstacle>(); // Active obstacle list
-float obstacleSpawnGap = 900;    // Minimum pixel gap between consecutive swampHopObstacles
-float nextObstacleX = 0;       // X position at which the next obstacle will be spawned
-float hopGatorHitboxWidth = 0.70;   // 70% of sprite width
-float hopGatorHitboxHeight = 0.45;   // 45% of sprite height
-float vineHitboxWidth = 0.45;
-float vineHitboxHeight = 0.85;
+PImage minigamechoice;              // background image for the minigame selection screen
+PImage alligatorf1;                 // walk-cycle frame 1
+PImage alligatorf2;                 // walk-cycle frame 2
+PImage alligatorf3;                 // walk-cycle frame 3
+PImage alligatorf4;                 // walk-cycle frame 4
+PImage log, rock, vine, mud;        // obstacle sprites (each has unique hitbox tuning below)
+
+// =========================
+// Swamp Hop — Physics & Game State
+// =========================
+boolean isEnterSwampHop    = false;   // true when Swamp Hop is the active minigame
+boolean isSwampHopRetry    = false;   // true when player clicked RETRY (grace frames prevent instant death)
+boolean isExitingMinigame  = false;   // true when player clicked EXIT to return to main screen
+boolean isSwampHopFirstPlay = true;   // shows WELCOME modal instead of YOU LOST on first entry
+boolean isSwampHopOnGround = true;    // prevents double-jumping
+
+int   walkAnimFrameDelay = 6;         // 6 frames per walk animation cell at 60fps gives a natural-looking gait
+float x = 224;                        // alligator's fixed horizontal screen position
+float y = 500;                        // vertical position — changes during jumps
+float hopGravity      = 1.2f;         // tuned so the jump arc feels responsive but not floaty
+float hopJumpStrength = 20;           // peak upward velocity; matched to gravity so player can clear one obstacle height
+float hopVelocityY    = 0;            // current vertical velocity (positive = falling)
+float hopGroundY;                     // ground threshold — recalculated each frame
+
+int swampHopGraceFrames = 0;          // frames of invincibility after RETRY (prevents instant re-death)
+int swampHopSpawnDelay  = 0;          // extra delay before first obstacle spawns after RETRY
+
+float swampHopScoreTimer  = 0;        // counts frames; every 60 frames = +1 point
+float swampHopBgScrollX   = 0;        // current horizontal scroll offset for the background
+float swampHopScrollSpeed = 16;       // horizontal scroll rate; fast enough to feel urgent, slow enough to be fair
+float swampHopBgWidth;                // cached background image width (set each frame)
+float swampHopBgHeight;               // cached background image height (set each frame)
+
+// =========================
+// Swamp Hop — Obstacle Spawning
+// =========================
+ArrayList<Obstacle> swampHopObstacles = new ArrayList<Obstacle>(); // active obstacle instances
+float obstacleSpawnGap = 900;   // minimum pixel gap between obstacles so the player always has time to react
+float nextObstacleX    = 0;     // x-position at which the next obstacle will be placed
+
+// =========================
+// Swamp Hop — Hitbox Tuning
+// Each value is a fraction of the sprite's drawn size (1.0 = full size).
+// Offsets shift the hitbox center from the sprite center in pixels.
+// Hand-tuned so near-misses feel fair and collisions feel accurate.
+// Hitbox fractions are intentionally forgiving (smaller than the sprite) to keep gameplay fair; values tuned by playtesting
+// =========================
+// Alligator catcher hitbox (slightly inset so near-misses feel forgiving)
+float hopGatorHitboxWidth   = 0.70f;   // 70% of sprite width
+float hopGatorHitboxHeight  = 0.45f;   // 45% of sprite height
+float hopGatorHitboxOffsetY = -8;      // shift upward from sprite center
+
+// Vine hitbox (tall and narrow — hangs down from above)
+float vineHitboxWidth   = 0.45f;
+float vineHitboxHeight  = 0.85f;
 float vineHitboxOffsetY = -10;
-float rockHitboxWidth = 0.75;
-float rockHitboxHeight = 0.55;
+
+// Rock hitbox (wide and low — sits on the ground)
+float rockHitboxWidth   = 0.75f;
+float rockHitboxHeight  = 0.55f;
 float rockHitboxOffsetY = 0;
-float mudHitboxWidth = 0.75;
-float mudHitboxHeight = 0.55;
+
+// Mud hitbox (same shape as rock)
+float mudHitboxWidth   = 0.75f;
+float mudHitboxHeight  = 0.55f;
 float mudHitboxOffsetY = 0;
-float logHitboxWidth = 1.0;
-float logHitboxHeight = 0.7;
+
+// Log hitbox (full width, slightly reduced height)
+float logHitboxWidth   = 1.0f;
+float logHitboxHeight  = 0.7f;
 float logHitboxOffsetY = 0;
-float swampHopScoreTimer = 0;    // Counts frames; every 60 frames = 1 point + moneyPerMinigamePoint earned
-int snatchScore = 0;               // Current run score for Snack Snatch
-float swampHopBgScrollX = 0;
-float swampHopScrollSpeed = 16;
-float swampHopBgWidth;
-float swampHopBgHeight;
-PImage bluegill;
-PImage bass;
-PImage perch;
-PImage goldfish;
-PImage crab;
-PImage lambchop;
-PImage porkchop;
-PImage broccoli;
-PImage carrot;
-PImage tomato;
-PImage pepper;
-ArrayList<FallingFood> fallingFoods = new ArrayList<FallingFood>();
-boolean isSnatchFirstPlay = true;
-boolean isSnatchLost = true;
-int snatchBestScore = 0;
-float snatchGatorWidthMult = 0.600; // fraction of sprite width used for collision
-float snatchGatorHeightMult = 0.240; // fraction of sprite height used for collision
-float snatchGatorOffsetX = -4.0;     // horizontal center offset in pixels
-float bluegillW=0.520, bluegillH=0.380, bluegillOX=-2, bluegillOY=-4;
-float bassW=0.560, bassH=0.400, bassOX=4, bassOY=-8;
-float perchW=0.580, perchH=0.360, perchOX=0, perchOY=-2;
-float goldfishW=0.520, goldfishH=0.380, goldfishOX=-2, goldfishOY=-4;
-float crabW=0.600, crabH=0.360, crabOX=0, crabOY=-4;
-float lambchopW=0.420, lambchopH=0.340, lambchopOX=-8, lambchopOY=8;
-float porkchopW=0.500, porkchopH=0.420, porkchopOX=0, porkchopOY=0;
-float broccoliW=0.540, broccoliH=0.620, broccoliOX=2, broccoliOY=-4;
-float carrotW=0.380, carrotH=0.540, carrotOX=-6, carrotOY=8;
-float tomatoW=0.380, tomatoH=0.480, tomatoOX=2, tomatoOY=-2;
-float pepperW=0.340, pepperH=0.540, pepperOX=2, pepperOY=-4;
+
+// =========================
+// Swamp Hop — Scoring & Animation
+// =========================
+int swampHopScore     = 0;   // current run score (increments once per second survived)
+int swampHopBestScore = 0;   // all-time best score (persisted to save file)
+int walkAnimFrameIndex = 1;  // current walk-cycle sprite (1–4)
+int walkAnimFrameTimer = 0;  // counts up each draw(); resets at walkAnimFrameDelay
+
+float moneyPerMinigamePoint = 0;  // dollars earned per minigame point (upgradeable in Earn panel)
+
+
+// =========================
+// Snack Snatch — Assets & Game State
+// =========================
+boolean isEnterSnackSnatch = false;   // true when Snack Snatch is the active minigame
+boolean isSnatchFirstPlay  = true;    // shows WELCOME modal on first entry
+boolean isSnatchLost       = true;    // true when showing lose/welcome modal (not actively playing)
+
+int   snatchScore     = 0;    // current run score
+int   snatchBestScore = 0;    // all-time best score
+
+// Player position (horizontal only — vertical is fixed)
+float snatchPlayerX = 550;
+
+// Player hitbox fractions (applied to energeticalligator sprite size)
+float snatchGatorWidthMult  = 0.600f;  // fraction of sprite width used for collision
+float snatchGatorHeightMult = 0.240f;  // fraction of sprite height used for collision
+float snatchGatorOffsetX    = -4.0f;   // horizontal center offset in pixels
+float snatchGatorOffsetY    = -20.0f;  // vertical center offset (shifted up toward mouth)
+
+ArrayList<FallingFood> fallingFoods = new ArrayList<FallingFood>(); // active falling items
+
+// Food sprite references (loaded in D_General_Functions :: fileWork)
+PImage bluegill, bass, perch, goldfish, crab, lambchop, porkchop;
+PImage broccoli, carrot, tomato, pepper;
+
+// =========================
+// Snack Snatch — Per-Food Hitbox Tuning
+// W/H = size fraction relative to sprite dimensions, OX/OY = center offset in pixels.
+// Vegetables touching the player cause a loss; all other food scores a point.
+// =========================
+float bluegillW=0.520f, bluegillH=0.380f, bluegillOX=-2,  bluegillOY=-4;
+float bassW    =0.560f, bassH    =0.400f, bassOX   = 4,   bassOY   =-8;
+float perchW   =0.580f, perchH   =0.360f, perchOX  = 0,   perchOY  =-2;
+float goldfishW=0.520f, goldfishH=0.380f, goldfishOX=-2,  goldfishOY=-4;
+float crabW    =0.600f, crabH    =0.360f, crabOX   = 0,   crabOY   =-4;
+float lambchopW=0.420f, lambchopH=0.340f, lambchopOX=-8,  lambchopOY= 8;
+float porkchopW=0.500f, porkchopH=0.420f, porkchopOX= 0,  porkchopOY= 0;
+float broccoliW=0.540f, broccoliH=0.620f, broccoliOX= 2,  broccoliOY=-4;
+float carrotW  =0.380f, carrotH  =0.540f, carrotOX =-6,   carrotOY  = 8;
+float tomatoW  =0.380f, tomatoH  =0.480f, tomatoOX = 2,   tomatoOY  =-2;
+float pepperW  =0.340f, pepperH  =0.540f, pepperOX = 2,   pepperOY  =-4;
+
+
+// =========================
+// Fetch Frenzy — Assets & Game State
+// =========================
+boolean isEnterFetchFrenzy = false;   // true when Fetch Frenzy is the active minigame
+boolean isFetchFirstPlay   = true;    // shows WELCOME modal on first entry
+boolean isFetchLost        = true;    // true when showing lose/welcome modal
+
+int   fetchScore     = 0;
+int   fetchBestScore = 0;
+float fetchTimer     = 3;             // 3-minute fetch session; long enough to earn meaningful rewards, short enough to stay engaging
+
 PImage fetchfrenzybackground;
 PImage ball;
-float ballX = 548, ballY = 618;
-float ballVelocityX = 0, ballVelocityY = 0;
-float ballZ = 0;
-float ballVerticalVelocity = 0;
-boolean isBallMoving = false;
-float ballGravity = 1.0;
-float ballBounceFactor = 0.55;
-float ballAirDrag = 0.995;
-float ballGroundFriction = 0.92;
-float ballStopSpeedThreshold = 0.15;
-float ballStopBounceThreshold = 0.6;
-PImage topalligator1, topalligator2;
-int fetchWalkFrameTimer = 0;
-float fetchPlayerX = 0;
-float fetchPlayerY = 0;
+PImage topalligator1, topalligator2;  // two-frame top-down walk animation
+
+// Player position and facing direction (WASD/arrow key controlled)
+float  fetchPlayerX       = 0;
+float  fetchPlayerY       = 0;
 String fetchFacingDirection = "RIGHT";
-boolean ballHitsPlayer = false;
-boolean wasBallHittingPlayer = false;
-boolean hasBallBeenLaunched = false;
-int fetchScore=0;
-int fetchBestScore=0;
-float fetchTimer=3;
-RectHB ballHB  = new RectHB(0, -0.50, 36.00, 37.00);
-RectHB gatorHB = new RectHB(0, -42.00, 95.00, 144.00);
-boolean isBallWaitingToLaunch = false;
-int ballLaunchCountdown = 0;
-final int LAUNCH_DELAY = 30;
-boolean isBallOnField = true;
-boolean isFetchLost = true;
-boolean isFetchFirstPlay = true;
+int    fetchWalkFrameTimer  = 0;       // tracks which walk frame to show
+
+// =========================
+// Fetch Frenzy — Ball Physics
+// Fetch Frenzy physics constants — tuned for a bouncy but controllable feel; drag/friction slow the ball to prevent infinite sliding
+// =========================
+float   ballX = 548, ballY = 618;           // current ball position
+float   ballVelocityX = 0, ballVelocityY = 0; // horizontal/vertical ground-plane velocity
+float   ballZ = 0;                           // height above the ground (for shadow + arc)
+float   ballVerticalVelocity = 0;            // vertical (arc) velocity component
+boolean isBallMoving = false;
+
+float ballGravity            = 1.0f;   // downward pull on ballVerticalVelocity each frame
+float ballBounceFactor       = 0.55f;  // fraction of vertical speed kept on each bounce
+float ballAirDrag            = 0.995f; // per-frame drag applied while ball is airborne
+float ballGroundFriction     = 0.92f;  // per-frame friction applied when ball is on ground
+float ballStopSpeedThreshold = 0.15f;  // ground speed below which the ball is considered stopped
+float ballStopBounceThreshold = 0.6f;  // bounce speed below which the ball stops bouncing
+
+// =========================
+// Fetch Frenzy — Hitboxes and Launch Logic
+// =========================
+RectHB ballHB  = new RectHB(0, -0.50f, 36.00f, 37.00f);    // ball collision box (center-relative)
+RectHB gatorHB = new RectHB(0, -42.00f, 95.00f, 144.00f);  // alligator collision box (UP orientation)
+
+boolean isBallWaitingToLaunch = false;  // true while countdown before next launch is running
+int     ballLaunchCountdown   = 0;      // frames remaining until next launch
+final int LAUNCH_DELAY        = 30;     // 30 frames (~0.5s at 60fps) between catches so the player has time to reposition
+boolean isBallOnField         = true;   // false briefly while waiting to re-launch
+
+boolean ballHitsPlayer      = false;    // true this frame if ball overlaps alligator hitbox
+boolean wasBallHittingPlayer = false;   // true last frame (used to detect the moment of contact)
+boolean hasBallBeenLaunched  = false;   // prevents double-launch on round start
+// Canonical way to add money from minigame play; updates money, totalMoneyEarned, and relevant achievement counters.
+// amount: dollars to add (derived from moneyPerMinigamePoint, which the player can upgrade).
 void earnMinigameMoney(float amount) {
   money += amount;
   currentPlaySessionMoneyEarned += amount;
@@ -131,16 +208,19 @@ void earnMinigameMoney(float amount) {
   moneyEarnedFromMinigames += amount;
 }
 
-// Drains energy, boosts happiness each frame during active gameplay
+// Called every frame during minigames; slowly drains energy and hunger to simulate effort,
+// while boosting happiness because the alligator enjoys playing.
 void tickMinigameStats() {
   alligator.energy    -= 0.01;
   alligator.happiness += 0.01;
   totalHappinessRestored += 0.01;
 }
 
-// Draws the lose/welcome modal shared by all three minigames.
-// title/sub1/sub2/sub3 are the header and instruction lines (empty string = skip).
-// leftBtn / rightBtn are the button labels.
+// Draws the pre-game info popup with controls and description before a minigame starts,
+// and re-uses the same layout for the YOU LOST screen after a run ends.
+// title: large header text (e.g., "WELCOME!" or "YOU LOST!")
+// sub1/sub2/sub3: up to three instruction/info lines; pass an empty string to skip a line.
+// leftBtn / rightBtn: labels for the two action buttons (e.g., "RETRY" / "EXIT").
 void drawMinigameModal(String title, String sub1, String sub2, String sub3,
                        String leftBtn, String rightBtn) {
   stroke(255);
@@ -168,7 +248,8 @@ void drawMinigameModal(String title, String sub1, String sub2, String sub3,
   rect(width/2 + 70, 436, 105, 50);
 }
 
-// Draws the stat bars overlay shown during all three minigames
+// Renders the in-game HUD overlay (energy and happiness bars) during any minigame,
+// giving the player visibility into how the activity is affecting their alligator.
 void drawMinigameStats() {
   strokeWeight(1);
   stroke(0);
@@ -201,15 +282,11 @@ PImage swamphopbackground;  // Scrolling background image (drawn twice for seaml
 // =========================
 // Swamp Hop — Animation State
 // =========================
-int walkAnimFrameIndex = 1;    // current walk-cycle frame (1–4)
-int walkAnimFrameTimer = 0;  // counts up each draw() call; resets at walkAnimFrameDelay
 
 
 // =========================
 // Swamp Hop — Physics
 // =========================
-float hopVelocityY = 0;    // Current downward velocity (increases each frame by hopGravity)
-float hopGroundY;          // Calculated ground threshold (set each frame based on sprite height)
 
 
 // =========================
@@ -228,7 +305,6 @@ boolean isSwampHopLost = true;         // True = showing lose/welcome modal (not
 // =========================
 
 // Alligator hitbox (slightly inset so near-misses feel forgiving)
-float hopGatorHitboxOffsetY = -8;     // shift upward from sprite center (pixels)
 
 // Vine hitbox (tall but narrow — hangs from above)
 // Rock hitbox (wide and low — sits on ground)
@@ -237,9 +313,6 @@ float hopGatorHitboxOffsetY = -8;     // shift upward from sprite center (pixels
 // =========================
 // Swamp Hop — Scoring
 // =========================
-int swampHopScore = 0;                  // Current run score (increments once per second survived)
-int swampHopBestScore = 0;              // All-time best score across all runs (persisted to save)
-float moneyPerMinigamePoint = 0;              // Dollars earned per minigame point (upgradeable in Earn panel)
 
 // =========================
 // Snack Snatch — Scoring
@@ -247,7 +320,6 @@ float moneyPerMinigamePoint = 0;              // Dollars earned per minigame poi
 // =========================
 // Fetch Frenzy — Player Position
 // =========================
-float snatchPlayerX = 550;            // Horizontal position of the alligator in Fetch Frenzy (top-down)
 
 void resetSwampHop() {
   isSwampHopLost = false;
@@ -440,7 +512,8 @@ class Obstacle {
 
 void initObstaclesIfNeeded() {
   if (swampHopObstacles.size() == 0) {
-    nextObstacleX = width + 200;
+    nextObstacleX = width + 200;  // start off-screen right so the first obstacle slides in naturally
+    // pre-populate 4 obstacles spaced across the visible+buffer zone
     for (int i = 0; i < 4; i++) spawnObstacle();
   }
 }
@@ -473,7 +546,7 @@ void spawnObstacle() {
 void updateAndDrawObstacles() {
   if (isSwampHopLost) return;
 
-  if (swampHopGraceFrames > 0) swampHopGraceFrames--;
+  if (swampHopGraceFrames > 0) swampHopGraceFrames--;  // brief invincibility after retry so the player isn't instantly killed on spawn
 
   if (swampHopSpawnDelay > 0) {
     swampHopSpawnDelay--;
@@ -536,7 +609,7 @@ void updateAndDrawObstacles() {
     }
   }
 
-  while (swampHopObstacles.size() < 6) {
+  while (swampHopObstacles.size() < 6) {  // keep 6 obstacles pooled off-screen to avoid mid-game allocation
     spawnObstacle();
   }
 }
@@ -649,6 +722,7 @@ void updateSnackSnatchFalling() {
     }
     f.drawFood();
 
+    // spawn the next food when the current one is 70% down the screen, keeping at most 2 active
     if (!f.spawnedNext && f.y > height * 0.7 && fallingFoods.size() < 2) {
       fallingFoods.add(new FallingFood(randomFood()));
       f.spawnedNext = true;
@@ -699,10 +773,10 @@ class FallingFood {
     this.img = img;
     x = random(50, width - 50);
     y = -60;
-    fallSpeed = random(4, 8);
+    fallSpeed = random(4, 8);               // randomize fall speed so each food item feels different to catch
     angle = random(TWO_PI);
-    rotationSpeed = random(-0.1, 0.1);
-    if (abs(rotationSpeed) < 0.03) rotationSpeed = (rotationSpeed < 0 ? -0.05 : 0.05);
+    rotationSpeed = random(-0.1, 0.1);      // gentle spin in either direction for visual variety
+    if (abs(rotationSpeed) < 0.03) rotationSpeed = (rotationSpeed < 0 ? -0.05 : 0.05);  // ensure minimum spin is visible; values near 0 look like no rotation
   }
 
   void update() {
@@ -727,7 +801,6 @@ class FallingFood {
 // =========================
 
 // Alligator catcher hitbox (applied to the player character)
-float snatchGatorOffsetY = -20.0;    // vertical center offset in pixels (shifted up toward mouth)
 
 // Per-food hitbox tuning (W/H = size fraction, OX/OY = center offset)
 // Vegetables (touching these causes a loss)
@@ -842,6 +915,7 @@ void walkanimation() {
   if (fetchFacingDirection.equals("RIGHT") && fetchPlayerY > 504 && fetchPlayerX > 371 && fetchPlayerX < 500) fetchPlayerX = 371;
   if (fetchFacingDirection.equals("LEFT")  && fetchPlayerY > 504 && fetchPlayerX > 600 && fetchPlayerX < 746) fetchPlayerX = 747;
 
+  // boundary margins match the sprite edge so the alligator never walks off-screen
   if (fetchPlayerY < 96) fetchPlayerY = 97;
   if (fetchPlayerX < 100) fetchPlayerX = 101;
   if (fetchPlayerX > 1000) fetchPlayerX = 999;
@@ -873,6 +947,7 @@ void walkanimation() {
   if (!isFetchLost) {
   applyAlligatorTint();
   fetchWalkFrameTimer++;
+  // 7-frame animation cycle gives natural walking cadence: frames 0-6 show pose 1, frames 7-13 show pose 2, then reset
   if (fetchWalkFrameTimer < 7) {
     image(topalligator1, 0, 0, topalligator1.width/4, topalligator1.height/4);
   } else if (fetchWalkFrameTimer < 14) {
@@ -891,9 +966,9 @@ void launchBall() {
   ballX = 548;
   ballY = 618;
 
-  float speed = 11;
-  float baseAngle = -HALF_PI;
-  float spread = radians(180);
+  float speed = 11;                  // launch speed that gives a satisfying arc across the play field
+  float baseAngle = -HALF_PI;        // launch straight up with 180° spread so the ball always lands somewhere in the play area
+  float spread = radians(180);       // 180° total spread means the ball can go anywhere in the upper half of the field
   float angle = baseAngle + random(-spread, spread);
 
   ballVelocityX = cos(angle) * speed;

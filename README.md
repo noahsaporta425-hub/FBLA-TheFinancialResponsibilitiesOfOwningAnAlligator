@@ -133,3 +133,34 @@ Click the **Rest** button to do a timing mini-game:
 | `H_Play_Screen.pde` | All three minigames |
 | `I_Alligator_Class.pde` | `Pet` class and food/medicine effects |
 | `data/` | All images, fonts, and audio assets |
+
+---
+
+## Libraries & Attribution
+
+### Processing Libraries
+
+| Library | Purpose | Author | Source | License |
+|---------|---------|--------|--------|---------|
+| `processing.sound` | Background music playback | Processing Foundation | https://processing.org/reference/libraries/sound/ | LGPL v2.1 |
+| `ControlP5` | Volume slider, music toggle, pet name text input | Andreas Schlegel | https://sojamo.de/libraries/controlP5/ | LGPL v2.1 |
+
+### Runtime / IDE
+
+| Resource | Source | License |
+|----------|--------|---------|
+| Processing 4 IDE and runtime | https://processing.org | GPL v2 / LGPL v2.1 |
+
+### Audio
+
+| Asset | Details |
+|-------|---------|
+| **Title** | Leisure Simulation Game |
+| **Artist/Composer** | Sylvain Ott |
+| **Label** | AXS Music / BMG Production Music |
+| **Released** | 2017-12-23 |
+| **Source** | https://www.youtube.com/watch?v=SlBiaepD0Ys |
+| **Usage** | Used as ambient background music in an educational, non-commercial FBLA competition project. No modifications made. |
+
+### Visual Assets
+- All game artwork (alligator sprites, backgrounds, UI elements, item images) was created originally for this project.

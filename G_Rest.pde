@@ -13,7 +13,7 @@ boolean hasAlligatorRestedOnce = false;
 boolean isShowingRestPopup = false;
 boolean hasShownRestPopup = false;
 
-int restAttemptsRemaining = 2;
+int restAttemptsRemaining = 2; // two rest attempts per day prevents the player from spamming rest to max energy; resets each morning
 int restAttempts = 0;
 int timesRestedSuccessfully = 0;
 float totalEnergyRestoredFromResting = 0;
@@ -51,6 +51,7 @@ void restpopup() {
 
 // =========================
 // Rest Panel
+// Renders the rest minigame: a moving marker on a colored gradient bar. Landing in the green zone gives the best energy recovery.
 // =========================
 void rest() {
   rectMode(CENTER);
@@ -59,7 +60,7 @@ void rest() {
   fill(80, 220);
   rect(439, 490, 320, 90);
 
-  int pixelSize = 5;
+  int pixelSize = 5; // render the gradient bar as 5px blocks to give a chunky, retro feel
   rectMode(CORNER);
   noStroke();
 
@@ -67,7 +68,7 @@ void rest() {
     float position = px / restBarWidth;
     int gradientColor;
 
-    if (position < 0.25f) {
+    if (position < 0.25f) { // symmetric gradient: red at edges (poor rest), through orange/yellow to green in the center (ideal rest)
       gradientColor = lerpColor(COLOR_RED, COLOR_ORANGE, map(position, 0, 0.25f, 0, 1));
     } else if (position < 0.4f) {
       gradientColor = lerpColor(COLOR_ORANGE, COLOR_YELLOW, map(position, 0.25f, 0.4f, 0, 1));
@@ -85,8 +86,8 @@ void rest() {
     rect(restBarLeft + px, restBarTop, pixelSize, restBarHeight);
   }
 
-  float edgeSlowdown = abs(restMarkerProgress - 0.5f) * 2.0f;
-  float markerSpeed = map(edgeSlowdown, 0, 1, 0.03f, 0.008f);
+  float edgeSlowdown = abs(restMarkerProgress - 0.5f) * 2.0f; // marker slows toward the edges to make landing in the extremes harder — rewards aiming for center
+  float markerSpeed = map(edgeSlowdown, 0, 1, 0.03f, 0.008f); // maps slowdown value to actual speed: 0.03 at center (fast), 0.008 at edge (slow)
 
   restMarkerProgress += markerSpeed * restMarkerDirection;
 

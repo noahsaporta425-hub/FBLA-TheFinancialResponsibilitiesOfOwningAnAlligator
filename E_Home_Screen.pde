@@ -30,10 +30,10 @@ void homescreen() {
   rectMode(CORNER);
 
   // Fade in from black on initial load
-  homeFade.stepIn(2);
+  homeFade.stepIn(2); // fade speed 2 gives a ~2s fade-in on first launch — slow enough to feel welcoming
 
   // Draw background slightly oversized to avoid edge gaps
-  image(homescreen, -25, 0, width + 25, height + 100);
+  image(homescreen, -25, 0, width + 25, height + 100); // slight overflow on right and bottom hides background image seams at the canvas edge
 
   // Draw fade overlay on top of the background
   homeFade.draw();

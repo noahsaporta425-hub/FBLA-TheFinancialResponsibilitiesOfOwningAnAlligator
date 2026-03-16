@@ -31,6 +31,9 @@ Fade storeFade = new Fade(255);
 // =========================
 // Store Panel Shared Helpers
 // =========================
+
+// drawStorePanelFrame(String title) — Draws the shared store panel background, border, title, and
+// close button. Called by each store tab (medicine, snacks, meat) before drawing its items.
 void drawStorePanelFrame(String title) {
   rectMode(CORNERS);
   stroke(169);
@@ -110,6 +113,7 @@ void store() {
 
   if (isViewingMedicineTab) {
     drawStorePanelFrame("MEDICINE:");
+    // 4-column × 5-row grid divides the left half of the store panel into equal item slots
     float[] xs = {110, 256.66f, 403.32f, width/2};
     float[] ys = {182, 279.625f, 377.25f, 474.875f, 572.5f};
     drawStoreGrid(xs, ys);
@@ -132,6 +136,7 @@ void store() {
       textSize(25);
 
       if (selectedInventorySlot >= 0 && selectedInventorySlot < medicineIsPrescribed.length && medicineIsPrescribed[selectedInventorySlot]) {
+        // prescribed medicines are free; the strikethrough shows the normal $5 price for context
         text("$5.00   $0.00", 770, 522.5f);
         stroke(255, 0, 0);
         line(692, 514, 769, 514);
@@ -306,7 +311,10 @@ void store() {
   storeFade.draw();
 }
 
+// storeclosedpopup() — Renders the 'store is closed' notice that appears on every 7th day
+// (Sunday), modeling real-world business hours.
 void storeclosedpopup() {
+  // store closes every 7th day (modeled as Sunday) to teach budgeting ahead
   imageMode(CENTER);
   image(popupbackground, width/2, height*0.42f, popupbackground.width*0.6f, popupbackground.height*0.6f);
   fill(0);

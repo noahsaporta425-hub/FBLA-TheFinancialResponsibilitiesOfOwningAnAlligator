@@ -61,7 +61,7 @@ void cutscene() {
   // Phase 1: Fade to black (0→255) — screen goes dark before city is revealed
   // ---------------------------------------------------
   if (!cutFade1.outComplete) {
-    cutFade1.stepOut(3);
+    cutFade1.stepOut(3);  // fade speed 3 gives a ~1.4s transition at 60fps — fast enough to feel snappy, slow enough to read
     cutFade1.draw();
   }
 
@@ -71,14 +71,14 @@ void cutscene() {
   else {
 
     // Pan the background until the adoption center is reached
-    if (cityPanOffset <= 765) {
-      cityPanOffset += 3;
+    if (cityPanOffset <= 765) {  // pan 765px to show the full city background before pausing on the pet shop
+      cityPanOffset += 3;  // 3px/frame pan speed matches the fade duration so they complete together
     } else {
 
       // Pause briefly before transitioning inside
       cityPanPauseTimer++;
 
-      if (cityPanPauseTimer >= 40) {
+      if (cityPanPauseTimer >= 40) {  // 40-frame pause (~0.7s) lets the player read the scene before advancing
         isEnteringAdoptionCenter = true;
       }
     }
@@ -98,7 +98,7 @@ void cutscene() {
 
     // Fade to black before showing the interior
     if (!cutFade2.outComplete) {
-      cutFade2.stepOut(8);
+      cutFade2.stepOut(8);  // faster fade (8) for the scene cut to keep the cutscene pacey
       cutFade2.draw();
     }
 
@@ -122,7 +122,7 @@ void cutscene() {
 
         petSignDisplayTimer++;
 
-        if (petSignDisplayTimer > 220) {
+        if (petSignDisplayTimer > 220) {  // 220 frames (~3.7s) on the pet sign gives the player time to absorb the choices
 
           // Fade to black (cutFade3) before switching to naming screen
           if (!cutFade3.outComplete) {
@@ -150,11 +150,11 @@ void cutscene() {
 // =========================
 
 float signRevealProgress = 0;
-float signRevealSpeed    = 0.015;
+float signRevealSpeed    = 0.015;  // slow reveal (1.5% per frame) makes the sign dramatically slide down into view
 
-float signBaseX          = width / 2 - 240;
+float signBaseX          = width / 2 - 240;  // center the 480px-wide sign on the canvas
 
-float signMaskLineY      = 191;
+float signMaskLineY      = 191;  // top edge of the sign reveal; aligns with the panel header in the background image
 float signFinalY         = height / 2 - 200;
 
 
@@ -168,7 +168,7 @@ void signanimation(PImage img) {
   float x      = width / 2.0 - 230;
   float finalY = height / 2.0 - 200;
 
-  float targetW = 480;
+  float targetW = 480;  // sign image native display size — fits the center panel without crowding the pet options
   float targetH = 350;
 
   float startY = signMaskLineY - targetH;
@@ -225,12 +225,13 @@ void namingalligatorsegment() {
   imageMode(CORNER);
   image(namingalligatorbackground, 0, 0, width, height);
 
+  // three pet choices evenly spaced 300px apart, centered slightly left to balance the UI
   image(alligator.neutralalligator, width * 0.27 - 300, height * 0.5, (width / 2) * 0.9, height / 2);
 
-  tint(0,255,0);
+  tint(0,255,0);   // green skin color preview for the alternate pet choice
   image(alligator.neutralalligator, width * 0.27, height * 0.5, (width / 2) * 0.9, height / 2);
 
-  tint(70,130,255);
+  tint(70,130,255);  // blue skin color preview for the alternate pet choice
   image(alligator.neutralalligator, width * 0.27 + 300, height * 0.5, (width / 2) * 0.9, height / 2);
   noTint();
 
@@ -245,7 +246,7 @@ void namingalligatorsegment() {
     float btnX = (width * 0.27 + btnXOffsets[i]) + ((width / 2) * 0.9) / 2;
     if (selectedAlligatorSkin == i) fill(0, 255, 0, 120);
     else fill(80, 220);
-    rect(btnX, 659, 120, 35);
+    rect(btnX, 659, 120, 35);  // 120×35 button near the bottom edge of the 700px canvas
     fill(255);
     if (selectedAlligatorSkin == i) text("SELECTED", btnX, 659);
     else text("SELECT", btnX, 659);
@@ -276,11 +277,13 @@ void namingalligatorsegment() {
   rectMode(CORNER);
 
   // Entry fade: cutFade3 arrives at 255 from the cutscene transition; step to clear
+  // consistent fade speed (4) keeps screen transitions uniform
   cutFade3.stepIn(4);
   cutFade3.draw();
 
   // Exit fade: once name is confirmed, fade to black then switch to the main game
   if (isNameChosen) {
+    // consistent fade speed (4) keeps screen transitions uniform
     if (namingFade.stepOut(4)) {
       isGameStarted = true;
       isOnMainScreen = true;

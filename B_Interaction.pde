@@ -70,6 +70,9 @@ void setMinigameEntry(boolean swamp, boolean snatch, boolean fetch) {
   isOnChoiceScreen   = false;
 }
 
+// Handles all mouse click interactions. Organized by screen state (homescreen → cutscene →
+// main game panels). Raw coordinate comparisons are used throughout because Processing's
+// event model doesn't support component-based hit testing without a UI framework.
 void mousePressed() {
   // Capture current screen states at the moment of click to avoid mid-handler transitions
   // causing incorrect branching (e.g., a click that changes isOnChoiceScreen mid-frame)
@@ -80,6 +83,15 @@ void mousePressed() {
 
   // Pre-compute whether the click is inside the Swamp Hop panel area
   isMouseInSwampHopArea = (mouseX > 88 && mouseX < 373 && mouseY > 258 && mouseY < 658);
+
+  // Pre-compute the "no popup blocking" guard shared by all main-screen buttons.
+  // All interactive buttons are disabled while any popup or dialog is covering the screen.
+  // Computing this once avoids repeating 12+ identical checks on every button test below.
+  // consolidated guard: most click actions are blocked while any popup is open to prevent state conflicts
+  boolean noPopupOpen = !isWelcomePopupVisible && !isShowingCantSell && !isShowingPlayPopup
+      && !isShowingEarnPopup && !isShowingJobPopup && !isShowingFirstHelpPopup
+      && !isShowingTreatmentPopup && !isShowingBankPopup
+      && !isShowingStoreClosedPopup && !isNextDayPopupOpen && !isShowingQuitDialog;
 
   // =========================
   // Home Screen: Button Clicks
@@ -149,6 +161,7 @@ void mousePressed() {
   // selectedAlligatorSkin controls which skin tint is applied in I_Alligator_Class.pde
   // =========================
   if (isNamingActive) {
+    // button hitbox mirrors the drawing code in F_Adoption_Cutscene.pde — keep both in sync if layout changes
     // Left alligator (default / no tint) — index 0
     if (mouseX > ((width * 0.27 - 300) + ((width / 2) * 0.9) / 2) - 60 &&
         mouseX < ((width * 0.27 - 300) + ((width / 2) * 0.9) / 2) + 60 &&
@@ -272,31 +285,29 @@ void mousePressed() {
     }
 
     // --- Inventory Button (bottom-left action circle) ---
+    // circular hitbox radius matches the circular inventory button sprite
     if (dist(mouseX, mouseY, 239.5f, 602) <= 49.5f &&
-        !isShowingRestPopup && !isRestOpen && isWelcomePopupVisible == false && !isStoreOpen &&
-        !isServicesOpen && !isEarnPanelOpen && !isBankOpen && isOnMainScreen &&
-        !isShowingCantSell && !isShowingPlayPopup && !isShowingEarnPopup && !isShowingJobPopup &&
-        !isShowingFirstHelpPopup && !isShowingTreatmentPopup && !isShowingBankPopup && !isShowingStoreClosedPopup && !isNextDayPopupOpen  && !isShowingQuitDialog) {
+        noPopupOpen && !isShowingRestPopup &&
+        !isRestOpen && !isStoreOpen && !isServicesOpen && !isEarnPanelOpen && !isBankOpen &&
+        isOnMainScreen) {
       isInventoryVisible = true;
       hasOpenedInventory = true;
     }
 
     // --- Rest Button — only available after the rest popup has been shown once ---
     if (dist(mouseX, mouseY, 439, 602) <= 50 &&
-        !isRestOpen && hasShownRestPopup && !isServicesOpen && !isEarnPanelOpen && !isStoreOpen &&
-        !isBankOpen && isOnMainScreen && !isShowingCantSell && !isShowingPlayPopup &&
-        !isShowingEarnPopup && !isShowingJobPopup && !isShowingFirstHelpPopup && !isWelcomePopupVisible &&
-        !isShowingTreatmentPopup && !isShowingBankPopup && !isShowingStoreClosedPopup && !isNextDayPopupOpen  && !isShowingQuitDialog) {
+        noPopupOpen && hasShownRestPopup &&
+        !isRestOpen && !isServicesOpen && !isEarnPanelOpen && !isStoreOpen && !isBankOpen &&
+        isOnMainScreen) {
       isRestOpen = true;
       hasUsedRest = true;
     }
 
     // --- Bank Button (bottom-right action circle) ---
     if (dist(mouseX, mouseY, 861, 602) <= 50 &&
-        !isRestOpen && isWelcomePopupVisible == false && !isStoreOpen &&
-        !isServicesOpen && !isEarnPanelOpen && !isBankOpen && isOnMainScreen &&
-        !isShowingCantSell && !isShowingPlayPopup && !isShowingEarnPopup && !isShowingJobPopup && !isWelcomePopupVisible &&
-        !isShowingFirstHelpPopup && !isShowingTreatmentPopup && !isShowingBankPopup && !isShowingStoreClosedPopup  && !isNextDayPopupOpen  && !isShowingQuitDialog) {
+        noPopupOpen &&
+        !isRestOpen && !isStoreOpen && !isServicesOpen && !isEarnPanelOpen && !isBankOpen &&
+        isOnMainScreen) {
       isBankOpen = true;
       hasViewedBank = true;
     }
@@ -307,11 +318,10 @@ void mousePressed() {
     }
 
     // --- Play / Minigame Button — unlocked only after the play popup has been shown ---
-    if (hasShownPlayPopup == true && !isRestOpen && !isBankOpen && isShowingPlayPopup == false &&
-        dist(mouseX, mouseY, 656, 602) <= 49.5f && !isServicesOpen && !isEarnPanelOpen &&
-        !isInventoryVisible && isOnMainScreen && !isShowingCantSell && !isShowingPlayPopup && !isStoreOpen &&
-        !isShowingEarnPopup && !isShowingJobPopup && !isShowingFirstHelpPopup && !isWelcomePopupVisible &&
-        !isShowingTreatmentPopup && !isShowingBankPopup && !isShowingStoreClosedPopup  && !isNextDayPopupOpen  && !isShowingQuitDialog) {
+    if (hasShownPlayPopup && noPopupOpen &&
+        dist(mouseX, mouseY, 656, 602) <= 49.5f &&
+        !isRestOpen && !isBankOpen && !isServicesOpen && !isEarnPanelOpen &&
+        !isInventoryVisible && !isStoreOpen && isOnMainScreen) {
       isPlayClicked = true;
       isExitingMinigame = false;
       currentPlaySessionMoneyEarned = 0;  // reset per-session earnings tracker
@@ -456,6 +466,7 @@ void mousePressed() {
       if (isMedicine) {
         int medIndex = findItemIndex(inventorySlots[selectedInventorySlot], medicineItemList);
         if (medIndex != -1) {
+          // sell price scales per-dose: $3.75 total value per medicine package, prorated by how many doses remain
           float sellPrice = (1.0f / medicineDefaultQuantities[medIndex]) * 3.75f;
           logSellTransaction(medicineItemList[medIndex], sellPrice);
           medicineQuantities[medIndex] -= 1;
@@ -468,6 +479,7 @@ void mousePressed() {
       } else if (isSnack) {
         int snackIndex = findItemIndex(inventorySlots[selectedInventorySlot], snackItemList);
         if (snackIndex != -1) {
+          // items resell at 75% of purchase price — discourages buying just to immediately resell
           float sellPrice = snackPrices[snackIndex] * 0.75f;
           logSellTransaction(snackItemList[snackIndex], sellPrice);
           snackQuantities[snackIndex] -= 1;
@@ -480,6 +492,7 @@ void mousePressed() {
       } else if (isMeat) {
         int meatIndex = findItemIndex(inventorySlots[selectedInventorySlot], meatItemList);
         if (meatIndex != -1) {
+          // items resell at 75% of purchase price — discourages buying just to immediately resell
           float sellPrice = meatPrices[meatIndex] * 0.75f;
           logSellTransaction(meatItemList[meatIndex], sellPrice);
           meatQuantities[meatIndex] -= 1;
@@ -557,9 +570,6 @@ void mousePressed() {
     isSwampHopFirstPlay = true;
     isFetchFirstPlay = true;
     isSnatchFirstPlay = true;
-    isExitingMinigame = true;
-    isOnMainScreen = true;
-    isPlayClicked = false;
     if (currentPlaySessionMoneyEarned > 0) {
       bankTransactionsLoggedCount++;
       bankTransactionLog.add("Transaction: Minigames (+$" + nf(currentPlaySessionMoneyEarned, 0, 2) + ")");
@@ -572,11 +582,9 @@ void mousePressed() {
   // Opens a confirmation dialog before quitting
   // =========================
   if (dist(mouseX, mouseY, 1044, 43) <= 36 &&
-      !isBankOpen  && !isInventoryVisible && !isServicesOpen && !isStoreOpen &&
-      !isShowingCantSell && !isShowingPlayPopup && !isShowingEarnPopup && !isWelcomePopupVisible && !isShowingJobPopup &&
-      !isShowingFirstHelpPopup && !isShowingTreatmentPopup && !isShowingRestPopup &&
-      !isShowingBankPopup && !isShowingStoreClosedPopup  && !isNextDayPopupOpen && !isEarnPanelOpen  && !isShowingQuitDialog) {
-    isShowingQuitDialog=true;
+      noPopupOpen && !isShowingRestPopup &&
+      !isBankOpen && !isInventoryVisible && !isServicesOpen && !isStoreOpen && !isEarnPanelOpen) {
+    isShowingQuitDialog = true;
   }
 
   // =========================
@@ -584,10 +592,8 @@ void mousePressed() {
   // Opens the earn screen (jobs + tasks)
   // =========================
   if (dist(mouseX, mouseY, 1045, 134) <= 43 &&
-      !isBankOpen && hasShownEarnPopup && !isInventoryVisible && !isServicesOpen && !isStoreOpen &&
-      !isShowingCantSell && !isShowingPlayPopup && !isShowingEarnPopup && !isShowingJobPopup && !isWelcomePopupVisible &&
-      !isShowingFirstHelpPopup && !isShowingTreatmentPopup && !isShowingRestPopup &&
-      !isShowingBankPopup && !isShowingStoreClosedPopup  && !isNextDayPopupOpen && !isShowingMusicSettings  && !isShowingQuitDialog) {
+      noPopupOpen && !isShowingRestPopup && hasShownEarnPopup && !isShowingMusicSettings &&
+      !isBankOpen && !isInventoryVisible && !isServicesOpen && !isStoreOpen) {
     isEarnPanelOpen = true;
     isJobFinderOpen = false;
     isTasksPanelOpen = false;
@@ -686,8 +692,8 @@ if (isTasksPanelOpen && hasShownJobPopup &&
     currentSicknessName = sicknessNames[0];
     helpPopupMessage = "Congrats on earning $" + nf(taskRewardAmount,0,2) + "! While helping around town, " + alligator.petName + " was left unattended and developed an infection. Close this window and click the services button to visit the vet.";
     isShowingFirstHelpPopup = true;
-  } else if (random(1) < 0.40f) {
-    
+  } else if (random(1) < 0.40f) { // 40% chance that leaving for a task stresses the pet enough to worsen a stat — risk/reward tradeoff
+
       if (!isPetSick) {
         int randomSicknessIndex = int(random(sicknessNames.length));
         isPetSick = true;
@@ -696,8 +702,9 @@ if (isTasksPanelOpen && hasShownJobPopup &&
         helpPopupMessage = "Uh oh! While you were off helping, " + alligator.petName + " was left unattended and I have bad news: " + currentSicknessName + ".";
       } 
       else {
+        // minor 10 HP penalty for the stress of being left alone — survivable, but worth noting
         alligator.health -= 10;
-    
+
         helpPopupMessage = "While you were helping around town, your already sick alligator  became weaker and lost 10 health.";
       }
     
@@ -766,10 +773,6 @@ if (isTasksPanelOpen && hasShownJobPopup &&
       pointUpgradeCost *= 1.2f;
   }
 
-  if (isEarnPanelOpen == true && mouseX > 933 && mouseY < 171 && mouseX < 977 && mouseY > 132) {
-    isEarnPanelOpen = false;
-  }
-
 if (isEarnPanelOpen == true && hasShownJobPopup &&
     mouseX > 804 && mouseX < 884 && mouseY > 388 && mouseY < 408) {
   isHelpTaskPending = true;
@@ -787,10 +790,11 @@ if (isEarnPanelOpen == true && hasShownJobPopup &&
     alligator.health -= 30;
     helpPopupMessage = "Congrats on earning $" + nf(taskRewardAmount,0,2) + "! While helping around town, " + alligator.petName + " was left unattended and developed an infection. Close this window and click the services button to visit the vet.";
     isShowingFirstHelpPopup = true;
-  } else if (!isPetSick && random(1) < 0.15f) {
+  } else if (!isPetSick && random(1) < 0.15f) { // 15% baseline daily sickness chance even for a healthy pet — models real-world unpredictability
     int randomSicknessIndex = int(random(sicknessNames.length));
     isPetSick = true;
     currentSicknessName = sicknessNames[randomSicknessIndex];
+    // 30 HP for an unexpected illness — significant enough to require immediate vet attention
     alligator.health -= 30;
     helpPopupMessage = "Uh oh! While you were off helping, your " + alligator.petName + " was left unattended and developed " + currentSicknessName + ".";
     isShowingFirstHelpPopup = true;
@@ -802,10 +806,8 @@ if (isEarnPanelOpen == true && hasShownJobPopup &&
   // Unlocked after the first illness popup — opens vet / walker / cleaner panel
   // =========================
   if (dist(mouseX, mouseY, 760, 602) < 50 &&
-      !isBankOpen && hasShownFirstHelpPopup == true && !isInventoryVisible && !isStoreOpen &&
-      !isEarnPanelOpen && !isShowingCantSell && !isShowingPlayPopup && !isShowingEarnPopup && !isWelcomePopupVisible &&
-      !isShowingJobPopup && !isShowingFirstHelpPopup && !isShowingTreatmentPopup &&
-      !isShowingBankPopup && !isShowingStoreClosedPopup  && !isNextDayPopupOpen && !isShowingMusicSettings  && !isShowingQuitDialog) {
+      noPopupOpen && hasShownFirstHelpPopup && !isShowingMusicSettings &&
+      !isBankOpen && !isInventoryVisible && !isStoreOpen && !isEarnPanelOpen) {
     isServicesOpen = true;
     hasOpenedServices = true;
   }
@@ -882,20 +884,17 @@ if (money >= 5 && isVetOpen &&
 
   // =========================
   // Store Button (bottom action circle)
-  // Unlocked after the treatment popup is shown. Blocked on day % 7 == 0 (store closed).
+  // Unlocked after the treatment popup is shown. Blocked on day % 7 == 0 (store closed Sundays).
   // =========================
   if (dist(mouseX, mouseY, 337, 602) < 50 &&
-      !isBankOpen && hasShownTreatmentPopup && !isStoreOpen && !isStoreMainScreenFading &&
-      !isShowingCantSell && !isShowingPlayPopup && !isShowingEarnPopup && !isShowingJobPopup && !isWelcomePopupVisible &&
-      !isShowingFirstHelpPopup && !isShowingTreatmentPopup && !isShowingBankPopup && (day%7!=0) && !isShowingStoreClosedPopup  && !isNextDayPopupOpen  && !isShowingQuitDialog) {
+      noPopupOpen && hasShownTreatmentPopup && !isBankOpen && !isStoreOpen &&
+      !isStoreMainScreenFading && day % 7 != 0) {
     isStoreMainScreenFading = true;  // begin fade-to-black before entering the store
     return;
   } else if (dist(mouseX, mouseY, 337, 602) < 50 &&
-      !isBankOpen && hasShownTreatmentPopup && !isStoreOpen &&
-      !isShowingCantSell && !isShowingPlayPopup && !isShowingEarnPopup && !isShowingJobPopup && !isWelcomePopupVisible &&
-      !isShowingFirstHelpPopup && !isShowingTreatmentPopup && !isShowingBankPopup && !isShowingStoreClosedPopup  && !isNextDayPopupOpen  && !isShowingQuitDialog) {
+      noPopupOpen && hasShownTreatmentPopup && !isBankOpen && !isStoreOpen) {
     // Store is closed today — show a message instead of opening the store
-    isShowingStoreClosedPopup=true;
+    isShowingStoreClosedPopup = true;
   }
 
   // =========================
@@ -1100,6 +1099,27 @@ if (money >= 5 && isVetOpen &&
     }
   }
 
+  // --- Bank Filter Buttons ---
+  // Buttons are inside the scrollable viewport (below the advice separator).
+  // Convert screen Y to content Y using bankScrollOffset, then check against the fixed content-space row (98–127).
+  if (isBankOpen &&
+      mouseX >= bankViewportX && mouseX < bankViewportX + bankViewportWidth &&
+      mouseY >= bankViewportY && mouseY < bankViewportY + bankViewportHeight) {
+    float relContentY = (mouseY - bankViewportY) + bankScrollOffset;
+    if (relContentY >= 98 && relContentY <= 127) {
+      float bw = (bankViewportWidth - 12) / 3.0f;
+      String[] filterValues = {"all", "earn", "spend"};
+      for (int i = 0; i < 3; i++) {
+        float bx1 = bankViewportX + 4 + i * (bw + 2);
+        float bx2 = bx1 + bw;
+        if (mouseX >= bx1 && mouseX <= bx2) {
+          bankFilter = filterValues[i];
+          bankScrollOffset = 0;
+        }
+      }
+    }
+  }
+
   if (mouseX > 733 && mouseY > 132 && mouseX < 776 && mouseY < 171.5f && isBankOpen) {
     isBankOpen = false;
     if (!hasViewedBankFirstTime) {
@@ -1140,11 +1160,9 @@ if (money >= 5 && isVetOpen &&
   // Opens the scrollable achievement progress and reward claim panel
   // =========================
   if (dist(mouseX, mouseY, 1045, 232) <= 43 &&
-      !isShowingRestPopup && !isRestOpen && isWelcomePopupVisible == false &&
-      !isServicesOpen && !isEarnPanelOpen && !isBankOpen && isOnMainScreen &&
-      !isShowingCantSell && !isShowingPlayPopup && !isShowingEarnPopup && !isShowingJobPopup &&
-      !isShowingFirstHelpPopup && !isShowingTreatmentPopup && !isShowingBankPopup && !isWelcomePopupVisible &&
-      !isInventoryVisible && !isStoreOpen && !isShowingStoreClosedPopup  && !isNextDayPopupOpen  && !isShowingQuitDialog) {
+      noPopupOpen && !isShowingRestPopup &&
+      !isRestOpen && !isServicesOpen && !isEarnPanelOpen && !isBankOpen &&
+      !isInventoryVisible && !isStoreOpen && isOnMainScreen) {
     isAchievementsOpen = true;
     hasOpenedAchievements = true;
   }
@@ -1153,12 +1171,10 @@ if (money >= 5 && isVetOpen &&
   // Next Day Button (center bottom circle)
   // Advances the in-game day, applies salary, and decays pet stats
   // =========================
-  if (dist(mouseX, mouseY, width/2, 602) <= 50  &&
-      !isShowingRestPopup && !isRestOpen && isWelcomePopupVisible == false &&
-      !isServicesOpen && !isEarnPanelOpen && !isAchievementsOpen && !isBankOpen && isOnMainScreen &&
-      !isShowingCantSell && !isShowingPlayPopup && !isShowingEarnPopup && !isShowingJobPopup &&
-      !isShowingFirstHelpPopup && !isShowingTreatmentPopup && !isShowingBankPopup &&
-      !isInventoryVisible && !isStoreOpen && !isShowingStoreClosedPopup  && !isNextDayPopupOpen  && !isShowingQuitDialog) {
+  if (dist(mouseX, mouseY, width/2, 602) <= 50 &&
+      noPopupOpen && !isShowingRestPopup &&
+      !isRestOpen && !isServicesOpen && !isEarnPanelOpen && !isAchievementsOpen && !isBankOpen &&
+      !isInventoryVisible && !isStoreOpen && isOnMainScreen) {
     isNextDayPopupOpen=true;
     hasAdvancedDay=true;
     isDayEdited=false;
@@ -1254,22 +1270,6 @@ if (money >= 5 && isVetOpen &&
     alligator.health    = clampStat(alligator.health,    0, 100);
   }
 
-  // =========================
-  // Job Finder: Apply for Locked Jobs
-  // Barista unlocks on day 10, Manager on day 25 (progression gates)
-  // =========================
-  if (job.equals("unemployed") && day >= 10 && isJobFinderOpen &&
-      mouseX>510 && mouseX<590 && mouseY>477 && mouseY<497) {
-    job = "barista";
-    salary = 35;
-  }
-
-  if (job.equals("unemployed") && day >= 25 && isJobFinderOpen &&
-      mouseX>760 && mouseX<840 && mouseY>477 && mouseY<497) {
-    job = "manager";
-    salary = 75;
-  }
-
   // Close services panel (X button)
   if (mouseX>931 && mouseX<979 && mouseY>132 && mouseY<174 && isServicesOpen) {
     isServicesOpen=false;
@@ -1280,54 +1280,45 @@ if (money >= 5 && isVetOpen &&
 
 // =========================
 // Key Press Handler
-// Handles minigame controls and developer test keys
+// Routes key events to the active minigame.
+// State is cached at the top so each flag is read once per event instead of
+// once per key-check — keeps the conditionals short and avoids repeated lookups.
 // =========================
 void keyPressed() {
-  // Swamp Hop: SPACE to jump (only when alligator is on the ground)
+  // Cache which minigame is currently active (evaluated once, used by every binding below)
+  boolean inSnatch = isEnterSnackSnatch;
+  boolean inFetch  = isEnterFetchFrenzy;
+
+  // Swamp Hop: SPACE to jump (only when the alligator is on the ground)
   if (key == ' ' && isSwampHopOnGround) {
     hopVelocityY = -hopJumpStrength;
     isSwampHopOnGround = false;
   }
 
-  // Snack Snatch: A/D or arrow keys to move left/right
-  if ((key == 'a' || key == 'A' || keyCode == LEFT) && isEnterSnackSnatch) {
-    isMoveLeft = true;
+  // Snack Snatch: A/D or left/right arrows set horizontal movement flags
+  if (inSnatch) {
+    if (key == 'a' || key == 'A' || keyCode == LEFT)  isMoveLeft  = true;
+    if (key == 'd' || key == 'D' || keyCode == RIGHT) isMoveRight = true;
   }
 
-  if ((key == 'd' || key == 'D' || keyCode == RIGHT) && isEnterSnackSnatch) {
-    isMoveRight = true;
+  // Fetch Frenzy: WASD or arrow keys set the alligator's facing direction
+  if (inFetch) {
+    if (key == 'a' || key == 'A' || keyCode == LEFT)  fetchFacingDirection = "LEFT";
+    if (key == 'd' || key == 'D' || keyCode == RIGHT) fetchFacingDirection = "RIGHT";
+    if (key == 'w' || key == 'W' || keyCode == UP)    fetchFacingDirection = "UP";
+    if (key == 's' || key == 'S' || keyCode == DOWN)  fetchFacingDirection = "DOWN";
   }
-
-  // Fetch Frenzy: WASD or arrow keys to set movement direction
-  if ((key == 'a' || key == 'A' || keyCode == LEFT) && isEnterFetchFrenzy) {
-    fetchFacingDirection = "LEFT";
-  }
-
-  if ((key == 'd' || key == 'D' || keyCode == RIGHT) && isEnterFetchFrenzy) {
-    fetchFacingDirection = "RIGHT";
-  }
-
-  if ((key == 'w' || key == 'W' || keyCode == UP) && isEnterFetchFrenzy) {
-    fetchFacingDirection = "UP";
-  }
-
-  if ((key == 's' || key == 'S' || keyCode == DOWN) && isEnterFetchFrenzy) {
-    fetchFacingDirection = "DOWN";
-  }
-
 }
 
 // =========================
 // Key Release Handler
-// Stops continuous movement in Snack Snatch when A/D or arrow keys are released
+// Clears Snack Snatch movement flags when directional keys are released,
+// stopping continuous horizontal movement.
 // =========================
 void keyReleased() {
-  if ((key == 'a' || key == 'A' || keyCode == LEFT) && isEnterSnackSnatch) {
-    isMoveLeft = false;
-  }
-
-  if ((key == 'd' || key == 'D' || keyCode == RIGHT) && isEnterSnackSnatch) {
-    isMoveRight = false;
+  if (isEnterSnackSnatch) {
+    if (key == 'a' || key == 'A' || keyCode == LEFT)  isMoveLeft  = false;
+    if (key == 'd' || key == 'D' || keyCode == RIGHT) isMoveRight = false;
   }
 }
 
@@ -1372,7 +1363,7 @@ void mouseWheel(MouseEvent event) {
 
   if (mouseX >= bankViewportX && mouseX <= bankViewportX + bankViewportWidth &&
       mouseY >= bankViewportY && mouseY <= bankViewportY + bankViewportHeight && isBankOpen) {
-    bankScrollContentHeight = 140 + bankTransactionLog.size() * bankItemLineHeight;
+    bankScrollContentHeight = 190 + filteredBankLog.size() * bankItemLineHeight;
     float bankMaxScroll = max(0, bankScrollContentHeight - bankViewportHeight);
 
     bankScrollOffset += e * 20;

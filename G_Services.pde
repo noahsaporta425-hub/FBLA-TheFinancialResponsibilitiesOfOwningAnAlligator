@@ -46,6 +46,7 @@ PImage vet, walker, cleaner;
 
 // =========================
 // Services Panel
+// Renders the services panel listing the dog walker and cleaner options with their costs and effects.
 // =========================
 void services() {
   rectMode(CORNERS);
@@ -71,7 +72,7 @@ void services() {
   rect(843.33f, 520, 160, 40);
   fill(255);
   text("VISIT", 256.7f, 520);
-  text("HIRE - $10", 550, 520);
+  text("HIRE - $10", 550, 520); // $10/day services are recurring costs that model real pet ownership expenses (grooming, hygiene)
   text("HIRE - $10", 843.33f, 520);
   image(vet, 250, 330, vet.width/1.55f, vet.height/1.55f);
   textSize(15);
@@ -111,6 +112,7 @@ void services() {
 
 // =========================
 // Vet Sub-Panel
+// Renders the vet panel with quality tiers, current prescription status, and treatment history.
 // =========================
 void vet() {
   imageMode(CENTER);
@@ -130,7 +132,7 @@ void vet() {
   image(vet, 660, 347, vet.width/3.75f, vet.height/3.75f);
   textSize(15);
   text("Treat " + alligator.petName + "'s " + currentSicknessName, 440, 389);
-  text("for $5.", 440, 402);
+  text("for $5.", 440, 402); // low-quality vet is cheaper but has a 25% fail rate; high-quality always succeeds — teaches cost vs reliability tradeoff
   text("Treat " + alligator.petName + "'s " + currentSicknessName, 660, 389);
   text("for $20.", 660, 402);
 
@@ -175,6 +177,8 @@ void treatmentpopup() {
 // =========================
 // Prescription Management
 // =========================
+
+// clearPrescriptionCourse: Resets all prescription flags and progress when a treatment course is completed or cancelled.
 void clearPrescriptionCourse() {
   for (int i = 0; i < medicineIsPrescribed.length; i++) {
     medicineIsPrescribed[i] = false;
@@ -185,6 +189,7 @@ void clearPrescriptionCourse() {
   lastDoseTakenDay = -1;
 }
 
+// startPrescriptionCourse: Initializes a new prescription course for the given medicine index, preserving any prior partial progress.
 void startPrescriptionCourse(int medIndex) {
   int preservedProgress = (prescribedMedicineIndex == medIndex && prescriptionDaysCompleted > 0)
     ? min(prescriptionDaysCompleted, medicineDefaultQuantities[medIndex] - 1)

@@ -86,7 +86,7 @@ boolean isNameChosen = false;
 
 // =========================
 // Asset Loading + Audio + Fonts
-// Called once during setup() to load everything the game needs
+// Loads all image and audio assets, and initializes ControlP5 UI elements. Called once from setup().
 // =========================
 void fileWork() {
   //Creating the alligator pet
@@ -192,6 +192,7 @@ void fileWork() {
 
 // =========================
 // Music Settings UI
+// Creates the ControlP5 volume slider and mute toggle used in the music settings panel.
 // Builds a volume slider + on/off toggle (hidden by default)
 // Keeps UI + audio state synchronized via callbacks
 // =========================
@@ -273,6 +274,7 @@ void musicAdjusters() {
 
 // =========================
 // Name Input UI Builder
+// Creates the ControlP5 text field for the pet naming screen.
 // Creates a hidden Textfield + Confirm button for naming the pet
 // =========================
 void nameinput() {
@@ -323,6 +325,7 @@ void nameinput() {
 
 // =========================
 // Input Validation
+// isValidName: Validates a proposed pet name. Rules: non-empty, max 20 chars, must contain at least one letter, only letters/spaces/hyphens/apostrophes allowed.
 // Validates the pet name on two levels before accepting it:
 //   - Syntactical: checks format rules (non-empty, max length, allowed characters)
 //   - Semantic:    checks that the value makes sense as a name (at least one letter)
@@ -341,7 +344,7 @@ boolean isValidName(String raw) {
   String trimmed = raw.trim();
 
   // Syntactical check: enforce a maximum of 20 characters for display fit
-  if (trimmed.length() > 20) {
+  if (trimmed.length() > 20) { // 20-character limit keeps the name displayable in all UI panels without overflow
     petNameValidationError = "Name is too long (max 20 characters).";
     return false;
   }
@@ -361,6 +364,7 @@ boolean isValidName(String raw) {
 
   // Syntactical check: only letters, spaces, hyphens, and apostrophes are valid
   // (covers names like "Al" or "Snap-jaw" or "O'Scales" but blocks digits/symbols)
+  // only allow characters that appear in real pet names; blocks numbers and symbols that look odd in-game
   for (int i = 0; i < trimmed.length(); i++) {
     char c = trimmed.charAt(i);
     if (!Character.isLetter(c) && c != ' ' && c != '-' && c != '\'') {
@@ -417,7 +421,8 @@ String formatName(String raw) {
 
 
 // =========================
-// saveGame / loadGame
+// saveGame
+// Serializes the full game state to a JSON file in the sketch's data folder so progress persists between sessions.
 // Persist and restore the entire game state to/from "save.json" in the sketch's data folder.
 // Every global variable that affects gameplay is saved so the player can quit and resume.
 // Arrays (inventory, prescriptions, achievements) are serialized via helper functions below.
@@ -563,6 +568,10 @@ void saveGame() {
 }
 
 
+// =========================
+// loadGame
+// Deserializes the JSON save file and restores all game state variables. Missing keys fall back to defaults.
+// =========================
 void loadGame() {
   File saveFile = new File(sketchPath("data/save.json"));
   if (!saveFile.exists()) return;
@@ -782,6 +791,7 @@ void loadGame() {
 // so primitive arrays must be converted before they can be written to disk.
 // =========================
 
+// booleanArrayToJson: Converts a boolean array to a JSONArray for save-file serialization.
 // Converts a boolean[] to a JSONArray of boolean values
 JSONArray booleanArrayToJson(boolean[] arr) {
   JSONArray j = new JSONArray();
@@ -791,6 +801,7 @@ JSONArray booleanArrayToJson(boolean[] arr) {
   return j;
 }
 
+// stringArrayToJson: Converts a string array to a JSONArray, preserving null entries as empty strings.
 // Converts a String[] to a JSONArray; null entries become empty strings to avoid JSON errors
 JSONArray stringArrayToJson(String[] arr) {
   JSONArray j = new JSONArray();
@@ -800,6 +811,7 @@ JSONArray stringArrayToJson(String[] arr) {
   return j;
 }
 
+// intArrayToJson: Converts an int array to a JSONArray for save-file serialization.
 // Converts an int[] to a JSONArray of integer values
 JSONArray intArrayToJson(int[] arr) {
   JSONArray j = new JSONArray();

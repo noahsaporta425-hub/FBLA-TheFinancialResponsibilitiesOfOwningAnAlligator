@@ -28,7 +28,7 @@ float achievementViewportX = 320;
 float achievementViewportY = 190;
 float achievementViewportWidth = 450;
 float achievementViewportHeight = 370;
-float achievementItemLineHeight = 110;
+float achievementItemLineHeight = 110; // 110px per row fits the icon, progress bar, title, and collect button without overlapping
 float achievementScrollbarX = 770;
 float achievementScrollbarY = 190;
 float achievementScrollbarWidth = 12;
@@ -61,6 +61,7 @@ float currentPlaySessionMoneyEarned = 0;
 // =========================
 // Achievement Initialization
 // =========================
+// Populates all 30 achievement definitions (names, goals, rewards, tier scaling). Called once at game start.
 void initAchievements() {
   for (int i = 0; i < 30; i++) {
     achievementTiers[i] = 1;
@@ -70,7 +71,9 @@ void initAchievements() {
   refreshAchievementData();
 }
 
+// Syncs live game counters into the achievement progress arrays. Called at the start of each draw cycle so progress bars are always current.
 void refreshAchievementData() {
+  // 30 achievements across 8 categories (minigames, money, care, upgrades, tasks, store, rest, days)
   setHopAchievement(0, "Swamp Hop High Score", 20, 2);
   setSnackAchievement(1, "Snack Snatch High Score", 15, 2);
   setFetchAchievement(2, "Fetch Frenzy High Score", 10, 2);
@@ -116,13 +119,14 @@ void refreshAchievementData() {
 // =========================
 // Achievement Setters
 // =========================
+// Each achievement tier scales the goal and reward exponentially so progress stays meaningful across the full game arc
 void setHopAchievement(int i, String baseName, float baseGoal, int baseReward) {
   int tier = max(1, achievementTiers[i]);
   achievementTiers[i] = tier;
   achievementType[i] = 0;
   achievementNames[i] = baseName + " - Tier " + tier;
-  achievementGoals[i] = max(1, round(baseGoal * pow(1.2f, tier - 1)));
-  achievementRewards[i] = max(1, round(baseReward * pow(1.18f, tier - 1)));
+  achievementGoals[i] = max(1, round(baseGoal * pow(1.2f, tier - 1)));   // 20% harder each tier — keeps each achievement a meaningful challenge without becoming impossible
+  achievementRewards[i] = max(1, round(baseReward * pow(1.18f, tier - 1))); // rewards grow slightly slower than goals (18% vs 20%) so upgrades remain the better income strategy
   achievementDescriptions[i] = "Highest score reached in Swamp Hop";
   achievementProgress[i] = swampHopBestScore;
   isAchievementCollectable[i] = achievementProgress[i] >= achievementGoals[i];
@@ -157,6 +161,7 @@ void setMoneyEarnedAchievement(int i, String baseName, float baseGoal, int baseR
   achievementTiers[i] = tier;
   achievementType[i] = 3;
   achievementNames[i] = baseName + " - Tier " + tier;
+  // scaling rate varies by category — rarer actions (vet visits, upgrades) scale faster since they happen less often
   achievementGoals[i] = max(1, round(baseGoal * pow(1.3f, tier - 1)));
   achievementRewards[i] = max(1, round(baseReward * pow(1.2f, tier - 1)));
   achievementDescriptions[i] = baseName;
@@ -169,6 +174,7 @@ void setMoneySpentAchievement(int i, String baseName, float baseGoal, int baseRe
   achievementTiers[i] = tier;
   achievementType[i] = 4;
   achievementNames[i] = baseName + " - Tier " + tier;
+  // scaling rate varies by category — rarer actions (vet visits, upgrades) scale faster since they happen less often
   achievementGoals[i] = max(1, round(baseGoal * pow(1.3f, tier - 1)));
   achievementRewards[i] = max(1, round(baseReward * pow(1.2f, tier - 1)));
   achievementDescriptions[i] = baseName;
@@ -181,6 +187,7 @@ void setHighestMoneyAchievement(int i, String baseName, float baseGoal, int base
   achievementTiers[i] = tier;
   achievementType[i] = 5;
   achievementNames[i] = baseName + " - Tier " + tier;
+  // scaling rate varies by category — rarer actions (vet visits, upgrades) scale faster since they happen less often
   achievementGoals[i] = max(1, round(baseGoal * pow(1.25f, tier - 1)));
   achievementRewards[i] = max(1, round(baseReward * pow(1.2f, tier - 1)));
   achievementDescriptions[i] = baseName;
@@ -193,6 +200,7 @@ void setCountAchievement(int i, String baseName, String actionText, float baseGo
   achievementTiers[i] = tier;
   achievementType[i] = 6;
   achievementNames[i] = baseName + " - Tier " + tier;
+  // scaling rate varies by category — rarer actions (vet visits, upgrades) scale faster since they happen less often
   achievementGoals[i] = max(1, round(baseGoal * pow(1.5f, tier - 1)));
   achievementRewards[i] = max(1, round(baseReward * pow(1.18f, tier - 1)));
   if (PApplet.parseInt(achievementGoals[i]) == 1)
@@ -208,6 +216,7 @@ void setAmountAchievement(int i, String baseName, String actionText, float baseG
   achievementTiers[i] = tier;
   achievementType[i] = 7;
   achievementNames[i] = baseName + " - Tier " + tier;
+  // scaling rate varies by category — rarer actions (vet visits, upgrades) scale faster since they happen less often
   achievementGoals[i] = max(1, round(baseGoal * pow(1.35f, tier - 1)));
   achievementRewards[i] = max(1, round(baseReward * pow(1.18f, tier - 1)));
   achievementDescriptions[i] = actionText + " by " + PApplet.parseInt(achievementGoals[i]) + " total points";
@@ -220,6 +229,7 @@ void setDayAchievement(int i, String baseName, float baseGoal, int baseReward, f
   achievementTiers[i] = tier;
   achievementType[i] = 8;
   achievementNames[i] = baseName + " - Tier " + tier;
+  // scaling rate varies by category — rarer actions (vet visits, upgrades) scale faster since they happen less often
   achievementGoals[i] = max(1, round(baseGoal * pow(1.4f, tier - 1)));
   achievementRewards[i] = max(1, round(baseReward * pow(1.2f, tier - 1)));
   achievementDescriptions[i] = "Reach day " + PApplet.parseInt(achievementGoals[i]);
@@ -260,6 +270,7 @@ void updateAchievementOrder() {
 // =========================
 // Achievements Panel
 // =========================
+// Renders the scrollable achievement panel with progress bars and collect buttons.
 void achievements() {
   updateAchievementProgress();
 

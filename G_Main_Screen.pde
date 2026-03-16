@@ -132,11 +132,14 @@ void mainscreen() {
   }
 
   image(mainscreen, 0, 0, width, height);
+  // Mood display priority: sick > hungry > energetic > neutral. Only one mood shows at a time.
   if (isPetSick) {
     alligator.sickmood();
   } else if (alligator.hunger > 80) {
+    // 80+ triggers a visible mood change to warn the player before stats become critical
     alligator.hungrymood();
   } else if (alligator.energy > 80) {
+    // 80+ triggers a visible mood change to warn the player before stats become critical
     alligator.energeticmood();
   } else {
     alligator.neutralmood();
@@ -159,7 +162,7 @@ void mainscreen() {
   // Food thought bubble (Day 1 until fed)
   if (!hasFedSteak) {
     cloudFrameTimer++;
-    if (cloudFrameTimer >= 30) cloudFrameTimer = 0;
+    if (cloudFrameTimer >= 30) cloudFrameTimer = 0;  // cycle cloud sprite every 30 frames (~0.5s) for a gentle animated sky effect
     if      (cloudFrameTimer < 10) image(cloudframe1, width*0.48f, height*0.35f);
     else if (cloudFrameTimer < 20) image(cloudframe2, width*0.48f, height*0.35f);
     else                           image(cloudframe3, width*0.48f, height*0.35f);
@@ -280,6 +283,7 @@ void mainscreen() {
 
 // =========================
 // Stat Bar Display (HUD)
+// Renders all four stat bars (health, sickness risk, energy, hunger) in the HUD along with their labels
 // =========================
 void statbars() {
   textAlign(LEFT, CENTER);
@@ -321,6 +325,11 @@ void statbars() {
 
 // =========================
 // StatBar Class
+// Renders a horizontal fill bar for a 0–100 stat value.
+// Three draw modes reflect different desired directions:
+//   drawpositive()    — high value = green (health, happiness)
+//   drawnegative()    — high value = red   (sickness risk, hunger)
+//   drawenergyscale() — mid-range = green, extremes = red (energy)
 // =========================
 class StatBar {
   float x, y, w, h;
@@ -332,33 +341,38 @@ class StatBar {
 
   void setValue(float v) { value = constrain(v, 0, 100); }
 
+  // High is good: green → yellow → orange → red as value falls
   void drawpositive() {
     fill(50); rect(x, y, w, h, 4);
-    if      (value >= 90) fill(0, 200, 100);
-    else if (value >= 70) fill(182, 232, 35);
-    else if (value >= 50) fill(227, 220, 0);
-    else if (value >= 40) fill(227, 155, 0);
-    else                  fill(201, 8, 8);
+    // color shifts from green→yellow→orange→red as the stat deteriorates, giving clear visual urgency
+    if      (value >= 90) fill(0, 200, 100);   // great
+    else if (value >= 70) fill(182, 232, 35);  // good
+    else if (value >= 50) fill(227, 220, 0);   // fair
+    else if (value >= 40) fill(227, 155, 0);   // low
+    else                  fill(201, 8, 8);     // critical
     rect(x, y, map(value, 0, 100, 0, w), h, 4);
   }
 
+  // High is bad: red → orange → yellow → green as value falls
   void drawnegative() {
     fill(50); rect(x, y, w, h, 4);
-    if      (value >= 90) fill(201, 8, 8);
-    else if (value >= 70) fill(227, 155, 0);
-    else if (value >= 50) fill(227, 220, 0);
-    else if (value >= 40) fill(182, 232, 35);
-    else                  fill(0, 200, 100);
+    // color shifts from green→yellow→orange→red as the stat deteriorates, giving clear visual urgency
+    if      (value >= 90) fill(201, 8, 8);     // critical
+    else if (value >= 70) fill(227, 155, 0);   // high
+    else if (value >= 50) fill(227, 220, 0);   // moderate
+    else if (value >= 40) fill(182, 232, 35);  // low
+    else                  fill(0, 200, 100);   // safe
     rect(x, y, map(value, 0, 100, 0, w), h, 4);
   }
 
+  // Mid-range (40–70) is ideal: both extremes turn red
   void drawenergyscale() {
     fill(50); rect(x, y, w, h, 4);
-    if      (value >= 80) fill(201, 8, 8);
-    else if (value >= 70) fill(182, 232, 35);
-    else if (value >= 40) fill(0, 200, 100);
-    else if (value >= 20) fill(182, 232, 35);
-    else                  fill(201, 8, 8);
+    if      (value >= 80) fill(201, 8, 8);     // too hyper — dangerous
+    else if (value >= 70) fill(182, 232, 35);  // slightly high but ok
+    else if (value >= 40) fill(0, 200, 100);   // ideal range
+    else if (value >= 20) fill(182, 232, 35);  // slightly low
+    else                  fill(201, 8, 8);     // exhausted — dangerous
     rect(x, y, map(value, 0, 100, 0, w), h, 4);
   }
 }
@@ -366,7 +380,8 @@ class StatBar {
 
 // =========================
 // drawWrappedTextInBox
-// Word-wraps a string inside a bounding rectangle.
+// Word-wraps text inside a rounded rectangle popup box; used for all tutorial and advice popups.
+// Params: x/y = center, w/h = box size, text = message to display, textSz = font size
 // =========================
 void drawWrappedTextInBox(String sentence, float leftX, float topY, float rightX, float bottomY, float extraSpacing) {
   float maxW  = rightX - leftX;
@@ -413,9 +428,10 @@ void redarrow(float arrowx, float arrowy, String direction) {
   image(redarrow, 0, 0, redarrow.width/3, redarrow.height/3);
   popMatrix();
 
+  // arrow bobs 25px downward to draw the player's eye without being distracting
   if (isGuideArrowMovingUp) {
     guideArrowOffset--;
-    if (guideArrowOffset <= -25) isGuideArrowMovingUp = false;
+    if (guideArrowOffset <= -25) isGuideArrowMovingUp = false;  // -25 to 0 bounce range
   } else {
     guideArrowOffset++;
     if (guideArrowOffset >= 0) isGuideArrowMovingUp = true;
@@ -461,24 +477,36 @@ void nextday() {
   );
 }
 
+// =========================
+// decideSicknessForNewDay()
+// Rolls against the pet's current sickrisk to determine if illness triggers.
+// The sickness type is chosen based on whichever stat is most critically out of range —
+// giving the player a meaningful signal that their stat neglect caused the illness.
+// sicknessNames[] indices (defined in D_General_Functions.pde):
+//   0=default, 1=cold, 2=flu, 3=fatigue, 4=dehydration,
+//   5=exhaustion, 6=weakness, 7=depression, 8=anxiety, 9=infection, 10=fever, 11=parasite
+// =========================
 void decideSicknessForNewDay() {
   sickRoll = int(random(0, 101));
 
   if (sickRoll <= alligator.sickrisk && !isPetSick) {
     isPetSick = true;
 
+    // Priority order: most severe stat violations assigned first
     int sicknessIndex = 0;
-    if      (alligator.hunger >= 85)                                     sicknessIndex = 4;
-    else if (alligator.energy <= 10)                                     sicknessIndex = 6;
-    else if (alligator.happiness <= 15 || alligator.energy >= 90)        sicknessIndex = 8;
-    else if (alligator.hunger >= 70)                                     sicknessIndex = 3;
-    else if (alligator.energy <= 20)                                     sicknessIndex = 5;
-    else if (alligator.happiness <= 25)                                  sicknessIndex = 7;
-    else if (random(1) < 0.20)                                           sicknessIndex = 9;
-    else if (random(1) < 0.20)                                           sicknessIndex = 11;
-    else if (random(1) < 0.20)                                           sicknessIndex = 10;
-    else if (random(1) < 0.35)                                           sicknessIndex = 1;
-    else if (random(1) < 0.20)                                           sicknessIndex = 2;
+    if      (alligator.hunger >= 85)                              sicknessIndex = 4;  // dehydration sets in above 85% hunger — the body can't maintain health when severely underfed
+    else if (alligator.energy <= 10)                              sicknessIndex = 6;  // no energy → weakness
+    else if (alligator.happiness <= 15 || alligator.energy >= 90) sicknessIndex = 8;  // miserable/over-excited → anxiety
+    else if (alligator.hunger >= 70)                              sicknessIndex = 3;  // moderately hungry → fatigue
+    else if (alligator.energy <= 20)                              sicknessIndex = 5;  // low energy → exhaustion
+    else if (alligator.happiness <= 25)                           sicknessIndex = 7;  // unhappy → depression
+    // No dominant stat culprit — random chance for minor illnesses
+    // probability weights tuned so the player usually has one day of warning before getting sick
+    else if (random(1) < 0.20)                                    sicknessIndex = 9;  // infection
+    else if (random(1) < 0.20)                                    sicknessIndex = 11; // parasite
+    else if (random(1) < 0.20)                                    sicknessIndex = 10; // fever
+    else if (random(1) < 0.35)                                    sicknessIndex = 1;  // cold
+    else if (random(1) < 0.20)                                    sicknessIndex = 2;  // flu
 
     currentSicknessName = sicknessNames[sicknessIndex];
   } else if (!isPetSick) {
@@ -486,17 +514,26 @@ void decideSicknessForNewDay() {
   }
 }
 
+// =========================
+// daychanges()
+// Applies all stat and economy changes that happen at the start of every new day.
+// Called once per day transition inside nextday(), guarded by isDayEdited.
+// =========================
 void daychanges() {
-  restAttemptsRemaining = 2;
-  alligator.happiness -= 10;
+  restAttemptsRemaining = 2;  // reset rest opportunities for the new day
+
+  // Natural daily stat drift: pet gets hungrier and more energetic overnight,
+  // and happiness declines without active player care
+  alligator.happiness -= 10;  // overnight: pet gets hungry and restless (hunger/energy rise) and loses a little happiness from being alone
   alligator.hunger    += 40;
   alligator.energy    += 40;
 
-  if (!hasCleanerVisited) alligator.sickrisk += 15;
+  // Skipping the cleaner raises sickness risk (dirty habitat spreads bacteria)
+  if (!hasCleanerVisited) alligator.sickrisk += 15;  // uncleaned environment raises sickness risk 15 points per day — hire a cleaner to prevent this
   hasCleanerVisited = false;
 
   if (isPetSick && currentSicknessName != null && !currentSicknessName.equals("")) {
-    alligator.health -= 20;
+    alligator.health -= 20;  // sickness costs 20 HP per day — serious but survivable if treated promptly
 
     if (currentSicknessName.equals(sicknessNames[2])) {
       sicknessStatusText = alligator.petName + " currently has the flu.";
@@ -557,10 +594,11 @@ void quit() {
 
 // =========================
 // Game Over Screen
+// Renders the full-screen game-over overlay when the pet's health reaches 0
 // =========================
 void gameOverScreen() {
   float cx     = width  / 2.0;
-  float panelW = 700;
+  float panelW = 700;  // panel sized to fit all end-of-game stats without crowding on the 1100×700 canvas
   float panelH = 430;
   float panelTop = height / 2.0 - panelH / 2.0;
 

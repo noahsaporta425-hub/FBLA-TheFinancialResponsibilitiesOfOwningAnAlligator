@@ -7,13 +7,15 @@
 // =========================
 // Inventory Data
 // =========================
+// 12 slots (3×4 grid) give enough space to hold several food types and medicines without overwhelming the UI
 String[] inventorySlots = {
-  "Steak", "EMPTY", "EMPTY", "EMPTY",
+  "Steak", "EMPTY", "EMPTY", "EMPTY", // the tutorial steak is pre-placed so new players immediately see how inventory works
   "EMPTY", "EMPTY", "EMPTY", "EMPTY",
   "EMPTY", "EMPTY", "EMPTY", "EMPTY"
 };
 int filledSlotCount = 0;
 
+// each medicine has a different dose count based on treatment length; shorter courses for mild illnesses, longer for severe ones
 int[] medicineDefaultQuantities = {
   2, // Enrofloxacin
   3, // Doxycycline
@@ -36,18 +38,13 @@ int[] meatQuantities     = { 0,0,0,0,0,0,0,0,0,0,0,0 };
 // =========================
 // Item Name / Description Arrays
 // =========================
+// medicineItemList: canonical medicine name list shared by store, inventory, and eat() logic
 String[] medicineItemList = {
   "Enrofloxacin","Doxycycline","Oseltamivir","Vitamin B-Complex",
   "Cyproheptadine","Potassium Chloride","Coenzyme Q10","Fluoxetine",
   "Trazodone","Meloxicam","Calcium Carbonate","Activated Charcoal"
 };
 boolean[] medicineIsPrescribed = new boolean[12];
-
-String[] medicineNames = {
-  "Enrofloxacin","Doxycycline","Oseltamivir","Vitamin B-Complex",
-  "Cyproheptadine","Potassium Chloride","Coenzyme Q10","Fluoxetine",
-  "Trazodone","Meloxicam","Calcium Carbonate","Activated Charcoal"
-};
 String[] medicineDesc1 = {
   "Pet with an infection? Give 1 pill daily",
   "Pet with a cold? Give 1 pill daily",
@@ -77,11 +74,8 @@ String[] medicineDesc2 = {
   "immediately to remove toxins."
 };
 
+// snackItemList: canonical snack name list shared by store, inventory, and eat() logic
 String[] snackItemList = {
-  "Nachos","Cheesepuffs","Chips","Chocolate Bar","Cookies","Crackers",
-  "Energy Drink","Granola Bar","Popcorn","Pretzels","Soda","Trail Mix"
-};
-String[] snackNames = {
   "Nachos","Cheesepuffs","Chips","Chocolate Bar","Cookies","Crackers",
   "Energy Drink","Granola Bar","Popcorn","Pretzels","Soda","Trail Mix"
 };
@@ -128,11 +122,8 @@ String[] snackStats = {
   "-10 Hunger   -5 Health   +5 Happiness   +20 Energy"
 };
 
+// meatItemList: canonical meat/fish name list shared by store, inventory, and eat() logic
 String[] meatItemList = {
-  "Bluegill","Bass","Perch","Goldfish","Crab","Lamb Chop",
-  "Pork Chop","Steak","Chicken","Catfish","Frog","Shrimp"
-};
-String[] meatNames = {
   "Bluegill","Bass","Perch","Goldfish","Crab","Lamb Chop",
   "Pork Chop","Steak","Chicken","Catfish","Frog","Shrimp"
 };
@@ -212,12 +203,14 @@ float[] meatPrices = {
 PImage[] snackImages;
 PImage[] meatImages;
 
+// per-item display tweaks to center each sprite correctly in its slot; values determined visually since each sprite has different whitespace
 float[] snackDisplayScales  = {9, 8, 8, 12, 6.5f, 7, 11.5f, 7, 8, 6, 14, 8};
 float[] snackDisplayOffsetY = {0, 5, 10, 0, -2, 2, 0, 10, 1.5f, 3, 0, 6};
 
 
 // =========================
-// indexOf — finds index of val in arr, returns -1 if not found
+// indexOf(String[] arr, String val) — Returns the first index where val appears in arr,
+// or -1 if not found. Used to locate items by name.
 // =========================
 int indexOf(String[] arr, String val) {
   for (int i = 0; i < arr.length; i++) if (arr[i].equals(val)) return i;
@@ -226,8 +219,8 @@ int indexOf(String[] arr, String val) {
 
 
 // =========================
-// inventoryHasRoomFor
-// Returns true if inventory has an EMPTY slot or already holds the same item.
+// inventoryHasRoomFor(String item) — Returns true if the item already exists in inventory
+// (stackable) or if there is an empty slot available.
 // =========================
 boolean inventoryHasRoomFor(String item) {
   for (int i = 0; i < inventorySlots.length; i++) {
@@ -242,6 +235,8 @@ boolean inventoryHasRoomFor(String item) {
 // =========================
 // Item Detail Display Helpers
 // =========================
+// drawItemDetail(...) — Renders the item detail side panel when a slot is selected, showing
+// the item image, description, stat effects, and use/sell buttons.
 void drawItemDetail(String name, String desc1, String desc2, String statLine, PImage img, float scale) {
   textAlign(CENTER);
   textSize(30);
@@ -259,7 +254,7 @@ void drawItemDetail(String name, String desc1, String desc2, String statLine, PI
 void drawMedicineDetail(int idx) {
   textAlign(CENTER);
   textSize(30);
-  text(medicineNames[idx], 770, 233);
+  text(medicineItemList[idx], 770, 233);
   textSize(20);
   text(medicineDesc1[idx], 770, 406);
   text(medicineDesc2[idx], 770, 436);
@@ -271,17 +266,18 @@ void drawMedicineDetail(int idx) {
 }
 
 void drawSnackDetail(int idx) {
-  drawItemDetail(snackNames[idx], snackDesc1[idx], snackDesc2[idx], snackStats[idx], snackImages[idx], snackDisplayScales[idx]);
+  drawItemDetail(snackItemList[idx], snackDesc1[idx], snackDesc2[idx], snackStats[idx], snackImages[idx], snackDisplayScales[idx]);
 }
 
 void drawMeatDetail(int idx) {
-  drawItemDetail(meatNames[idx], meatDesc1[idx], meatDesc2[idx], meatStats[idx], meatImages[idx], 7);
+  drawItemDetail(meatItemList[idx], meatDesc1[idx], meatDesc2[idx], meatStats[idx], meatImages[idx], 7);
 }
 
 
 // =========================
 // Inventory Panel
 // =========================
+// inventory() — Renders the full inventory panel: 3×4 slot grid on the left, item detail panel on the right.
 void inventory() {
   rectMode(CORNERS);
   stroke(169);
@@ -330,7 +326,7 @@ void inventory() {
       fill(255, 0, 0, 65);
       rect(780, 474.875f, 954.875f, 546);
       fill(255);
-      text("SELL", 867.4375f, 522.5f);
+      text("SELL", 867.4375f, 522.5f); // items resell at 75% of their buy price — same as the sell logic in B_Interaction.pde
     } else {
       textAlign(CENTER);
       fill(255);
@@ -351,7 +347,7 @@ void inventory() {
   }
 
   if (selectedInventorySlot >= 0 && selectedInventorySlot < inventorySlots.length) {
-    int r = selectedInventorySlot / 3;
+    int r = selectedInventorySlot / 3; // convert flat slot index to row/column in the 3-column grid
     int c = selectedInventorySlot % 3;
 
     float x1 = xs[c], x2 = xs[c+1];
@@ -466,6 +462,8 @@ void inventory() {
   stroke(0);
 }
 
+// cantsell() — Shows the popup that blocks selling the tutorial steak (Day 1 starting item),
+// so beginners always have a first meal.
 void cantsell() {
   imageMode(CENTER);
   image(popupbackground, width/2, height*0.42f, popupbackground.width*0.6f, popupbackground.height*0.6f);

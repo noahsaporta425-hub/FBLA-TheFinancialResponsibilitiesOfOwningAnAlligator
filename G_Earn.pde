@@ -76,6 +76,7 @@ void help() {
 
 // =========================
 // Earn Panel (main view)
+// Routes to the correct earn sub-panel (Jobs, Tasks, or Upgrades) based on the active tab.
 // =========================
 void earn() {
   if (isJobFinderOpen) {
@@ -216,6 +217,7 @@ void earn() {
 
 // =========================
 // Job Finder Sub-Panel
+// Renders the job listings panel where the player can hire or quit jobs by day milestone.
 // =========================
 void earnJobFinder() {
   rectMode(CORNERS);
@@ -266,13 +268,13 @@ void earnJobFinder() {
   text("Base Salary:", 550, 397);
   text("$35/day", 550, 410);
   text("Status:", 550, 434);
-  text("Unlocks on day 10", 550, 447);
+  text("Unlocks on day 10", 550, 447); // Barista unlocks Day 10 and Cafe Manager Day 25 — paced so the player must plan their income growth
 
   text("Run the cafe,", 800, 347);
   text("manage staff,", 800, 360);
   text("ensure efficiency.", 800, 373);
   text("Base Salary:", 800, 397);
-  text("$75/day", 800, 410);
+  text("$75/day", 800, 410); // salaries roughly triple each tier: Cashier $15 → Barista $35 → Manager $75; balanced against store and service costs
   text("Status:", 800, 434);
   text("Unlocks on day 25", 800, 447);
 
@@ -314,6 +316,7 @@ void earnJobFinder() {
 
 // =========================
 // Tasks & Upgrades Sub-Panel
+// Renders the tasks and upgrades panel showing one-time tasks and purchasable multiplier upgrades.
 // =========================
 void earnTasksUpgrades() {
   rectMode(CORNERS);
@@ -383,12 +386,12 @@ void earnTasksUpgrades() {
 
   text("Upgrade:", 615, 359);
   if (moneyPerMinigamePoint == 0) text("$0.10/pt", 615, 372);
-  else text("$" + nf(moneyPerMinigamePoint*1.2f, 0, 2) + "/pt", 615, 372);
+  else text("$" + nf(moneyPerMinigamePoint*1.2f, 0, 2) + "/pt", 615, 372); // tasks scale at 12% (same as salary) while minigame point value scales at 20% — play rewards grow faster to encourage engagement
 
   text("Upgrade:", 720, 359);
   if (job.equals("cashier")) {
     if (salary >= 32 || salary * 1.12f >= 32) text("MAXED", 720, 372);
-    else text("$" + nf(salary * 1.12f, 0, 2) + "/day", 720, 372);
+    else text("$" + nf(salary * 1.12f, 0, 2) + "/day", 720, 372); // 12% salary increase per upgrade — meaningful but not game-breaking; encourages regular reinvestment
   } else if (job.equals("barista")) {
     if (salary >= 70 || salary * 1.12f >= 70) text("MAXED", 720, 372);
     else text("$" + nf(salary * 1.12f, 0, 2) + "/day", 720, 372);
@@ -401,7 +404,7 @@ void earnTasksUpgrades() {
   text("BUY:", 825, 402);
 
   text("Upgrade:", 825, 359);
-  text("$" + nf(taskRewardAmount*1.12f, 0, 2) + "/task", 825, 372);
+  text("$" + nf(taskRewardAmount*1.12f, 0, 2) + "/task", 825, 372); // task reward grows 12% per upgrade, same rate as salary upgrades
 
   textSize(13);
   if (money >= pointUpgradeCost) fill(0, 255, 0, 80);
@@ -422,7 +425,7 @@ void earnTasksUpgrades() {
   if (job.equals("cashier") && (salary >= 32 || salary * 1.12f >= 32)) text("MAXED", 720, 420);
   else if (job.equals("barista") && (salary >= 70 || salary * 1.12f >= 70)) text("MAXED", 720, 420);
   else if (job.equals("unemployed")) text("N/A", 720, 420);
-  else text("$" + nf(salaryUpgradeCost, 0, 2), 720, 420);
+  else text("$" + nf(salaryUpgradeCost, 0, 2), 720, 420); // upgrade cost grows 40% each time, faster than the salary gain, so the benefit diminishes over time
 
   if (money >= taskUpgradeCost) fill(0, 255, 0, 80);
   else fill(80, 220);
