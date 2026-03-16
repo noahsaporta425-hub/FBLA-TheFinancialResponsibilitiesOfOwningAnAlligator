@@ -454,9 +454,9 @@ void mousePressed() {
       if (isMedicine) {
         int medIndex = findItemIndex(inventoryslots[selectedSlot], medicinestock);
         if (medIndex != -1) {
-          float sellPrice = 5 * 0.75f;
+          float sellPrice = (1.0f / defaultQtys[medIndex]) * 3.75f;
           logSellTransaction(medicinestock[medIndex], sellPrice);
-          medQtys[medIndex] -= defaultQtys[medIndex];
+          medQtys[medIndex] -= 1;
           if (medQtys[medIndex] <= 0) {
             medQtys[medIndex] = 0;
             removeInventorySlot(selectedSlot);
@@ -763,18 +763,19 @@ if (earnclicked == true && jobpopupshown &&
   totalMoneyEarned += taskmoney;
   bankTransactionsLoggedCount++;
   bankTransactions.add("Transaction: Help Around Town (+$" + nf(taskmoney, 0, 2) + ")");
-  alligator.health -= 50;
   earnclicked = false;
 
   if (!firsthelppopupshown) {
     sick = true;
     sickness = sicknesses[0];
+    alligator.health -= 30;
     helppopuptext = "Congrats on earning $" + nf(taskmoney,0,2) + "! While helping around town, " + alligator.petName + " was left unattended and developed an infection. Close this window and click the services button to visit the vet.";
     showfirsthelppopup = true;
   } else if (!sick && random(1) < 0.15f) {
     int randomSicknessIndex = int(random(sicknesses.length));
     sick = true;
     sickness = sicknesses[randomSicknessIndex];
+    alligator.health -= 30;
     helppopuptext = "Uh oh! While you were off helping, your " + alligator.petName + " was left unattended and developed " + sickness + ".";
     showfirsthelppopup = true;
   }

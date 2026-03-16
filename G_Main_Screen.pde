@@ -1345,11 +1345,11 @@ void services() {
  text("health and happiness.", 575, 478);
  
  image(cleaner, 830, 310, cleaner.width/3.8f, cleaner.height/3.8f);
- text("A walker will take", 843.33f, 418);
- text("your pet on a walk", 843.33f, 433);
- text("in order to stabalize", 843.33f, 448);
- text("energy while increasing", 843.33f, 463);
- text("health and happiness.", 843.33f, 478);
+ text("A cleaner will tidy", 843.33f, 418);
+ text("your pet's habitat,", 843.33f, 433);
+ text("reducing the daily", 843.33f, 448);
+ text("risk of your pet", 843.33f, 463);
+ text("getting sick.", 843.33f, 478);
  noFill();
  rectMode(CORNERS);
  rect(933,132,976,171.5f); //X box
@@ -1460,11 +1460,18 @@ void clearPrescriptionCourse() {
 }
 
 void startPrescriptionCourse(int medIndex) {
+  // If prescribing the same medicine already in progress, preserve the treatment progress
+  // so a vet refill visit doesn't wipe out doses already given.
+  // Save progress before clearPrescriptionCourse() wipes it.
+  int preservedProgress = (activePrescriptionIndex == medIndex && treatmentDaysCompleted > 0)
+    ? min(treatmentDaysCompleted, defaultQtys[medIndex] - 1)
+    : 0;
+
   clearPrescriptionCourse();
 
   activePrescriptionIndex = medIndex;
   treatmentDaysNeeded = defaultQtys[medIndex];
-  treatmentDaysCompleted = 0;
+  treatmentDaysCompleted = preservedProgress;
   lastTreatmentDay = -1;
 
   presc[medIndex] = true;
@@ -2283,7 +2290,7 @@ void restpopup() {
     fill(0);
     textFont(times50);
     textSize(20);
-    drawWrappedTextInBox("Seems like Moss is tired. Click rest after closing this window to attempt to stabalize his energy.", 338, 271, 761, 400, 6);
+    drawWrappedTextInBox("Seems like " + alligator.petName + " is tired. Click rest after closing this window to attempt to stabalize his energy.", 338, 271, 761, 400, 6);
   }
 
 boolean restclicked = false;

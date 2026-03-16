@@ -859,10 +859,8 @@ if (waitingToLaunch) {
   }
   if (fetchfrenzylost) {
     if (!fetchfrenzyinstructions) {
-      if (hopscore > besthopscore) besthopscore = hopscore;
       drawMinigameModal("YOU LOST!", "High Score: " + bestfetchscore, "", "", "RETRY", "EXIT");
     } else {
-      if (snatchscore > bestsnatchscore) bestsnatchscore = snatchscore;
       drawMinigameModal("WELCOME", "Fetch the ball in the", "allotted time using WASD", "or the arrow keys!", "PLAY", "EXIT");
     }
     stroke(0);

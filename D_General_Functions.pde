@@ -562,6 +562,8 @@ void saveGame() {
 
 
 void loadGame() {
+  File saveFile = new File(sketchPath("data/save.json"));
+  if (!saveFile.exists()) return;
   JSONObject save = loadJSONObject("save.json");
   if (save == null) return;
 
