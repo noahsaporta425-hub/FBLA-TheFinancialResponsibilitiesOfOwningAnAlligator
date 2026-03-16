@@ -3,13 +3,13 @@
 // Controls fades, scene transitions, and adoption/naming progression
 // =========================
 
-boolean inNaming            = false;
-boolean cutscenestart       = false;
-boolean enteradoptioncenter = false;
-boolean insideadoptioncenter= false;
-boolean dogadopted          = false;
-boolean catadopted          = false;
-boolean startrealgame       = false;
+boolean isNamingActive            = false;
+boolean isCutsceneActive          = false;
+boolean isEnteringAdoptionCenter  = false;
+boolean isInsideAdoptionCenter    = false;
+boolean isDogSelected             = false;
+boolean isCatSelected             = false;
+boolean isGameStarted             = false;
 
 // =========================
 // Cutscene Fade Instances
@@ -29,10 +29,10 @@ Fade namingFade = new Fade(0);
 // Timing / Animation State
 // =========================
 
-int   signreadingtimer = 0;
+int   petSignDisplayTimer = 0;
 
-float cityblockmoving  = 0;
-float movementpause    = 0;
+float cityPanOffset  = 0;
+float cityPanPauseTimer    = 0;
 
 
 // =========================
@@ -71,19 +71,19 @@ void cutscene() {
   else {
 
     // Pan the background until the adoption center is reached
-    if (cityblockmoving <= 765) {
-      cityblockmoving += 3;
+    if (cityPanOffset <= 765) {
+      cityPanOffset += 3;
     } else {
 
       // Pause briefly before transitioning inside
-      movementpause++;
+      cityPanPauseTimer++;
 
-      if (movementpause >= 40) {
-        enteradoptioncenter = true;
+      if (cityPanPauseTimer >= 40) {
+        isEnteringAdoptionCenter = true;
       }
     }
 
-    image(outsideofadoptioncenter, 0 - cityblockmoving, -190, width * 1.75, height * 1.75);
+    image(outsideofadoptioncenter, 0 - cityPanOffset, -190, width * 1.75, height * 1.75);
 
     // Overlay fades away to reveal the street
     cutFade1.stepIn(2);
@@ -94,7 +94,7 @@ void cutscene() {
   // Phase 3: Transition inside the adoption center
   //   — fade to black (cutFade2 outComplete), then reveal the interior
   // ---------------------------------------------------
-  if (enteradoptioncenter) {
+  if (isEnteringAdoptionCenter) {
 
     // Fade to black before showing the interior
     if (!cutFade2.outComplete) {
@@ -105,7 +105,7 @@ void cutscene() {
     // Interior scene
     else {
 
-      insideadoptioncenter = true;
+      isInsideAdoptionCenter = true;
 
       image(adoptioncenterinterior, 0, 0, width, height);
 
@@ -114,15 +114,15 @@ void cutscene() {
       cutFade2.draw();
 
       // Show the pet sign animation based on selection
-      if (dogadopted) signanimation(pickingdog);
-      if (catadopted) signanimation(pickingcat);
+      if (isDogSelected) signanimation(pickingdog);
+      if (isCatSelected) signanimation(pickingcat);
 
       // After a pet is chosen, wait briefly, then transition to naming
-      if (dogadopted == true || catadopted == true) {
+      if (isDogSelected == true || isCatSelected == true) {
 
-        signreadingtimer++;
+        petSignDisplayTimer++;
 
-        if (signreadingtimer > 220) {
+        if (petSignDisplayTimer > 220) {
 
           // Fade to black (cutFade3) before switching to naming screen
           if (!cutFade3.outComplete) {
@@ -132,7 +132,7 @@ void cutscene() {
 
           // Naming segment begins once cutFade3 is fully black
           else {
-            inNaming = true;
+            isNamingActive = true;
           }
 
           // Extra fade step to accelerate cutFade2 completion (preserves original timing)
@@ -149,13 +149,13 @@ void cutscene() {
 // Shared by dog/cat reveal animations
 // =========================
 
-float revealProgress = 0;
-float revealSpeed    = 0.015;
+float signRevealProgress = 0;
+float signRevealSpeed    = 0.015;
 
-float signX          = width / 2 - 240;
+float signBaseX          = width / 2 - 240;
 
-float hideLineY      = 191;
-float finalSignY     = height / 2 - 200;
+float signMaskLineY      = 191;
+float signFinalY         = height / 2 - 200;
 
 
 // =========================
@@ -171,14 +171,14 @@ void signanimation(PImage img) {
   float targetW = 480;
   float targetH = 350;
 
-  float startY = hideLineY - targetH;
+  float startY = signMaskLineY - targetH;
 
   // Reveal increases until full height is shown
-  revealProgress = min(revealProgress + revealSpeed, 1);
+  signRevealProgress = min(signRevealProgress + signRevealSpeed, 1);
 
-  float y = lerp(startY, finalY, revealProgress);
+  float y = lerp(startY, finalY, signRevealProgress);
 
-  int hSrc = constrain(int(img.height * revealProgress), 0, img.height);
+  int hSrc = constrain(int(img.height * signRevealProgress), 0, img.height);
 
   int sy = img.height - hSrc;
 
@@ -187,9 +187,9 @@ void signanimation(PImage img) {
   float drawTop = y + (targetH - hDraw);
 
   // Clip to the hide line (prevents drawing above the mask line)
-  if (drawTop < hideLineY) {
+  if (drawTop < signMaskLineY) {
 
-    float cutDraw = hideLineY - drawTop;
+    float cutDraw = signMaskLineY - drawTop;
     int cutSrc    = int(cutDraw / scaleY);
 
     sy   += cutSrc;
@@ -198,7 +198,7 @@ void signanimation(PImage img) {
     if (hSrc <= 0) return;
 
     hDraw   = hSrc * scaleY;
-    drawTop = hideLineY;
+    drawTop = signMaskLineY;
   }
 
   // Draw only the visible slice
@@ -215,12 +215,12 @@ void signanimation(PImage img) {
 // Shows naming background, pet sprite, and input UI
 // =========================
 
-boolean alligatornamingshown = false;
-int selectedAlligator = 0;
+boolean isNamingScreenShown = false;
+int selectedAlligatorSkin = 0;
 
 void namingalligatorsegment() {
-  alligatornamingshown = true;
-  insideadoptioncenter = false;
+  isNamingScreenShown = true;
+  isInsideAdoptionCenter = false;
 
   imageMode(CORNER);
   image(namingalligatorbackground, 0, 0, width, height);
@@ -243,11 +243,11 @@ void namingalligatorsegment() {
   float[] btnXOffsets = {-300, 0, 300};
   for (int i = 0; i < 3; i++) {
     float btnX = (width * 0.27 + btnXOffsets[i]) + ((width / 2) * 0.9) / 2;
-    if (selectedAlligator == i) fill(0, 255, 0, 120);
+    if (selectedAlligatorSkin == i) fill(0, 255, 0, 120);
     else fill(80, 220);
     rect(btnX, 659, 120, 35);
     fill(255);
-    if (selectedAlligator == i) text("SELECTED", btnX, 659);
+    if (selectedAlligatorSkin == i) text("SELECTED", btnX, 659);
     else text("SELECT", btnX, 659);
   }
 
@@ -262,14 +262,14 @@ void namingalligatorsegment() {
   cp5.draw();
 
   // Display validation error message in red if the last confirm attempt was invalid.
-  // nameValidationError is set by isValidName() in D_General_Functions.pde and cleared
+  // petNameValidationError is set by isValidName() in D_General_Functions.pde and cleared
   // as soon as the user submits a valid name.
-  if (nameValidationError != null && nameValidationError.length() > 0) {
+  if (petNameValidationError != null && petNameValidationError.length() > 0) {
     fill(255, 80, 80);
     textFont(times30);
     textSize(15);
     textAlign(LEFT, CENTER);
-    text(nameValidationError, width * 0.35, 355);
+    text(petNameValidationError, width * 0.35, 355);
   }
 
   noStroke();
@@ -280,12 +280,12 @@ void namingalligatorsegment() {
   cutFade3.draw();
 
   // Exit fade: once name is confirmed, fade to black then switch to the main game
-  if (namechosen) {
+  if (isNameChosen) {
     if (namingFade.stepOut(4)) {
-      startrealgame = true;
-      onmainscreen = true;
-      cutscenestart = false;
-      inNaming = false;
+      isGameStarted = true;
+      isOnMainScreen = true;
+      isCutsceneActive = false;
+      isNamingActive = false;
     }
     namingFade.draw();
   }

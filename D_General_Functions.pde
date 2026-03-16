@@ -60,14 +60,29 @@ class Fade {
 
 Textfield nameField;         // Text input for naming the pet
 Button    confirmBtn;        // Button to confirm name entry
-boolean   nameUIShown = false; // Tracks whether naming UI should currently be visible
+boolean   isNameInputVisible = false; // Tracks whether naming UI should currently be visible
 
 
 // =========================
 // Alligator placeholder name
 // =========================
 
-String alligatorname = "Moss";
+String defaultPetName = "Moss";
+
+// =========================
+// Naming / Input-Related Variables
+// =========================
+
+String typedInput = "";  // Placeholder string for typed input
+
+PFont fontTimesReference;        // Font reference
+
+// Holds the current validation error message shown on the naming screen
+// Empty string means no error (input is valid or not yet submitted)
+String petNameValidationError = "";
+
+boolean isNameChosen = false;
+
 
 // =========================
 // Asset Loading + Audio + Fonts
@@ -75,7 +90,7 @@ String alligatorname = "Moss";
 // =========================
 void fileWork() {
   //Creating the alligator pet
-    alligator = new Pet(alligatorname);
+    alligator = new Pet(defaultPetName);
 
   // --- Images / Screens ---
   homescreen                = loadImage("gametitlescreen.png");
@@ -136,7 +151,7 @@ void fileWork() {
   lock                      = loadImage("lock.png");
   vet                       = loadImage("vet.png");
   walker                    = loadImage("walker.png");
-  cleaner                   = loadImage("cleaner.png");  
+  cleaner                   = loadImage("cleaner.png");
   storebackground           = loadImage("storebackground.png");
   medicine                  = loadImage("medicine.png");
   nachos                    = loadImage("nachos.png");
@@ -243,7 +258,7 @@ void musicAdjusters() {
 
       if (on) {
         // Restore last non-zero volume when turning back on
-        float target = (lastVolume > 0 ? lastVolume : 0);
+        float target = (lastNonZeroVolume > 0 ? lastNonZeroVolume : 0);
         setSliderValueNoEvent(target);
         applyVolume(target);
       } else {
@@ -255,14 +270,6 @@ void musicAdjusters() {
   });
 }
 
-
-// =========================
-// Naming / Input-Related Variables
-// =========================
-
-String userInput = "";  // Placeholder string for typed input
-
-PFont timesFont;        // Font reference
 
 // =========================
 // Name Input UI Builder
@@ -319,19 +326,15 @@ void nameinput() {
 // Validates the pet name on two levels before accepting it:
 //   - Syntactical: checks format rules (non-empty, max length, allowed characters)
 //   - Semantic:    checks that the value makes sense as a name (at least one letter)
-// Sets nameValidationError to a human-readable message on failure.
+// Sets petNameValidationError to a human-readable message on failure.
 // Returns true if the name is acceptable, false otherwise.
 // =========================
-
-// Holds the current validation error message shown on the naming screen
-// Empty string means no error (input is valid or not yet submitted)
-String nameValidationError = "";
 
 boolean isValidName(String raw) {
 
   // Syntactical check: cannot be null or entirely whitespace
   if (raw == null || raw.trim().length() == 0) {
-    nameValidationError = "Name cannot be empty. Please enter a name.";
+    petNameValidationError = "Name cannot be empty. Please enter a name.";
     return false;
   }
 
@@ -339,7 +342,7 @@ boolean isValidName(String raw) {
 
   // Syntactical check: enforce a maximum of 20 characters for display fit
   if (trimmed.length() > 20) {
-    nameValidationError = "Name is too long (max 20 characters).";
+    petNameValidationError = "Name is too long (max 20 characters).";
     return false;
   }
 
@@ -352,7 +355,7 @@ boolean isValidName(String raw) {
     }
   }
   if (!hasLetter) {
-    nameValidationError = "Name must contain at least one letter.";
+    petNameValidationError = "Name must contain at least one letter.";
     return false;
   }
 
@@ -361,13 +364,13 @@ boolean isValidName(String raw) {
   for (int i = 0; i < trimmed.length(); i++) {
     char c = trimmed.charAt(i);
     if (!Character.isLetter(c) && c != ' ' && c != '-' && c != '\'') {
-      nameValidationError = "Only letters, spaces, hyphens, and apostrophes are allowed.";
+      petNameValidationError = "Only letters, spaces, hyphens, and apostrophes are allowed.";
       return false;
     }
   }
 
   // All checks passed — clear any leftover error message
-  nameValidationError = "";
+  petNameValidationError = "";
   return true;
 }
 
@@ -377,7 +380,6 @@ boolean isValidName(String raw) {
 // Triggered by the ControlP5 button named "confirm"
 // Validates the name first; only proceeds if it passes both syntactical and semantic checks.
 // =========================
-boolean namechosen = false;
 
 void confirm() {
 
@@ -387,7 +389,7 @@ void confirm() {
   if (!isValidName(rawInput)) return;
 
   // Mark name selection complete and assign the formatted name to the pet
-  namechosen = true;
+  isNameChosen = true;
   alligator.petName = formatName(rawInput);
 }
 
@@ -405,7 +407,7 @@ String formatName(String raw) {
   raw = raw.trim();                   // remove leading/trailing spaces
   raw = raw.replaceAll("\\s+", " ");  // collapse multiple spaces into single spaces
   raw = raw.toLowerCase();            // normalize to lowercase
- 
+
   // If user entered nothing meaningful, return empty string
   if (raw.length() == 0) return raw;
 
@@ -427,29 +429,29 @@ void saveGame() {
   JSONObject save = new JSONObject();
 
   // cutscene / setup progress
-  save.setBoolean("homescreenvisible", homescreenvisible);
-  save.setBoolean("cutscenestart", cutscenestart);
-  save.setBoolean("inNaming", inNaming);
-  save.setBoolean("startrealgame", startrealgame);
-  save.setBoolean("dogadopted", dogadopted);
-  save.setBoolean("catadopted", catadopted);
-  save.setInt("selectedAlligator", selectedAlligator);
-  save.setBoolean("namechosen", namechosen);
-  save.setString("alligatorname", alligatorname == null ? "" : alligatorname);
-  save.setString("userInput", userInput == null ? "" : userInput);
+  save.setBoolean("homescreenvisible", isHomeScreenVisible);
+  save.setBoolean("cutscenestart", isCutsceneActive);
+  save.setBoolean("inNaming", isNamingActive);
+  save.setBoolean("startrealgame", isGameStarted);
+  save.setBoolean("dogadopted", isDogSelected);
+  save.setBoolean("catadopted", isCatSelected);
+  save.setInt("selectedAlligator", selectedAlligatorSkin);
+  save.setBoolean("namechosen", isNameChosen);
+  save.setString("alligatorname", defaultPetName == null ? "" : defaultPetName);
+  save.setString("userInput", typedInput == null ? "" : typedInput);
 
   // main progression
-  save.setBoolean("onmainscreen", onmainscreen);
+  save.setBoolean("onmainscreen", isOnMainScreen);
   save.setInt("day", day);
   save.setFloat("money", money);
   save.setString("job", job == null ? "" : job);
   save.setFloat("salary", salary);
   save.setFloat("totalJobEarnings", totalJobEarnings);
-  save.setFloat("taskmoney", taskmoney);
-  save.setFloat("moneyperpt", moneyperpt);
-  save.setFloat("ptupgcost", ptupgcost);
-  save.setFloat("salupgcost", salupgcost);
-  save.setFloat("taskupgcost", taskupgcost);
+  save.setFloat("taskmoney", taskRewardAmount);
+  save.setFloat("moneyperpt", moneyPerMinigamePoint);
+  save.setFloat("ptupgcost", pointUpgradeCost);
+  save.setFloat("salupgcost", salaryUpgradeCost);
+  save.setFloat("taskupgcost", taskUpgradeCost);
 
   // pet state
   save.setString("petName", alligator.petName == null ? "" : alligator.petName);
@@ -460,63 +462,63 @@ void saveGame() {
   save.setFloat("sickrisk", alligator.sickrisk);
 
   // sickness / treatment
-  save.setBoolean("sick", sick);
-  save.setString("sickness", sickness == null ? "" : sickness);
-  save.setBoolean("cleanerVisited", cleanerVisited);
-  save.setInt("activePrescriptionIndex", activePrescriptionIndex);
-  save.setInt("treatmentDaysNeeded", treatmentDaysNeeded);
-  save.setInt("treatmentDaysCompleted", treatmentDaysCompleted);
-  save.setInt("lastTreatmentDay", lastTreatmentDay);
+  save.setBoolean("sick", isPetSick);
+  save.setString("sickness", currentSicknessName == null ? "" : currentSicknessName);
+  save.setBoolean("cleanerVisited", hasCleanerVisited);
+  save.setInt("activePrescriptionIndex", prescribedMedicineIndex);
+  save.setInt("treatmentDaysNeeded", prescriptionDaysRequired);
+  save.setInt("treatmentDaysCompleted", prescriptionDaysCompleted);
+  save.setInt("lastTreatmentDay", lastDoseTakenDay);
 
   // tutorial / important progression flags
-  save.setBoolean("welcomepopupvisible", welcomepopupvisible);
-  save.setBoolean("firstinventoryclick", firstinventoryclick);
-  save.setBoolean("fedsteak", fedsteak);
-  save.setBoolean("firstearnclick", firstearnclick);
-  save.setBoolean("firsthelpclick", firsthelpclick);
-  save.setBoolean("firsttasktabclick", firsttasktabclick);
-  save.setBoolean("firstservicesclick", firstservicesclick);
-  save.setBoolean("firstbuymedicine", firstbuymedicine);
-  save.setBoolean("firstmedicinegiven", firstmedicinegiven);
-  save.setBoolean("firstbankclick", firstbankclick);
-  save.setBoolean("firstrestclick", firstrestclick);
-  save.setBoolean("firstalligatorrest", firstalligatorrest);
-  save.setBoolean("firstachievementsclick", firstachievementsclick);
-  save.setBoolean("firstachievementsclosed", firstachievementsclosed);
-  save.setBoolean("firstnextdayclick", firstnextdayclick);
-  save.setBoolean("firsthelppopupshown", firsthelppopupshown);
-  save.setBoolean("firstLowQualityCareAlwaysSucceeds", firstLowQualityCareAlwaysSucceeds);
-  save.setBoolean("neverboughthighqualitycare", neverboughthighqualitycare);
-  save.setBoolean("lowqualitycaregiven", lowqualitycaregiven);
-  save.setBoolean("bankpopupshown", bankpopupshown);
-  save.setBoolean("showplayarrow", showplayarrow);
+  save.setBoolean("welcomepopupvisible", isWelcomePopupVisible);
+  save.setBoolean("firstinventoryclick", hasOpenedInventory);
+  save.setBoolean("fedsteak", hasFedSteak);
+  save.setBoolean("firstearnclick", hasOpenedEarnPanel);
+  save.setBoolean("firsthelpclick", hasUsedHelpTask);
+  save.setBoolean("firsttasktabclick", hasClickedTaskTab);
+  save.setBoolean("firstservicesclick", hasOpenedServices);
+  save.setBoolean("firstbuymedicine", hasFirstBoughtMedicine);
+  save.setBoolean("firstmedicinegiven", hasGivenFirstMedicine);
+  save.setBoolean("firstbankclick", hasViewedBank);
+  save.setBoolean("firstrestclick", hasUsedRest);
+  save.setBoolean("firstalligatorrest", hasAlligatorRestedOnce);
+  save.setBoolean("firstachievementsclick", hasOpenedAchievements);
+  save.setBoolean("firstachievementsclosed", hasClosedAchievements);
+  save.setBoolean("firstnextdayclick", hasAdvancedDay);
+  save.setBoolean("firsthelppopupshown", hasShownFirstHelpPopup);
+  save.setBoolean("firstLowQualityCareAlwaysSucceeds", isFirstLowQualityVetAttempt);
+  save.setBoolean("neverboughthighqualitycare", hasNeverBoughtHighQualityCare);
+  save.setBoolean("lowqualitycaregiven", hasUsedLowQualityVet);
+  save.setBoolean("bankpopupshown", hasShownBankPopup);
+  save.setBoolean("showplayarrow", isShowingPlayArrow);
 
   // tutorial popup "already shown" flags — saved so they don't replay on resume
-  save.setBoolean("earnpopupshown", earnpopupshown);
-  save.setBoolean("playpopupShown", playpopupShown);
-  save.setBoolean("jobpopupshown", jobpopupshown);
-  save.setBoolean("treatmentpopupshown", treatmentpopupshown);
-  save.setBoolean("restpopupshown", restpopupshown);
-  save.setBoolean("firstbankview", firstbankview);
-  save.setBoolean("firstenergystabalized", firstenergystabalized);
+  save.setBoolean("earnpopupshown", hasShownEarnPopup);
+  save.setBoolean("playpopupShown", hasShownPlayPopup);
+  save.setBoolean("jobpopupshown", hasShownJobPopup);
+  save.setBoolean("treatmentpopupshown", hasShownTreatmentPopup);
+  save.setBoolean("restpopupshown", hasShownRestPopup);
+  save.setBoolean("firstbankview", hasViewedBankFirstTime);
+  save.setBoolean("firstenergystabalized", hasEnergyStabilized);
 
   // prescriptions — save both named fields (for backward compat) and array
   String[] prescNames = {"enrofloxacinPresc","doxycyclinePresc","oseltamivirPresc","vitaminBComplexPresc",
     "cyproheptadinePresc","potassiumChloridePresc","coenzymeQ10Presc","fluoxetinePresc",
     "trazodonePresc","meloxicamPresc","calciumCarbonatePresc","activatedCharcoalPresc"};
-  for (int i = 0; i < prescNames.length; i++) save.setBoolean(prescNames[i], presc[i]);
-  save.setJSONArray("presc", booleanArrayToJson(presc));
+  for (int i = 0; i < prescNames.length; i++) save.setBoolean(prescNames[i], medicineIsPrescribed[i]);
+  save.setJSONArray("presc", booleanArrayToJson(medicineIsPrescribed));
 
   // inventory
-  save.setJSONArray("inventoryslots", stringArrayToJson(inventoryslots));
-  save.setJSONArray("medQtys", intArrayToJson(medQtys));
-  save.setJSONArray("snackQtys", intArrayToJson(snackQtys));
-  save.setJSONArray("meatQtys", intArrayToJson(meatQtys));
+  save.setJSONArray("inventoryslots", stringArrayToJson(inventorySlots));
+  save.setJSONArray("medQtys", intArrayToJson(medicineQuantities));
+  save.setJSONArray("snackQtys", intArrayToJson(snackQuantities));
+  save.setJSONArray("meatQtys", intArrayToJson(meatQuantities));
 
   // bank
   JSONArray bankArr = new JSONArray();
-  for (int i = 0; i < bankTransactions.size(); i++) {
-    bankArr.append(bankTransactions.get(i));
+  for (int i = 0; i < bankTransactionLog.size(); i++) {
+    bankArr.append(bankTransactionLog.get(i));
   }
   save.setJSONArray("bankTransactions", bankArr);
 
@@ -551,11 +553,11 @@ void saveGame() {
   save.setInt("walkersHiredCount", walkersHiredCount);
   save.setFloat("currentPlaySessionMoneyEarned", currentPlaySessionMoneyEarned);
 
-  save.setInt("besthopscore", besthopscore);
-  save.setInt("bestsnatchscore", bestsnatchscore);
-  save.setInt("bestfetchscore", bestfetchscore);
+  save.setInt("besthopscore", swampHopBestScore);
+  save.setInt("bestsnatchscore", snatchBestScore);
+  save.setInt("bestfetchscore", fetchBestScore);
 
-  save.setJSONArray("achievementtiers", intArrayToJson(achievementtiers));
+  save.setJSONArray("achievementtiers", intArrayToJson(achievementTiers));
 
   saveJSONObject(save, "save.json");
 }
@@ -568,29 +570,29 @@ void loadGame() {
   if (save == null) return;
 
   // cutscene / setup progress
-  homescreenvisible = save.getBoolean("homescreenvisible", homescreenvisible);
-  cutscenestart = save.getBoolean("cutscenestart", cutscenestart);
-  inNaming = save.getBoolean("inNaming", inNaming);
-  startrealgame = save.getBoolean("startrealgame", startrealgame);
-  dogadopted = save.getBoolean("dogadopted", dogadopted);
-  catadopted = save.getBoolean("catadopted", catadopted);
-  selectedAlligator = save.getInt("selectedAlligator", selectedAlligator);
-  namechosen = save.getBoolean("namechosen", namechosen);
-  alligatorname = save.getString("alligatorname", alligatorname);
-  userInput = save.getString("userInput", userInput);
+  isHomeScreenVisible = save.getBoolean("homescreenvisible", isHomeScreenVisible);
+  isCutsceneActive = save.getBoolean("cutscenestart", isCutsceneActive);
+  isNamingActive = save.getBoolean("inNaming", isNamingActive);
+  isGameStarted = save.getBoolean("startrealgame", isGameStarted);
+  isDogSelected = save.getBoolean("dogadopted", isDogSelected);
+  isCatSelected = save.getBoolean("catadopted", isCatSelected);
+  selectedAlligatorSkin = save.getInt("selectedAlligator", selectedAlligatorSkin);
+  isNameChosen = save.getBoolean("namechosen", isNameChosen);
+  defaultPetName = save.getString("alligatorname", defaultPetName);
+  typedInput = save.getString("userInput", typedInput);
 
   // main progression
-  onmainscreen = save.getBoolean("onmainscreen", onmainscreen);
+  isOnMainScreen = save.getBoolean("onmainscreen", isOnMainScreen);
   day = save.getInt("day", day);
   money = save.getFloat("money", money);
   job = save.getString("job", job);
   salary = save.getFloat("salary", salary);
   totalJobEarnings = save.getFloat("totalJobEarnings", totalJobEarnings);
-  taskmoney = save.getFloat("taskmoney", taskmoney);
-  moneyperpt = save.getFloat("moneyperpt", moneyperpt);
-  ptupgcost = save.getFloat("ptupgcost", ptupgcost);
-  salupgcost = save.getFloat("salupgcost", salupgcost);
-  taskupgcost = save.getFloat("taskupgcost", taskupgcost);
+  taskRewardAmount = save.getFloat("taskmoney", taskRewardAmount);
+  moneyPerMinigamePoint = save.getFloat("moneyperpt", moneyPerMinigamePoint);
+  pointUpgradeCost = save.getFloat("ptupgcost", pointUpgradeCost);
+  salaryUpgradeCost = save.getFloat("salupgcost", salaryUpgradeCost);
+  taskUpgradeCost = save.getFloat("taskupgcost", taskUpgradeCost);
 
   // pet state
   alligator.petName = save.getString("petName", alligator.petName);
@@ -601,93 +603,93 @@ void loadGame() {
   alligator.sickrisk = save.getFloat("sickrisk", alligator.sickrisk);
 
   // sickness / treatment
-  sick = save.getBoolean("sick", sick);
-  sickness = save.getString("sickness", sickness);
-  cleanerVisited = save.getBoolean("cleanerVisited", cleanerVisited);
-  activePrescriptionIndex = save.getInt("activePrescriptionIndex", activePrescriptionIndex);
-  treatmentDaysNeeded = save.getInt("treatmentDaysNeeded", treatmentDaysNeeded);
-  treatmentDaysCompleted = save.getInt("treatmentDaysCompleted", treatmentDaysCompleted);
-  lastTreatmentDay = save.getInt("lastTreatmentDay", lastTreatmentDay);
+  isPetSick = save.getBoolean("sick", isPetSick);
+  currentSicknessName = save.getString("sickness", currentSicknessName);
+  hasCleanerVisited = save.getBoolean("cleanerVisited", hasCleanerVisited);
+  prescribedMedicineIndex = save.getInt("activePrescriptionIndex", prescribedMedicineIndex);
+  prescriptionDaysRequired = save.getInt("treatmentDaysNeeded", prescriptionDaysRequired);
+  prescriptionDaysCompleted = save.getInt("treatmentDaysCompleted", prescriptionDaysCompleted);
+  lastDoseTakenDay = save.getInt("lastTreatmentDay", lastDoseTakenDay);
 
   // tutorial / progression flags
-  welcomepopupvisible = save.getBoolean("welcomepopupvisible", welcomepopupvisible);
-  firstinventoryclick = save.getBoolean("firstinventoryclick", firstinventoryclick);
-  fedsteak = save.getBoolean("fedsteak", fedsteak);
-  firstearnclick = save.getBoolean("firstearnclick", firstearnclick);
-  firsthelpclick = save.getBoolean("firsthelpclick", firsthelpclick);
-  firsttasktabclick = save.getBoolean("firsttasktabclick", firsttasktabclick);
-  firstservicesclick = save.getBoolean("firstservicesclick", firstservicesclick);
-  firstbuymedicine = save.getBoolean("firstbuymedicine", firstbuymedicine);
-  firstmedicinegiven = save.getBoolean("firstmedicinegiven", firstmedicinegiven);
-  firstbankclick = save.getBoolean("firstbankclick", firstbankclick);
-  firstrestclick = save.getBoolean("firstrestclick", firstrestclick);
-  firstalligatorrest = save.getBoolean("firstalligatorrest", firstalligatorrest);
-  firstachievementsclick = save.getBoolean("firstachievementsclick", firstachievementsclick);
-  firstachievementsclosed = save.getBoolean("firstachievementsclosed", firstachievementsclosed);
-  firstnextdayclick = save.getBoolean("firstnextdayclick", firstnextdayclick);
-  firsthelppopupshown = save.getBoolean("firsthelppopupshown", firsthelppopupshown);
-  firstLowQualityCareAlwaysSucceeds = save.getBoolean("firstLowQualityCareAlwaysSucceeds", firstLowQualityCareAlwaysSucceeds);
-  neverboughthighqualitycare = save.getBoolean("neverboughthighqualitycare", neverboughthighqualitycare);
-  lowqualitycaregiven = save.getBoolean("lowqualitycaregiven", lowqualitycaregiven);
-  bankpopupshown = save.getBoolean("bankpopupshown", bankpopupshown);
-  showplayarrow = save.getBoolean("showplayarrow", showplayarrow);
+  isWelcomePopupVisible = save.getBoolean("welcomepopupvisible", isWelcomePopupVisible);
+  hasOpenedInventory = save.getBoolean("firstinventoryclick", hasOpenedInventory);
+  hasFedSteak = save.getBoolean("fedsteak", hasFedSteak);
+  hasOpenedEarnPanel = save.getBoolean("firstearnclick", hasOpenedEarnPanel);
+  hasUsedHelpTask = save.getBoolean("firsthelpclick", hasUsedHelpTask);
+  hasClickedTaskTab = save.getBoolean("firsttasktabclick", hasClickedTaskTab);
+  hasOpenedServices = save.getBoolean("firstservicesclick", hasOpenedServices);
+  hasFirstBoughtMedicine = save.getBoolean("firstbuymedicine", hasFirstBoughtMedicine);
+  hasGivenFirstMedicine = save.getBoolean("firstmedicinegiven", hasGivenFirstMedicine);
+  hasViewedBank = save.getBoolean("firstbankclick", hasViewedBank);
+  hasUsedRest = save.getBoolean("firstrestclick", hasUsedRest);
+  hasAlligatorRestedOnce = save.getBoolean("firstalligatorrest", hasAlligatorRestedOnce);
+  hasOpenedAchievements = save.getBoolean("firstachievementsclick", hasOpenedAchievements);
+  hasClosedAchievements = save.getBoolean("firstachievementsclosed", hasClosedAchievements);
+  hasAdvancedDay = save.getBoolean("firstnextdayclick", hasAdvancedDay);
+  hasShownFirstHelpPopup = save.getBoolean("firsthelppopupshown", hasShownFirstHelpPopup);
+  isFirstLowQualityVetAttempt = save.getBoolean("firstLowQualityCareAlwaysSucceeds", isFirstLowQualityVetAttempt);
+  hasNeverBoughtHighQualityCare = save.getBoolean("neverboughthighqualitycare", hasNeverBoughtHighQualityCare);
+  hasUsedLowQualityVet = save.getBoolean("lowqualitycaregiven", hasUsedLowQualityVet);
+  hasShownBankPopup = save.getBoolean("bankpopupshown", hasShownBankPopup);
+  isShowingPlayArrow = save.getBoolean("showplayarrow", isShowingPlayArrow);
 
   // tutorial popup "already shown" flags
-  earnpopupshown = save.getBoolean("earnpopupshown", earnpopupshown);
-  playpopupShown = save.getBoolean("playpopupShown", playpopupShown);
-  jobpopupshown = save.getBoolean("jobpopupshown", jobpopupshown);
-  treatmentpopupshown = save.getBoolean("treatmentpopupshown", treatmentpopupshown);
-  restpopupshown = save.getBoolean("restpopupshown", restpopupshown);
-  firstbankview = save.getBoolean("firstbankview", firstbankview);
-  firstenergystabalized = save.getBoolean("firstenergystabalized", firstenergystabalized);
+  hasShownEarnPopup = save.getBoolean("earnpopupshown", hasShownEarnPopup);
+  hasShownPlayPopup = save.getBoolean("playpopupShown", hasShownPlayPopup);
+  hasShownJobPopup = save.getBoolean("jobpopupshown", hasShownJobPopup);
+  hasShownTreatmentPopup = save.getBoolean("treatmentpopupshown", hasShownTreatmentPopup);
+  hasShownRestPopup = save.getBoolean("restpopupshown", hasShownRestPopup);
+  hasViewedBankFirstTime = save.getBoolean("firstbankview", hasViewedBankFirstTime);
+  hasEnergyStabilized = save.getBoolean("firstenergystabalized", hasEnergyStabilized);
 
-  // prescriptions — load from named fields first, then override with presc[] array if present
+  // prescriptions — load from named fields first, then override with medicineIsPrescribed[] array if present
   String[] prescNames = {"enrofloxacinPresc","doxycyclinePresc","oseltamivirPresc","vitaminBComplexPresc",
     "cyproheptadinePresc","potassiumChloridePresc","coenzymeQ10Presc","fluoxetinePresc",
     "trazodonePresc","meloxicamPresc","calciumCarbonatePresc","activatedCharcoalPresc"};
-  for (int i = 0; i < prescNames.length; i++) presc[i] = save.getBoolean(prescNames[i], presc[i]);
+  for (int i = 0; i < prescNames.length; i++) medicineIsPrescribed[i] = save.getBoolean(prescNames[i], medicineIsPrescribed[i]);
   JSONArray prescArr = save.getJSONArray("presc");
   if (prescArr != null) {
-    for (int i = 0; i < min(presc.length, prescArr.size()); i++) {
-      presc[i] = prescArr.getBoolean(i);
+    for (int i = 0; i < min(medicineIsPrescribed.length, prescArr.size()); i++) {
+      medicineIsPrescribed[i] = prescArr.getBoolean(i);
     }
   }
 
   // inventory
   JSONArray invArr = save.getJSONArray("inventoryslots");
   if (invArr != null) {
-    for (int i = 0; i < min(inventoryslots.length, invArr.size()); i++) {
-      inventoryslots[i] = invArr.getString(i);
+    for (int i = 0; i < min(inventorySlots.length, invArr.size()); i++) {
+      inventorySlots[i] = invArr.getString(i);
     }
   }
 
   JSONArray medQtyArr = save.getJSONArray("medQtys");
   if (medQtyArr != null) {
-    for (int i = 0; i < min(medQtys.length, medQtyArr.size()); i++) {
-      medQtys[i] = medQtyArr.getInt(i);
+    for (int i = 0; i < min(medicineQuantities.length, medQtyArr.size()); i++) {
+      medicineQuantities[i] = medQtyArr.getInt(i);
     }
   }
 
   JSONArray snackQtyArr = save.getJSONArray("snackQtys");
   if (snackQtyArr != null) {
-    for (int i = 0; i < min(snackQtys.length, snackQtyArr.size()); i++) {
-      snackQtys[i] = snackQtyArr.getInt(i);
+    for (int i = 0; i < min(snackQuantities.length, snackQtyArr.size()); i++) {
+      snackQuantities[i] = snackQtyArr.getInt(i);
     }
   }
 
   JSONArray meatQtyArr = save.getJSONArray("meatQtys");
   if (meatQtyArr != null) {
-    for (int i = 0; i < min(meatQtys.length, meatQtyArr.size()); i++) {
-      meatQtys[i] = meatQtyArr.getInt(i);
+    for (int i = 0; i < min(meatQuantities.length, meatQtyArr.size()); i++) {
+      meatQuantities[i] = meatQtyArr.getInt(i);
     }
   }
 
   // bank
-  bankTransactions.clear();
+  bankTransactionLog.clear();
   JSONArray bankArr = save.getJSONArray("bankTransactions");
   if (bankArr != null) {
     for (int i = 0; i < bankArr.size(); i++) {
-      bankTransactions.add(bankArr.getString(i));
+      bankTransactionLog.add(bankArr.getString(i));
     }
   }
 
@@ -722,53 +724,53 @@ void loadGame() {
   walkersHiredCount = save.getInt("walkersHiredCount", walkersHiredCount);
   currentPlaySessionMoneyEarned = save.getFloat("currentPlaySessionMoneyEarned", currentPlaySessionMoneyEarned);
 
-  besthopscore = save.getInt("besthopscore", besthopscore);
-  bestsnatchscore = save.getInt("bestsnatchscore", bestsnatchscore);
-  bestfetchscore = save.getInt("bestfetchscore", bestfetchscore);
+  swampHopBestScore = save.getInt("besthopscore", swampHopBestScore);
+  snatchBestScore = save.getInt("bestsnatchscore", snatchBestScore);
+  fetchBestScore = save.getInt("bestfetchscore", fetchBestScore);
 
   JSONArray achievementtiersArr = save.getJSONArray("achievementtiers");
   if (achievementtiersArr != null) {
-    for (int i = 0; i < min(achievementtiers.length, achievementtiersArr.size()); i++) {
-      achievementtiers[i] = achievementtiersArr.getInt(i);
+    for (int i = 0; i < min(achievementTiers.length, achievementtiersArr.size()); i++) {
+      achievementTiers[i] = achievementtiersArr.getInt(i);
     }
   }
 
   // reset temporary UI/runtime stuff so resume is clean
-  showinstructions = false;
-  showmusicsettings = false;
-  inventoryvisible = false;
-  showcantsell = false;
-  showplaypopup = false;
-  showplayarrow = false;
-  showearnpopup = false;
-  earnclicked = false;
-  helpclicked = false;
-  showfirsthelppopup = false;
-  servicesclicked = false;
-  vetclicked = false;
-  showtreatmentpopup = false;
-  lowQualityVetFailedPopup = false;
-  storeclicked = false;
-  buymedicine = false;
-  buysnacks = false;
-  buymeat = false;
-  bankclicked = false;
-  showbankpopup = false;
-  showrestpopup = false;
-  restclicked = false;
-  achievementsclicked = false;
-  showstoreclosedpopup = false;
-  nextdayclicked = false;
-  dayedited = false;
-  changeday = false;
-  playclicked = false;
-  fadingout = false;
-  onchoicescreen = false;
-  enterswamphop = false;
-  entersnacksnatch = false;
-  enterfetchfrenzy = false;
-  exit = false;
-  selectedSlot = -1;
+  isShowingInstructions = false;
+  isShowingMusicSettings = false;
+  isInventoryVisible = false;
+  isShowingCantSell = false;
+  isShowingPlayPopup = false;
+  isShowingPlayArrow = false;
+  isShowingEarnPopup = false;
+  isEarnPanelOpen = false;
+  isHelpTaskPending = false;
+  isShowingFirstHelpPopup = false;
+  isServicesOpen = false;
+  isVetOpen = false;
+  isShowingTreatmentPopup = false;
+  isShowingVetFailedPopup = false;
+  isStoreOpen = false;
+  isViewingMedicineTab = false;
+  isViewingSnacksTab = false;
+  isViewingMeatTab = false;
+  isBankOpen = false;
+  isShowingBankPopup = false;
+  isShowingRestPopup = false;
+  isRestOpen = false;
+  isAchievementsOpen = false;
+  isShowingStoreClosedPopup = false;
+  isNextDayPopupOpen = false;
+  isDayEdited = false;
+  isDayChangeConfirmed = false;
+  isPlayClicked = false;
+  isFadingOut = false;
+  isOnChoiceScreen = false;
+  isEnterSwampHop = false;
+  isEnterSnackSnatch = false;
+  isEnterFetchFrenzy = false;
+  isExitingMinigame = false;
+  selectedInventorySlot = -1;
 
   refreshAchievementData();
 }

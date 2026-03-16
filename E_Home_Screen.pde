@@ -15,9 +15,9 @@ PFont times15;
 // Home Screen Flags
 // =========================
 
-boolean homescreenvisible   = true;
-boolean showinstructions   = false;
-boolean showmusicsettings  = false;
+boolean isHomeScreenVisible   = true;
+boolean isShowingInstructions   = false;
+boolean isShowingMusicSettings  = false;
 
 
 // =========================
@@ -25,7 +25,7 @@ boolean showmusicsettings  = false;
 // Handles fade-in, overlays, and UI visibility
 // =========================
 void homescreen() {
-  
+
   imageMode(CORNER);
   rectMode(CORNER);
 
@@ -41,7 +41,7 @@ void homescreen() {
   // -------------------------
   // Instructions Overlay
   // -------------------------
-  if (showinstructions == true) {
+  if (isShowingInstructions == true) {
     image(instructions, 0, -50, 1100, 700);
     instructionstext();
   }
@@ -49,7 +49,7 @@ void homescreen() {
   // -------------------------
   // Music Settings Overlay
   // -------------------------
-  if (showmusicsettings == true) {
+  if (isShowingMusicSettings == true) {
 
     image(musicscreen, width * 0.08, height * 0.05, 900, 650);
 
@@ -90,9 +90,9 @@ void instructionstext() {
   text("• spending and earning money", 200, 390);
 
   text("Press + to move forward one day in time", 200, 430);
-  text("Your choices affect your alligator’s health, mood, and future expenses.", 200, 470);
+  text("Your choices affect your alligator's health, mood, and future expenses.", 200, 470);
   text("Watch your money and stats carefully.", 200, 495);
   text("Cheap choices may save money now but can cause problems later.", 200, 520);
   text("Features and responsibilities will be taught as you play.", 200, 545);
-  text("There is no single “right” way to play. Learn from the consequences of your decisions.", 200, 570);
+  text("There is no single \u201cright\u201d way to play. Learn from the consequences of your decisions.", 200, 570);
 }

@@ -31,24 +31,24 @@ void setup() {
 
   // Set window size and use P2D renderer
   size(1100, 700, P2D);
-  
+
   // Enable smoother edges
   smooth(4);
-  
+
   // Lock pixel density for consistent UI scaling
   pixelDensity(1);
-  
+
 
   // Runs all essential code required in the setup function
   fileWork();
-  
+
 
   // Initialize music volume, playback, and settings
   musicAdjusters();
-  
+
   // Set up pet naming input screen
   nameinput();
-  
+
   // Allows for layering of ControlP5 elements
   cp5.setAutoDraw(false);
 
@@ -64,23 +64,23 @@ void setup() {
 // =========================
 void draw() {
   // Home screen (main menu)
-  if (homescreenvisible == true) {
+  if (isHomeScreenVisible == true) {
     homescreen();
     cp5.draw();
-  } 
-  
+  }
+
   // Intro cutscene
-  else if (cutscenestart == true) {
+  else if (isCutsceneActive == true) {
     cutscene();
   }
-  
+
   // Pet naming screen
-  if (inNaming == true) {
+  if (isNamingActive == true) {
     namingalligatorsegment();
   }
-  
+
   // Main gameplay screen
-  if (startrealgame == true) {
+  if (isGameStarted == true) {
     mainscreen();
   }
 }

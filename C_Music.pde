@@ -3,8 +3,8 @@
 // Keeps slider + toggle in sync without triggering recursive events
 // =========================
 
-float lastVolume = 50;             // Remembers the last non-zero slider value (used when turning music back on)
-boolean internalChange = false;    // Flag for suppressing event loops (declared here; use when needed)
+float lastNonZeroVolume = 50;             // Remembers the last non-zero slider value (used when turning music back on)
+boolean isSuppressingVolumeCallback = false;    // Flag for suppressing event loops (declared here; use when needed)
 ControlP5 cp5;                     // Main ControlP5 instance
 
 
@@ -20,10 +20,10 @@ void volume(float v) {
   // If volume is basically 0, force toggle OFF (but without triggering its callback)
   if (v <= 0.001) {
     setToggleValueNoEvent(0);
-  } 
+  }
   // Otherwise, remember volume and force toggle ON
   else {
-    lastVolume = v;
+    lastNonZeroVolume = v;
     setToggleValueNoEvent(1);
   }
 }

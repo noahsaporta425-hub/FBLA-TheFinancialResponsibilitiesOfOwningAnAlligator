@@ -15,7 +15,7 @@ class Pet {
   PImage neutralalligator;     // Default sprite — no critical stat triggered
   PImage hungryalligator;      // Shown when hunger > 80
   PImage energeticalligator;   // Shown when energy > 80 (too hyper)
-  PImage sickalligator;        // Shown when sick == true
+  PImage sickalligator;        // Shown when isPetSick == true
 
   // --- Core Stats (all 0–100 unless noted) ---
   // health:    Overall well-being. Drops from junk food, unprescribed medicine, or illness.
@@ -58,7 +58,7 @@ void drawMoodSprite(PImage img) {
   // Central stat-update method called whenever the player uses an inventory item.
   // Logic flow:
   //   1. Steak (premium meat from adoption center) — biggest hunger/health boost
-  //   2. Medicines — check presc[] first; prescribed = heals, unprescribed = harms
+  //   2. Medicines — check medicineIsPrescribed[] first; prescribed = heals, unprescribed = harms
   //   3. Snacks / Meat — each has unique stat tradeoffs (junk hurts health, fish/meat helps)
   // All stats are clamped at the end to prevent overflow or underflow.
   // =========================
@@ -74,19 +74,19 @@ void drawMoodSprite(PImage img) {
   } else {
 
     // --- Medicine ---
-    // Each medicine maps to an index in medicinestock[].
-    // If the vet prescribed it (activePrescriptionIndex == i), it heals the pet.
+    // Each medicine maps to an index in medicineItemList[].
+    // If the vet prescribed it (prescribedMedicineIndex == i), it heals the pet.
     // If given without a prescription, it harms health and raises sickness risk —
     // teaching the player that self-medicating without a vet is dangerous.
     boolean foundMedicine = false;
-    for (int i = 0; i < medicinestock.length; i++) {
-      if (item.equals(medicinestock[i])) {
-        if (activePrescriptionIndex == i) {
+    for (int i = 0; i < medicineItemList.length; i++) {
+      if (item.equals(medicineItemList[i])) {
+        if (prescribedMedicineIndex == i) {
           // Prescribed: improves all stats
           health += 20;
           energy += 10;
           happiness += 10;
-          if (i == 0) firstmedicinegiven = true;  // tracks first medicine use for tutorial
+          if (i == 0) hasGivenFirstMedicine = true;  // tracks first medicine use for tutorial
         } else {
           // Unprescribed: penalizes health and raises future illness risk
           health -= 35;
@@ -255,7 +255,7 @@ void drawMoodSprite(PImage img) {
   sickrisk = clampStat(sickrisk, 20, 100);
 
   // Close the inventory panel after the player uses an item
-  inventoryvisible = false;
+  isInventoryVisible = false;
 }
 }
 
@@ -268,6 +268,6 @@ float clampStat(float val, float lo, float hi) {
 // Accessible globally from all files
 // =========================
 void applyAlligatorTint() {
-  if (selectedAlligator == 1) tint(0, 255, 0, 255);
-  else if (selectedAlligator == 2) tint(70, 130, 255, 255);
+  if (selectedAlligatorSkin == 1) tint(0, 255, 0, 255);
+  else if (selectedAlligatorSkin == 2) tint(70, 130, 255, 255);
 }
