@@ -1,18 +1,28 @@
 // =========================
 // Pet Class
-// Represents the player's virtual pet
+// Represents the player's virtual alligator pet.
+// Stores all per-pet state: identity, mood sprites, and the five core stats.
+// The eat() method is the primary way stats change from player-initiated feeding.
 // =========================
 
 class Pet {
 
-  // Pet identity
-  String petName;
-  PImage neutralalligator;
-  PImage hungryalligator;
-  PImage energeticalligator;
-  PImage sickalligator;
+  // --- Identity ---
+  String petName;              // Display name chosen by the player on the naming screen
 
-  //Pet statistics
+  // --- Mood sprites (loaded in D_General_Functions.pde :: fileWork()) ---
+  // Displayed based on which stat threshold is triggered each frame
+  PImage neutralalligator;     // Default sprite — no critical stat triggered
+  PImage hungryalligator;      // Shown when hunger > 80
+  PImage energeticalligator;   // Shown when energy > 80 (too hyper)
+  PImage sickalligator;        // Shown when sick == true
+
+  // --- Core Stats (all 0–100 unless noted) ---
+  // health:    Overall well-being. Drops from junk food, unprescribed medicine, or illness.
+  // happiness: Mood level. Rises from treats and play; falls from illness/bad food.
+  // energy:    Activity level. Best in mid-range (40–70). Too high triggers energetic mood.
+  // sickrisk:  Probability of falling ill next day. Clamped min 20 (baseline risk always exists).
+  // hunger:    How full the pet is. Rises each day; high hunger triggers the hungry mood.
   float health = 100;
   float happiness = 100;
   float energy = 50;
@@ -31,17 +41,9 @@ void neutralmood() {
   noTint();
 }
 
-void hungrymood() {
-  drawMoodSprite(hungryalligator);
-}
-
-void energeticmood() {
-  drawMoodSprite(energeticalligator);
-}
-
-void sickmood() {
-  drawMoodSprite(sickalligator);
-}
+void hungrymood()   { drawMoodSprite(hungryalligator); }
+void energeticmood() { drawMoodSprite(energeticalligator); }
+void sickmood()     { drawMoodSprite(sickalligator); }
 
 void drawMoodSprite(PImage img) {
   applyAlligatorTint();
@@ -51,23 +53,42 @@ void drawMoodSprite(PImage img) {
   noTint();
 }
 
+  // =========================
+  // eat(String item)
+  // Central stat-update method called whenever the player uses an inventory item.
+  // Logic flow:
+  //   1. Steak (premium meat from adoption center) — biggest hunger/health boost
+  //   2. Medicines — check presc[] first; prescribed = heals, unprescribed = harms
+  //   3. Snacks / Meat — each has unique stat tradeoffs (junk hurts health, fish/meat helps)
+  // All stats are clamped at the end to prevent overflow or underflow.
+  // =========================
   void eat(String item) {
+
+  // --- Premium Food ---
+  // Steak is the player's starting item; best all-around nutrition.
   if (item.equals("Steak")) {
       hunger-=70;
       energy+=40;
       health+=20;
       happiness+=20;
   } else {
-    // Check medicine by index
+
+    // --- Medicine ---
+    // Each medicine maps to an index in medicinestock[].
+    // If the vet prescribed it (activePrescriptionIndex == i), it heals the pet.
+    // If given without a prescription, it harms health and raises sickness risk —
+    // teaching the player that self-medicating without a vet is dangerous.
     boolean foundMedicine = false;
     for (int i = 0; i < medicinestock.length; i++) {
       if (item.equals(medicinestock[i])) {
-        if (presc[i]) {
+        if (activePrescriptionIndex == i) {
+          // Prescribed: improves all stats
           health += 20;
           energy += 10;
           happiness += 10;
-          if (i == 0) firstmedicinegiven = true;
+          if (i == 0) firstmedicinegiven = true;  // tracks first medicine use for tutorial
         } else {
+          // Unprescribed: penalizes health and raises future illness risk
           health -= 35;
           energy -= 10;
           happiness -= 10;
@@ -79,6 +100,9 @@ void drawMoodSprite(PImage img) {
     }
 
     if (!foundMedicine) {
+    // --- Snacks (junk food) ---
+    // Generally reduce hunger and boost happiness/energy in the short term,
+    // but damage health — reflecting real-world junk food consequences.
     if (item.equals("Nachos")) {
       hunger -= 40;
       health -= 15;
@@ -149,6 +173,9 @@ void drawMoodSprite(PImage img) {
       happiness += 5;
       energy += 20;
 
+    // --- Meat / Fish (premium foods) ---
+    // Natural diet for alligators; improve health and hunger the most.
+    // Better nutritional value than snacks — player learns to invest in quality food.
     } else if (item.equals("Bluegill")) {
       hunger -= 55;
       health += 15;
@@ -218,23 +245,22 @@ void drawMoodSprite(PImage img) {
     } // end !foundMedicine
   } // end else (not Steak)
 
-  if (hunger < 0) hunger = 0;
-  if (hunger > 100) hunger = 100;
+  // --- Stat Clamping ---
+  // After any food effect, constrain every stat to its valid range.
+  // sickrisk minimum is 20 (not 0) because a baseline illness risk always exists.
+  hunger   = clampStat(hunger,   0,  100);
+  health   = clampStat(health,   0,  100);
+  energy   = clampStat(energy,   0,  100);
+  happiness= clampStat(happiness,0,  100);
+  sickrisk = clampStat(sickrisk, 20, 100);
 
-  if (health < 0) health = 0;
-  if (health > 100) health = 100;
-
-  if (energy < 0) energy = 0;
-  if (energy > 100) energy = 100;
-
-  if (happiness < 0) happiness = 0;
-  if (happiness > 100) happiness = 100;
-
-  if (sickrisk < 20) sickrisk = 20;
-  if (sickrisk > 100) sickrisk = 100;
-
+  // Close the inventory panel after the player uses an item
   inventoryvisible = false;
 }
+}
+
+float clampStat(float val, float lo, float hi) {
+  return constrain(val, lo, hi);
 }
 
 // =========================

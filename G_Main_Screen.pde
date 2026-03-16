@@ -1,77 +1,122 @@
 // =========================
-// Main Screen Assets / Globals
+// G_Main_Screen.pde
+// The central gameplay file. Renders the main game screen and orchestrates all
+// subsystems: inventory, store, services (vet/walker/cleaner), bank, rest,
+// achievements, earn panel, and the next-day transition.
+//
+// Screen flow within this file:
+//   mainscreen() → individual popup/panel functions called based on boolean flags
 // =========================
 
-PImage mainscreen;
-PImage mainscreenbuttons;
-PImage achievementsbutton;
-PImage settingsbutton;
-PImage earnbutton;
-PImage popupbackground;
-PImage steak;
-PImage redarrow;
 
-PFont arcade;
-PFont times30;
+// =========================
+// Main Screen — UI Image Assets
+// =========================
+PImage mainscreen;         // Full-screen background for the main gameplay view
+PImage mainscreenbuttons;  // Button panel at the bottom (inventory, play, store, etc.)
+PImage achievementsbutton; // Achievements button in the upper-right
+PImage settingsbutton;     // Settings (quit) button
+PImage earnbutton;         // "Earn" button opening job/task panel
+PImage popupbackground;    // Reused background panel for tutorial popups
+PImage steak;              // Steak icon shown in the food thought bubble
+PImage redarrow;           // Directional guide arrow used in tutorial sequences
 
-boolean onmainscreen = false;
-boolean welcomepopupvisible = true;
-boolean inventoryvisible = false;
-boolean firstinventoryclick = false;
-boolean fedsteak = false;
-boolean showcantsell = false;
-boolean showplaypopup = false;
-boolean playpopupShown = false;
-boolean showplayarrow = false;
-boolean playclicked = false;
-boolean fadingout = false;
-boolean firstenergystabalized = false;
-boolean showearnpopup = false;
-boolean earnpopupshown = false;
-boolean earnclicked = false;
-boolean firstearnclick = false;
-boolean firsthelpclick = false;
-boolean firsttasktabclick = false;
-boolean firstservicesclick = false;
-boolean firstbuymedicine = false;
-boolean firstmedicinegiven = false;
-boolean firstbankclick = false;
-boolean bankclicked = false;
-boolean neverboughthighqualitycare=true;
-boolean firstrestclick = false;
-boolean firstalligatorrest = false;
-boolean firstachievementsclick=false;
-boolean achievementsclicked = false;
-boolean firstachievementsclosed = false;
-boolean showstoreclosedpopup=false;
-boolean nextdayclicked = false;
-boolean firstnextdayclick = false;
-boolean showquit = false;
+PFont arcade;   // Pixel/arcade font used for HUD text (score, money, day)
+PFont times30;  // Times New Roman 30pt for popup body text
 
-int selectedSlot = -1;
-int playpopuptimer = 0;
-int earnpopuptimer = 0;
 
-String item;
+// =========================
+// Main Screen — Screen State Flags
+// These booleans control which panel or popup is currently visible.
+// Only one major panel should be visible at a time to avoid overlap.
+// =========================
+boolean onmainscreen = false;           // True while the main gameplay screen is active
 
+// Tutorial progression flags — each goes true the first time the player performs that action.
+// Used to unlock the next tutorial step and suppress repeat popups.
+boolean welcomepopupvisible = true;    // Welcome popup on Day 1
+boolean inventoryvisible = false;      // Inventory panel open
+boolean firstinventoryclick = false;   // Player opened inventory at least once
+boolean fedsteak = false;              // Player fed the pet steak (clears food thought bubble)
+boolean showcantsell = false;          // Show "can't sell here" error message
+boolean showplaypopup = false;         // "Your pet wants to play!" popup
+boolean playpopupShown = false;        // Prevents the play popup from showing again
+boolean showplayarrow = false;         // Show guide arrow pointing at the Play button
+boolean playclicked = false;           // Player clicked Play, triggering fade to minigames
+boolean fadingout = false;             // True while fading out to minigame screen
+boolean firstenergystabalized = false; // True once energy dropped from hyper-state the first time
+boolean showearnpopup = false;         // "Here's how to earn money" popup
+boolean earnpopupshown = false;        // Prevents the earn popup from showing again
+boolean earnclicked = false;           // Earn panel is currently open
+boolean firstearnclick = false;        // Player opened earn panel at least once
+boolean firsthelpclick = false;        // Player used the Help Around Town option
+boolean firsttasktabclick = false;     // Player clicked the Tasks tab in the Earn panel
+boolean firstservicesclick = false;    // Player opened the Services screen
+boolean firstbuymedicine = false;      // Player purchased medicine at least once
+boolean firstmedicinegiven = false;    // Player gave medicine to the pet at least once
+boolean firstbankclick = false;        // Player viewed the bank at least once
+boolean bankclicked = false;           // Bank panel is currently open
+boolean neverboughthighqualitycare=true; // True until player buys high-quality vet care
+boolean firstrestclick = false;        // Player used the Rest button at least once
+boolean firstalligatorrest = false;    // Alligator successfully rested at least once
+boolean firstachievementsclick=false;  // Player opened achievements at least once
+boolean achievementsclicked = false;   // Achievements panel is currently open
+boolean firstachievementsclosed = false; // Player closed achievements (unlocks Day 1 end tutorial)
+boolean showstoreclosedpopup=false;    // "Store is closed" message when trying to shop at night
+boolean nextdayclicked = false;        // Player pressed the Next Day button (+)
+boolean firstnextdayclick = false;     // Player advanced the day at least once
+boolean showquit = false;              // Quit confirmation popup is visible
+boolean gameOver = false;              // True when the alligator's health reaches 0
+
+
+// =========================
+// Main Screen — UI Runtime State
+// =========================
+int selectedSlot = -1;    // Currently selected inventory slot index (-1 = none selected)
+int playpopuptimer = 0;   // Counts frames before showing the play popup
+int earnpopuptimer = 0;   // Counts frames before showing the earn popup
+
+String item;              // Holds the name of the item currently selected from inventory
+
+
+// =========================
+// Stat Bars (HUD)
+// Pre-instantiated StatBar objects used in the minigame overlay.
+// The main screen stat bars are created locally inside statbars() each frame.
+// =========================
 StatBar healthbar       = new StatBar(99,   66.15f,  180, 14);
 StatBar happinessbar    = new StatBar(129.25f, 101.5f, 180, 14);
 StatBar energybar       = new StatBar(99,   136.15f, 180, 14);
 StatBar sicknessriskbar = new StatBar(189.2f,170.555f,180, 14);
 StatBar hungerbar       = new StatBar(99,   206.15f, 180, 14);
 
-// Fade for the main screen
-int fadeInOpacity2 = 255;
+// Main screen entry/exit fades
+Fade mainFade  = new Fade(255);  // starts black; fades to clear on entry, back to black when going to minigames
+Fade storeFade = new Fade(255);  // starts black on store open; fades to clear on entry, black on exit
 
-// Game progression + economy
-int   day   = 1;
-float money = 0;
+// True while the store is fading to black before closing (player clicked EXIT)
+boolean storefadingout = false;
 
-//Thinking of food animation
+// =========================
+// Core Economy & Progression Variables
+// =========================
+int   day   = 1;    // Current in-game day; incremented when the player presses Next Day
+float money = 0;    // Player's current balance in dollars; updated by all earn/spend functions
+
+
+// =========================
+// Food Thought Bubble Animation
+// Three-frame cloud animation cycling above the alligator on Day 1 until fed
+// =========================
 PImage cloudframe1, cloudframe2, cloudframe3;
-int cloudframecounter=0;
+int cloudframecounter = 0;  // Cycles 0–29; switches frame every 10 counts
 
-// Main pet object
+
+// =========================
+// Global Pet Reference
+// Instantiated in D_General_Functions.pde :: fileWork()
+// Accessible from all .pde tabs
+// =========================
 Pet alligator;
 
 
@@ -84,6 +129,11 @@ void mainscreen() {
   // Once we reach the main screen, naming flow is no longer active
   inNaming = false;
   if (!onchoicescreen) onmainscreen = true;
+
+  // Trigger game over the moment health reaches zero
+  if (alligator.health <= 0 && !gameOver) {
+    gameOver = true;
+  }
   // Background + character
   image(mainscreen, 0, 0, width, height);
   if (sick) {
@@ -256,25 +306,50 @@ void mainscreen() {
     quitpopup();
   }
     
-  // Fade-in overlay (starts black, fades away)
-  fill(0, fadeInOpacity2);
+  // Fade overlay: fades in on entry; fades to black when Play is clicked
+  noStroke();
 
-  if (fadeInOpacity2 > 0 && fadingout==false) {
-    fadeInOpacity2--;
-  } else if (playclicked==true) {
-    fadingout=true;
-    fadeInOpacity2+=2;
-    if (fadeInOpacity2>=255 && !exit) {
-      play();
-      onmainscreen=false;
-    } else if (exit) {
-      fadeInOpacity2=0;
+  if (playclicked) {
+    // Fade to black, then call play() to switch to the minigame screen
+    fadingout = true;
+    if (mainFade.isBlack()) {
+      // Fade complete — render play screen; don't draw mainFade on top of it
+      if (!exit) play();
+      onmainscreen = false;
+    } else {
+      // Still fading to black — step and draw the overlay
+      mainFade.stepOut(2);
+      mainFade.draw();
     }
-  } else {
-    fadeInOpacity2 = 0;
+  } else if (storemainscreenfading) {
+    // Phase 1: fade main screen to black
+    if (mainFade.isBlack()) {
+      storeclicked = true;
+      storemainscreenfading = false;
+      storeEntryFadeIn = true;
+      storeFade.setClear();   // bypass storeFade; mainFade handles the reveal
+      storefadingout = false;
+    } else {
+      mainFade.stepOut(2);
+    }
+    mainFade.draw();  // keep drawing even when black to prevent one-frame flash
+  } else if (storeEntryFadeIn) {
+    // Phase 2: fade from black to reveal the store
+    if (mainFade.stepIn(2)) {
+      storeEntryFadeIn = false;
+    }
+    mainFade.draw();
+  } else if (!storeclicked) {
+    // Normal main screen: fade from black to clear on entry
+    mainFade.stepIn(1);
+    mainFade.draw();
   }
+  // storeclicked (normal): store handles its own exit fade via storeFade; don't draw mainFade
 
-  rect(0, 0, width, height);
+  // Game over overlay — drawn last so it sits on top of everything
+  if (gameOver) {
+    gameOverScreen();
+  }
 }
 
 
@@ -435,6 +510,14 @@ class StatBar {
   }
 }
 
+// =========================
+// drawWrappedTextInBox
+// Word-wraps a string to fit inside a bounding rectangle.
+// Splits on spaces, measures each candidate line with textWidth(),
+// and breaks to a new line when the next word would overflow rightX.
+// Stops drawing entirely if the next line would exceed bottomY.
+// extraSpacing adds pixel padding between lines beyond the font's natural line height.
+// =========================
 void drawWrappedTextInBox(String sentence,
                           float leftX, float topY,
                           float rightX, float bottomY,
@@ -473,14 +556,25 @@ void drawWrappedTextInBox(String sentence,
   }
 }
 
+// =========================
+// Inventory
+// 12-slot string array. "EMPTY" means the slot is unused.
+// The player starts with one Steak (given at the adoption center).
+// Items are compacted left by removeInventorySlot() when used or sold.
+// =========================
 String[] inventoryslots = {
   "Steak", "EMPTY", "EMPTY", "EMPTY",
   "EMPTY", "EMPTY", "EMPTY", "EMPTY",
   "EMPTY", "EMPTY", "EMPTY", "EMPTY"
 };
 
-int slotsfilled = 0;
+int slotsfilled = 0;  // Tracks how many slots are currently occupied (used for display logic)
 
+// =========================
+// inventoryHasRoomFor
+// Returns true if the inventory has at least one slot that is either EMPTY
+// or already holds the same item (stackable). Used before adding store purchases.
+// =========================
 boolean inventoryHasRoomFor(String item) {
   for (int i = 0; i < inventoryslots.length; i++) {
     if (inventoryslots[i].equals("EMPTY") || inventoryslots[i].equals(item)) {
@@ -693,12 +787,13 @@ int[] snackQtys = {
         drawMeatDetail(selMeatIdx);
     }
   }
+  }
 
   if (showcantsell == true) cantsell();
   stroke(0);
 }
 
- void cantsell() {
+void cantsell() {
     imageMode(CENTER);
     image(popupbackground,width/2,height*0.42f,popupbackground.width*0.6f,popupbackground.height*0.6f);
     fill(0);
@@ -775,6 +870,7 @@ PImage lock;
 String job = "unemployed";
 
 float salary = 0;
+float totalJobEarnings = 0;
 float taskmoney = 5;
 float ptupgcost = 3;
 float salupgcost = 3;
@@ -856,7 +952,7 @@ boolean earnTasksOpen = false;
     textSize(15);
     text("Current Salary: $" + nf(salary, 0, 2) + "/day", 129, 187);
     text("Next Paycheck: Day " + (day+1), 129, 209);
-    text("Total Job Earnings: Later", 129, 231);
+    text("Total Job Earnings: $" + nf(totalJobEarnings, 0, 2), 129, 231);
     if (day<10) {
     text("Next Job: Barista on Day 10", 129, 253);
     } else if (day<25){
@@ -877,7 +973,7 @@ boolean earnTasksOpen = false;
     textSize(15);
     text("Current Salary: $" + nf(salary, 0, 2) + "/day", 129, 187);
     text("Next Paycheck: Day " + (day+1), 129, 209);
-    text("Total Job Earnings: Later", 129, 231);
+    text("Total Job Earnings: $" + nf(totalJobEarnings, 0, 2), 129, 231);
     if (day<25) {
     text("Next Job: Cafe Manager on Day 25", 129, 253);
     } else {
@@ -896,7 +992,7 @@ boolean earnTasksOpen = false;
     textSize(15);
     text("Current Salary: $" + nf(salary, 0, 2) + "/day", 129, 187);
     text("Next Paycheck: Day " + (day+1), 129, 209);
-    text("Total Job Earnings: Later", 129, 231);
+    text("Total Job Earnings: $" + nf(totalJobEarnings, 0, 2), 129, 231);
     text("Next Job: N/A", 129, 253);
     textAlign(CENTER);
     text("Make coffee", 580, 223);
@@ -1169,7 +1265,7 @@ void earnTasksUpgrades() {
   fill(255);
   text("$" + nf(taskupgcost,0,2), 825, 420);
 
-  if (jobpopupshown && !helpclicked && earnTasksOpen) {
+  if (jobpopupshown && !helpclicked && earnTasksOpen && !firsthelpclick) {
     redarrow(261, 429, "right");
   }
 
@@ -1331,6 +1427,8 @@ void treatmentpopup() {
 }
 
 boolean storeclicked = false;
+boolean storemainscreenfading = false;  // True while main screen fades to black before opening the store
+boolean storeEntryFadeIn = false;       // True while mainFade fades from black to reveal the store
 boolean buymedicine = false;
 
 String[] medicinestock = {
@@ -1945,8 +2043,23 @@ void store(){
     }
   }
 
-  if (firstbuymedicine && inventoryslots[0].equals("Enrofloxacin") && !firstexitclick) redarrow(919, 657, "right");
+  if (firstbuymedicine && !firstexitclick) redarrow(919, 657, "right");
   rectMode(CORNER);
+
+  // Store fade overlay: fade from black to clear on entry; fade back to black on exit
+  if (storefadingout) {
+    // Exit: step toward black; once fully black, close the store
+    if (storeFade.stepOut(8)) {
+      storeclicked = false;
+      storefadingout = false;
+      onmainscreen = true;
+      storeFade.setClear();  // reset for next store visit
+    }
+  } else {
+    // Entry: step from black to clear so the store appears with a fade
+    storeFade.stepIn(8);
+  }
+  storeFade.draw();
 }
 
 boolean bankpopupshown=false;
@@ -2837,6 +2950,7 @@ void daychanges() {
   if (!job.equals("unemployed")) {
     salaryinfo = " You have earned $" + nf(salary, 0, 2) + " (salary).";
     money += salary;
+    totalJobEarnings += salary;
     bankTransactionsLoggedCount++;
     bankTransactions.add("Transaction: Salary " + "(+$" + nf(salary, 0, 2) + ")");
   } else {
@@ -2861,4 +2975,91 @@ void quitpopup() {
 void quit() {
   saveGame();
   exit();
+}
+
+
+// =========================
+// Game Over Screen
+// Shown when the alligator's health drops to 0.
+// Renders a full-screen dark overlay with a death message and a Quit button.
+// =========================
+void gameOverScreen() {
+  float cx    = width  / 2.0;
+  float panelW = 700;
+  float panelH = 430;
+  float panelTop = height / 2.0 - panelH / 2.0;  // y of the top edge of the panel
+
+  // Dim overlay
+  noStroke();
+  fill(0, 200);
+  rectMode(CORNER);
+  rect(0, 0, width, height);
+
+  // Panel background
+  fill(30, 15, 10);
+  stroke(180, 50, 50);
+  strokeWeight(4);
+  rectMode(CENTER);
+  rect(cx, height / 2.0, panelW, panelH, 18);
+  noStroke();
+
+  textFont(arcade);
+  textAlign(CENTER, CENTER);
+  String petName = (alligator != null) ? alligator.petName : "Your alligator";
+
+  // --- "GAME OVER" ---
+  float y = panelTop + 60;
+  textSize(52);
+  fill(200, 50, 50);
+  text("GAME OVER", cx, y);
+
+  // --- "[name] has passed away." ---
+  y += 70;
+  textSize(20);
+  fill(230, 210, 200);
+  text(petName + " has passed away.", cx, y);
+
+  // --- Explanation paragraph (left-aligned within centered bounds) ---
+  y += 38;
+  textSize(15);
+  fill(210, 190, 180);
+  float innerLeft  = cx - 290;
+  float innerRight = cx + 290;
+  drawWrappedTextInBox(
+    "Without enough food, medicine, or care, " + petName +
+    "'s health slowly fell to zero. Alligators need consistent " +
+    "nutrition and regular checkups to stay strong. " + petName +
+    " lived for " + (day - 1) + " day" + (day - 1 == 1 ? "" : "s") +
+    " under your care.",
+    innerLeft, y, innerRight, y + 115, 5
+  );
+
+  // --- Horizontal rule ---
+  y += 120;
+  stroke(180, 50, 50, 120);
+  strokeWeight(1);
+  line(cx - 300, y, cx + 300, y);
+  noStroke();
+
+  // --- Tip ---
+  y += 28;
+  textFont(arcade);
+  textSize(13);
+  fill(160, 140, 130);
+  textAlign(CENTER, CENTER);
+  text("Tip: Visit the vet and feed " + petName + " nutritious meat to keep his health up.", cx, y);
+
+  // --- Quit button ---
+  y += 52;
+  fill(180, 40, 40);
+  stroke(220, 80, 80);
+  strokeWeight(2);
+  rectMode(CENTER);
+  rect(cx, y, 200, 50, 8);
+  noStroke();
+  textSize(26);
+  fill(255);
+  textAlign(CENTER, CENTER);
+  text("QUIT", cx, y);
+  rectMode(CORNER);
 }

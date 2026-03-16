@@ -1,23 +1,97 @@
-boolean swampBox;
+// =========================
+// B_Interaction.pde
+// All user input: mousePressed, keyPressed, keyReleased, mouseDragged,
+// mouseWheel, mouseReleased, plus shared input utility helpers.
+//
+// Convention: all hit-detection uses raw coordinate comparisons.
+// Popup guard booleans prevent multiple screens from activating simultaneously.
+// =========================
+
+boolean swampBox; // true when the mouse is inside the Swamp Hop minigame panel
+
+// Temporary item category flags used during inventory/store sell logic
 boolean isMedicine = false;
 boolean isMeat = false;
+
+
+// =========================
+// Utility: findItemIndex
+// Linear search through an item name array.
+// Returns the matching index, or -1 if the item is not in the array.
+// Used to categorize inventory items into medicine / snack / meat buckets.
+// =========================
+int findItemIndex(String item, String[] arr) {
+  for (int i = 0; i < arr.length; i++) {
+    if (arr[i].equals(item)) return i;
+  }
+  return -1;
+}
+
+
+// =========================
+// Utility: removeInventorySlot
+// Marks a slot as EMPTY and left-shifts all remaining items to compact the list.
+// Ensures the selected slot index stays within valid bounds after removal.
+// =========================
+void removeInventorySlot(int slotIndex) {
+  inventoryslots[slotIndex] = "EMPTY";
+  for (int i = slotIndex; i < inventoryslots.length - 1; i++) {
+    inventoryslots[i] = inventoryslots[i + 1];
+  }
+  inventoryslots[inventoryslots.length - 1] = "EMPTY";
+  if (selectedSlot >= inventoryslots.length) selectedSlot = inventoryslots.length - 1;
+}
+
+
+// =========================
+// Utility: logSellTransaction
+// Canonical way to add sell income — updates money, lifetime earnings,
+// transaction count, and the bank log in one call.
+// =========================
+void logSellTransaction(String itemName, float sellPrice) {
+  money += sellPrice;
+  totalMoneyEarned += sellPrice;
+  bankTransactionsLoggedCount++;
+  bankTransactions.add("Transaction: Sold " + itemName + " (+$" + nf(sellPrice, 0, 2) + ")");
+}
+
+
+// =========================
+// Utility: setMinigameEntry
+// Ensures exactly one minigame active flag is true at a time.
+// Centralizes the logic so callers never accidentally set conflicting flags.
+// =========================
+void setMinigameEntry(boolean swamp, boolean snatch, boolean fetch) {
+  enterswamphop    = swamp;
+  entersnacksnatch = snatch;
+  enterfetchfrenzy = fetch;
+  onchoicescreen   = false;
+}
+
 void mousePressed() {
+  // Capture current screen states at the moment of click to avoid mid-handler transitions
+  // causing incorrect branching (e.g., a click that changes onchoicescreen mid-frame)
   boolean wasOnChoiceScreen = onchoicescreen;
   boolean wasEnteringSwamp = enterswamphop;
   boolean wasEnteringSnack = entersnacksnatch;
   boolean wasEnteringFetch = enterfetchfrenzy;
 
-  println("---- CLICK ----");
-
+  // Pre-compute whether the click is inside the Swamp Hop panel area
   swampBox = (mouseX > 88 && mouseX < 373 && mouseY > 258 && mouseY < 658);
 
+  // =========================
+  // Home Screen: Button Clicks
+  // Handles Instructions, Play, and Music Settings buttons
+  // =========================
   if (homescreenvisible) {
+    // "Instructions" button (left button) — only when music settings is closed
     if (mouseX > width * 0.13f && mouseX < width * 0.37f &&
         mouseY > height * 0.67f && mouseY < height * 0.8f &&
         showmusicsettings == false) {
       showinstructions = true;
     }
 
+    // "Play" button (center) — only when neither overlay is open
     if (mouseX > width * 0.38f && mouseX < width * 0.61f &&
         mouseY > height * 0.67f && mouseY < height * 0.8f &&
         showmusicsettings == false && showinstructions == false) {
@@ -25,24 +99,32 @@ void mousePressed() {
       cutscenestart = true;
     }
 
+    // "Music Settings" button (right) — only when instructions overlay is closed
     if (mouseX > width * 0.615f && mouseX < width * 0.85f &&
         mouseY > height * 0.67f && mouseY < height * 0.8f &&
         showinstructions == false) {
       showmusicsettings = true;
     }
 
+    // Close button on the instructions overlay
     if (mouseX > width * 0.785f && mouseX < width * 0.84f &&
         mouseY > height * 0.11f && mouseY < height * 0.185f) {
       showinstructions = false;
     }
 
+    // Close button on the music settings overlay
     if (mouseX > width * 0.68f && mouseX < width * 0.73f &&
         mouseY > height * 0.41f && mouseY < height * 0.48f) {
       showmusicsettings = false;
     }
   }
 
+  // =========================
+  // Adoption Center: Pet Selection
+  // Clicking either the sign or the animal portrait chooses that pet type
+  // =========================
   if (insideadoptioncenter == true) {
+    // Dog sign (button label area) OR dog portrait (larger clickable sprite region)
     if ((mouseX > 223 && mouseX < 350 &&
          mouseY > 450 && mouseY < 484) ||
         (mouseX > 229 && mouseX < 367 &&
@@ -50,6 +132,7 @@ void mousePressed() {
       dogadopted = true;
     }
 
+    // Cat sign OR cat portrait
     if ((mouseX > 768 && mouseX < 891 &&
          mouseY > 450 && mouseY < 482) ||
         (mouseX > 757 && mouseX < 871 &&
@@ -58,37 +141,58 @@ void mousePressed() {
     }
   }
   
+  // =========================
+  // Naming Screen: Alligator Color Selection
+  // Three "SELECT" buttons are evenly spaced 300px apart from the base X position.
+  // selectedAlligator controls which skin tint is applied in I_Alligator_Class.pde
+  // =========================
   if (inNaming) {
-  
+    // Left alligator (default / no tint) — index 0
     if (mouseX > ((width * 0.27 - 300) + ((width / 2) * 0.9) / 2) - 60 &&
         mouseX < ((width * 0.27 - 300) + ((width / 2) * 0.9) / 2) + 60 &&
         mouseY > 659 - 17.5 &&
         mouseY < 659 + 17.5) {
       selectedAlligator = 0;
     }
-  
+    // Center alligator (green tint) — index 1
     else if (mouseX > ((width * 0.27) + ((width / 2) * 0.9) / 2) - 60 &&
              mouseX < ((width * 0.27) + ((width / 2) * 0.9) / 2) + 60 &&
              mouseY > 659 - 17.5 &&
              mouseY < 659 + 17.5) {
       selectedAlligator = 1;
     }
-  
+    // Right alligator (blue tint) — index 2
     else if (mouseX > ((width * 0.27 + 300) + ((width / 2) * 0.9) / 2) - 60 &&
              mouseX < ((width * 0.27 + 300) + ((width / 2) * 0.9) / 2) + 60 &&
              mouseY > 659 - 17.5 &&
              mouseY < 659 + 17.5) {
       selectedAlligator = 2;
     }
-  
   }
 
+  // =========================
+  // Main Screen: Top-Level Click Routing
+  // Checks the main gameplay screen actions only when onmainscreen is active.
+  // Popup guards prevent multiple overlays from opening simultaneously.
+  // =========================
   if (onmainscreen == true) {
-    
+
+    // Game over screen — "QUIT" button (centered, y = height/2 + 155 ± 21)
+    if (gameOver) {
+      if (mouseX > width/2 - 90 && mouseX < width/2 + 90 &&
+          mouseY > height/2 + 134 && mouseY < height/2 + 176) {
+        exit();
+      }
+      return;  // block all other main-screen clicks while game over is shown
+    }
+
+    // "Confirm Quit" button inside the quit confirmation dialog
     if (mouseX>482 && mouseX<617 && mouseY>307 && mouseY<344 && showquit) {
       quit();
     }
-    
+
+    // --- Popup Dismiss (the shared X / close button used by all main screen popups) ---
+    // A single hit region at the top-right of every popup closes whichever is active.
     if (welcomepopupvisible || showcantsell || showplaypopup || showearnpopup || showjobpopup || showfirsthelppopup || showtreatmentpopup || showbankpopup || showrestpopup || showstoreclosedpopup || nextdayclicked || showquit) {
       if (mouseX > 730 && mouseX < 777 &&
           mouseY > 215 && mouseY < 254) {
@@ -144,6 +248,8 @@ void mousePressed() {
     }
     
     
+    // --- Bank Scrollbar: Begin Drag ---
+    // Calculates the current thumb position and starts a drag if the user clicks it.
     float bankMaxScroll = max(0, bankContentHeight - bankViewH);
     float bankThumbH;
     float bankThumbY;
@@ -163,6 +269,7 @@ void mousePressed() {
       bankThumbOffsetY = mouseY - bankThumbY;
     }
 
+    // --- Inventory Button (bottom-left action circle) ---
     if (dist(mouseX, mouseY, 239.5f, 602) <= 49.5f &&
         !showrestpopup && !restclicked && welcomepopupvisible == false && !storeclicked &&
         !servicesclicked && !earnclicked && !bankclicked && onmainscreen &&
@@ -172,6 +279,7 @@ void mousePressed() {
       firstinventoryclick = true;
     }
 
+    // --- Rest Button — only available after the rest popup has been shown once ---
     if (dist(mouseX, mouseY, 439, 602) <= 50 &&
         !restclicked && restpopupshown && !servicesclicked && !earnclicked && !storeclicked &&
         !bankclicked && onmainscreen && !showcantsell && !showplaypopup &&
@@ -181,6 +289,7 @@ void mousePressed() {
       firstrestclick = true;
     }
 
+    // --- Bank Button (bottom-right action circle) ---
     if (dist(mouseX, mouseY, 861, 602) <= 50 &&
         !restclicked && welcomepopupvisible == false && !storeclicked &&
         !servicesclicked && !earnclicked && !bankclicked && onmainscreen &&
@@ -190,10 +299,12 @@ void mousePressed() {
       firstbankclick = true;
     }
 
+    // --- Close Inventory (X button in top-right of inventory panel) ---
     if (inventoryvisible && mouseX > 933 && mouseY < 171 && mouseX < 977 && mouseY > 132) {
       inventoryvisible = false;
     }
 
+    // --- Play / Minigame Button — unlocked only after the play popup has been shown ---
     if (playpopupShown == true && !restclicked && !bankclicked && showplaypopup == false &&
         dist(mouseX, mouseY, 656, 602) <= 49.5f && !servicesclicked && !earnclicked &&
         !inventoryvisible && onmainscreen && !showcantsell && !showplaypopup && !storeclicked &&
@@ -201,7 +312,8 @@ void mousePressed() {
         !showtreatmentpopup && !showbankpopup && !showstoreclosedpopup  && !nextdayclicked  && !showquit) {
       playclicked = true;
       exit = false;
-      currentPlaySessionMoneyEarned = 0;
+      currentPlaySessionMoneyEarned = 0;  // reset per-session earnings tracker
+      minigameFade.setBlack();            // reset minigame fade to black for fresh entry
       enterswamphop = false;
       entersnacksnatch = false;
       enterfetchfrenzy = false;
@@ -209,6 +321,11 @@ void mousePressed() {
     }
   }
 
+  // =========================
+  // Inventory / Store: Slot Selection
+  // A 3x4 grid of slots; determines which slot index was clicked.
+  // xs[] and ys[] define column and row boundaries respectively.
+  // =========================
   boolean medicinegiven;
 
   if (inventoryvisible || buymedicine || buysnacks || buymeat) {
@@ -227,6 +344,11 @@ void mousePressed() {
     }
   }
 
+  // =========================
+  // Inventory: Use (Feed) Selected Item
+  // "FEED" button — applies the item's stat effects to the alligator via eat().
+  // The first use always consumes the tutorial steak; subsequent uses check stock.
+  // =========================
   if (inventoryvisible == true && selectedSlot != -1) {
     if (mouseX >= 585.125f && mouseX <= 760 &&
         mouseY >= 474.875f && mouseY <= 546) {
@@ -251,43 +373,14 @@ void mousePressed() {
 
         alligator.eat(item);
 
-        int medIndex = -1;
-        for (int i = 0; i < medicinestock.length; i++) {
-          if (medicinestock[i].equals(item)) {
-            medIndex = i;
-            break;
-          }
-        }
-
-        int snackIndex = -1;
-        for (int i = 0; i < snackstock.length; i++) {
-          if (snackstock[i].equals(item)) {
-            snackIndex = i;
-            break;
-          }
-        }
-
-        int meatIndex = -1;
-        for (int i = 0; i < meatstock.length; i++) {
-          if (meatstock[i].equals(item)) {
-            meatIndex = i;
-            break;
-          }
-        }
+        int medIndex   = findItemIndex(item, medicinestock);
+        int snackIndex = findItemIndex(item, snackstock);
+        int meatIndex  = findItemIndex(item, meatstock);
 
   if (medIndex != -1) {
     if (medQtys[medIndex] == 1) {
-      inventoryslots[selectedSlot] = "EMPTY";
       medQtys[medIndex] = 0;
-  
-      for (int i = selectedSlot; i < inventoryslots.length - 1; i++) {
-        inventoryslots[i] = inventoryslots[i + 1];
-      }
-      inventoryslots[inventoryslots.length - 1] = "EMPTY";
-  
-      if (selectedSlot >= inventoryslots.length) {
-        selectedSlot = inventoryslots.length - 1;
-      }
+      removeInventorySlot(selectedSlot);
     } else {
       medQtys[medIndex] = medQtys[medIndex] - 1;
     }
@@ -310,41 +403,21 @@ void mousePressed() {
   
         } else if (snackIndex != -1) {
           if (snackQtys[snackIndex] == 1) {
-            inventoryslots[selectedSlot] = "EMPTY";
             snackQtys[snackIndex] = 0;
-
-            for (int i = selectedSlot; i < inventoryslots.length - 1; i++) {
-              inventoryslots[i] = inventoryslots[i + 1];
-            }
-            inventoryslots[inventoryslots.length - 1] = "EMPTY";
-
-            if (selectedSlot >= inventoryslots.length) {
-              selectedSlot = inventoryslots.length - 1;
-            }
+            removeInventorySlot(selectedSlot);
           } else {
             snackQtys[snackIndex] = snackQtys[snackIndex] - 1;
           }
-
           timesFedPet++;
           medicinegiven = false;
 
         } else if (meatIndex != -1) {
           if (meatQtys[meatIndex] == 1) {
-            inventoryslots[selectedSlot] = "EMPTY";
             meatQtys[meatIndex] = 0;
-
-            for (int i = selectedSlot; i < inventoryslots.length - 1; i++) {
-              inventoryslots[i] = inventoryslots[i + 1];
-            }
-            inventoryslots[inventoryslots.length - 1] = "EMPTY";
-
-            if (selectedSlot >= inventoryslots.length) {
-              selectedSlot = inventoryslots.length - 1;
-            }
+            removeInventorySlot(selectedSlot);
           } else {
             meatQtys[meatIndex] = meatQtys[meatIndex] - 1;
           }
-
           timesFedPet++;
           medicinegiven = false;
 
@@ -357,6 +430,11 @@ void mousePressed() {
     }
   }
 
+  // =========================
+  // Inventory: Sell Selected Item
+  // "SELL" button — returns 75% of the item's purchase price and removes it from inventory.
+  // Blocked until the initial tutorial steak has been fed (fedsteak guard).
+  // =========================
   if (mouseX >= 780 && mouseX <= 954.875f &&
       mouseY >= 474.875f && mouseY <= 546 && inventoryvisible) {
 
@@ -369,166 +447,71 @@ void mousePressed() {
       boolean isSnack = false;
       boolean isMeat = false;
 
-      for (int i = 0; i < 12; i++) {
-        if (inventoryslots[selectedSlot].equals(medicinestock[i])) {
-          isMedicine = true;
-          break;
-        }
-      }
-
-      for (int i = 0; i < 12; i++) {
-        if (inventoryslots[selectedSlot].equals(snackstock[i])) {
-          isSnack = true;
-          break;
-        }
-      }
-
-      for (int i = 0; i < 12; i++) {
-        if (inventoryslots[selectedSlot].equals(meatstock[i])) {
-          isMeat = true;
-          break;
-        }
-      }
+      isMedicine = findItemIndex(inventoryslots[selectedSlot], medicinestock) != -1;
+      isSnack    = findItemIndex(inventoryslots[selectedSlot], snackstock)    != -1;
+      isMeat     = findItemIndex(inventoryslots[selectedSlot], meatstock)     != -1;
 
       if (isMedicine) {
-        int medIndex = -1;
-
-        for (int i = 0; i < medicinestock.length; i++) {
-          if (inventoryslots[selectedSlot].equals(medicinestock[i])) {
-            medIndex = i;
-            break;
-          }
-        }
-
+        int medIndex = findItemIndex(inventoryslots[selectedSlot], medicinestock);
         if (medIndex != -1) {
           float sellPrice = 5 * 0.75f;
-
-          money += sellPrice;
-          totalMoneyEarned += sellPrice;
-          bankTransactionsLoggedCount++;
-          bankTransactions.add("Transaction: Sold " + medicinestock[medIndex] + " (+$" + nf(sellPrice, 0, 2) + ")");
-
+          logSellTransaction(medicinestock[medIndex], sellPrice);
           medQtys[medIndex] -= defaultQtys[medIndex];
-
           if (medQtys[medIndex] <= 0) {
             medQtys[medIndex] = 0;
-            inventoryslots[selectedSlot] = "EMPTY";
-
-            for (int i = selectedSlot; i < inventoryslots.length - 1; i++) {
-              inventoryslots[i] = inventoryslots[i + 1];
-            }
-            inventoryslots[inventoryslots.length - 1] = "EMPTY";
-
-            if (selectedSlot >= inventoryslots.length) {
-              selectedSlot = inventoryslots.length - 1;
-            }
+            removeInventorySlot(selectedSlot);
           }
         }
 
       } else if (isSnack) {
-        int snackIndex = -1;
-
-        for (int i = 0; i < snackstock.length; i++) {
-          if (inventoryslots[selectedSlot].equals(snackstock[i])) {
-            snackIndex = i;
-            break;
-          }
-        }
-
+        int snackIndex = findItemIndex(inventoryslots[selectedSlot], snackstock);
         if (snackIndex != -1) {
           float sellPrice = snackCosts[snackIndex] * 0.75f;
-
-          money += sellPrice;
-          totalMoneyEarned += sellPrice;
-          bankTransactionsLoggedCount++;
-          bankTransactions.add("Transaction: Sold " + snackstock[snackIndex] + " (+" + nf(sellPrice, 0, 2) + ")");
-
+          logSellTransaction(snackstock[snackIndex], sellPrice);
           snackQtys[snackIndex] -= 1;
-
           if (snackQtys[snackIndex] <= 0) {
             snackQtys[snackIndex] = 0;
-            inventoryslots[selectedSlot] = "EMPTY";
-
-            for (int i = selectedSlot; i < inventoryslots.length - 1; i++) {
-              inventoryslots[i] = inventoryslots[i + 1];
-            }
-            inventoryslots[inventoryslots.length - 1] = "EMPTY";
-
-            if (selectedSlot >= inventoryslots.length) {
-              selectedSlot = inventoryslots.length - 1;
-            }
+            removeInventorySlot(selectedSlot);
           }
         }
 
       } else if (isMeat) {
-        int meatIndex = -1;
-
-        for (int i = 0; i < meatstock.length; i++) {
-          if (inventoryslots[selectedSlot].equals(meatstock[i])) {
-            meatIndex = i;
-            break;
-          }
-        }
-
+        int meatIndex = findItemIndex(inventoryslots[selectedSlot], meatstock);
         if (meatIndex != -1) {
           float sellPrice = meatCosts[meatIndex] * 0.75f;
-
-          money += sellPrice;
-          totalMoneyEarned += sellPrice;
-          bankTransactionsLoggedCount++;
-          bankTransactions.add("Transaction: Sold " + meatstock[meatIndex] + " (+" + nf(sellPrice, 0, 2) + ")");
-
+          logSellTransaction(meatstock[meatIndex], sellPrice);
           meatQtys[meatIndex] -= 1;
-
           if (meatQtys[meatIndex] <= 0) {
             meatQtys[meatIndex] = 0;
-            inventoryslots[selectedSlot] = "EMPTY";
-
-            for (int i = selectedSlot; i < inventoryslots.length - 1; i++) {
-              inventoryslots[i] = inventoryslots[i + 1];
-            }
-            inventoryslots[inventoryslots.length - 1] = "EMPTY";
-
-            if (selectedSlot >= inventoryslots.length) {
-              selectedSlot = inventoryslots.length - 1;
-            }
+            removeInventorySlot(selectedSlot);
           }
         }
 
       } else {
-        inventoryslots[selectedSlot] = "EMPTY";
-
-        for (int i = selectedSlot; i < inventoryslots.length - 1; i++) {
-          inventoryslots[i] = inventoryslots[i + 1];
-        }
-        inventoryslots[inventoryslots.length - 1] = "EMPTY";
-
-        if (selectedSlot >= inventoryslots.length) {
-          selectedSlot = inventoryslots.length - 1;
-        }
+        removeInventorySlot(selectedSlot);
       }
     }
   }
 
+  // =========================
+  // Minigame Choice Screen: Select Which Game to Play
+  // Three clickable panel regions on the choice screen.
+  // setMinigameEntry() ensures only one flag is true at a time.
+  // =========================
   if (wasOnChoiceScreen && fadingout && !onmainscreen) {
     if (mouseX > 88 && mouseX < 373 && mouseY > 258 && mouseY < 658) {
-      enterswamphop = true;
-      entersnacksnatch = false;
-      enterfetchfrenzy = false;
-      onchoicescreen = false;
+      setMinigameEntry(true, false, false);   // Swamp Hop
     } else if (mouseX > 403 && mouseX < 695 && mouseY > 257 && mouseY < 664) {
-      entersnacksnatch = true;
-      enterswamphop = false;
-      enterfetchfrenzy = false;
-      onchoicescreen = false;
+      setMinigameEntry(false, true, false);   // Snack Snatch
     } else if (mouseX > 731 && mouseY > 263 && mouseX < 1013 && mouseY < 661) {
-      enterfetchfrenzy = true;
-      enterswamphop = false;
-      entersnacksnatch = false;
-      onchoicescreen = false;
+      setMinigameEntry(false, false, true);   // Fetch Frenzy
     }
   }
 
+  // =========================
+  // Minigame: "PLAY" / "RETRY" Button (left modal button)
+  // Shared hit region used by all three games when the modal is showing
+  // =========================
   if (mouseX >= 427 &&
       mouseX <= 533 &&
       mouseY >= 410 &&
@@ -549,6 +532,10 @@ void mousePressed() {
     }
   }
 
+  // =========================
+  // Minigame: "EXIT" Button (right modal button)
+  // Returns to the main screen and logs any earnings from the session to the bank
+  // =========================
   if (mouseX >= width/2 + 70 - 52.5f &&
       mouseX <= width/2 + 70 + 52.5f &&
       mouseY >= 436 - 25 &&
@@ -561,7 +548,7 @@ void mousePressed() {
     onmainscreen = true;
     playclicked = false;
     fadingout = false;
-    fadeInOpacity2 = 0;
+    mainFade.setClear();   // resume on main screen without a fade-in
     enterswamphop = false;
     enterfetchfrenzy = false;
     entersnacksnatch = false;
@@ -578,6 +565,10 @@ void mousePressed() {
     }
   }
 
+  // =========================
+  // Quit Button (gear icon, top-right corner of main screen)
+  // Opens a confirmation dialog before quitting
+  // =========================
   if (dist(mouseX, mouseY, 1044, 43) <= 36 &&
       !bankclicked  && !inventoryvisible && !servicesclicked && !storeclicked &&
       !showcantsell && !showplaypopup && !showearnpopup && !welcomepopupvisible && !showjobpopup &&
@@ -586,6 +577,10 @@ void mousePressed() {
     showquit=true;
   }
 
+  // =========================
+  // Earn Button (top-right earn icon, unlocked after earnpopupshown)
+  // Opens the earn screen (jobs + tasks)
+  // =========================
   if (dist(mouseX, mouseY, 1045, 134) <= 43 &&
       !bankclicked && earnpopupshown && !inventoryvisible && !servicesclicked && !storeclicked &&
       !showcantsell && !showplaypopup && !showearnpopup && !showjobpopup && !welcomepopupvisible &&
@@ -596,18 +591,20 @@ void mousePressed() {
     earnTasksOpen = false;
     firstearnclick = true;
   }
-  
-  println("x:", mouseX, "y:", mouseY);
 
+  // =========================
+  // Earn Screen: Navigation and Actions
+  // Handles the earn hub, job finder, and tasks/upgrades sub-panels
+  // =========================
   if (earnclicked == true) {
 
-    // Main earn screen close
+    // Close earn screen (shared X button)
     if (!earnJobFinderOpen && !earnTasksOpen &&
         mouseX > 933 && mouseY < 171 && mouseX < 977 && mouseY > 132) {
       earnclicked = false;
     }
 
-    // Main earn screen quit job
+    // Quit current job — resets salary and upgrade cost
     if (!earnJobFinderOpen && !earnTasksOpen &&
         mouseX > 766 && mouseX < 866 && mouseY > 156 && mouseY < 256) {
       job = "unemployed";
@@ -616,7 +613,7 @@ void mousePressed() {
       salupgcost = 3;
     }
 
-    // Main earn screen -> job finder
+    // Navigate to Job Finder sub-panel
     if (!earnJobFinderOpen && !earnTasksOpen &&
         mouseX > 205 && mouseX < 455 && mouseY > 410 && mouseY < 500) {
       earnJobFinderOpen = true;
@@ -624,7 +621,7 @@ void mousePressed() {
       return;
     }
 
-    // Main earn screen -> tasks and upgrades
+    // Navigate to Tasks & Upgrades sub-panel
     if (!earnJobFinderOpen && !earnTasksOpen &&
         mouseX > 610 && mouseX < 930 && mouseY > 410 && mouseY < 500) {
       earnTasksOpen = true;
@@ -633,26 +630,27 @@ void mousePressed() {
       return;
     }
 
-    // Job finder back
+    // Back button inside Job Finder
     if (earnJobFinderOpen &&
         mouseX > 863 && mouseX < 906 && mouseY > 155 && mouseY < 194.5f) {
       earnJobFinderOpen = false;
     }
 
-    // Tasks screen back
+    // Back button inside Tasks screen
     if (earnTasksOpen &&
         mouseX > 833 && mouseX < 876 && mouseY > 155 && mouseY < 194.5f) {
       earnTasksOpen = false;
     }
 
-    // Apply cashier
+    // Apply for cashier job (always available, starting salary $15)
     if (earnJobFinderOpen && job.equals("unemployed") &&
         mouseX > 260 && mouseX < 339 && mouseY > 478 && mouseY < 498) {
       job = "cashier";
       salary = 15;
     }
 
-// Help button
+    // "Help Around Town" task button (tasks tab)
+    // Earns task money, triggers sickness risk, and logs to bank
 if (earnTasksOpen && jobpopupshown &&
     mouseX > 340 && mouseX < 420 && mouseY > 420 && mouseY < 441) {
   helpclicked = true;
@@ -679,7 +677,7 @@ if (earnTasksOpen && jobpopupshown &&
         sick = true;
         sickness = sicknesses[randomSicknessIndex];
     
-        helppopuptext = "Uh oh! While you were off helping, " + alligator.petName + " was left unattended and I have bad news:" + sickness + ".";
+        helppopuptext = "Uh oh! While you were off helping, " + alligator.petName + " was left unattended and I have bad news: " + sickness + ".";
       } 
       else {
         alligator.health -= 10;
@@ -691,8 +689,7 @@ if (earnTasksOpen && jobpopupshown &&
     }
 }
 
-    // Salary upgrade
-    
+    // Salary upgrade — increases salary by 12% each purchase, capped per job tier
     if (earnTasksOpen && !job.equals("unemployed") && money >= salupgcost &&
         mouseX > 680 && mouseX < 760 && mouseY > 410 && mouseY < 430 &&
         !(job.equals("cashier") && salary >= 32) &&
@@ -719,7 +716,7 @@ if (earnTasksOpen && jobpopupshown &&
       salaryUpgradeCount++;
     }
     
-    // Task upgrade
+    // Task reward upgrade — increases the "Help Around Town" payout by 12% each purchase
     if (earnTasksOpen && money >= taskupgcost &&
         mouseX > 775 && mouseX < 855 && mouseY > 410 && mouseY < 430) {
       float cost = taskupgcost;
@@ -733,6 +730,7 @@ if (earnTasksOpen && jobpopupshown &&
     }
   }
 
+  // $ Per Point upgrade — increases minigame money earned per score point
   if (earnTasksOpen &&
       mouseX > 575 && mouseX < 656 &&
       mouseY > 411 && mouseY < 431 && money>=ptupgcost) {
@@ -782,6 +780,10 @@ if (earnclicked == true && jobpopupshown &&
   }
 }
 
+  // =========================
+  // Services Button (bottom action circle)
+  // Unlocked after the first illness popup — opens vet / walker / cleaner panel
+  // =========================
   if (dist(mouseX, mouseY, 760, 602) < 50 &&
       !bankclicked && firsthelppopupshown == true && !inventoryvisible && !storeclicked &&
       !earnclicked && !showcantsell && !showplaypopup && !showearnpopup && !welcomepopupvisible &&
@@ -791,6 +793,10 @@ if (earnclicked == true && jobpopupshown &&
     firstservicesclick = true;
   }
 
+  // =========================
+  // Vet Button inside Services Panel
+  // Transitions from the services overview to the vet quality selection screen
+  // =========================
   if (servicesclicked &&
       mouseX > 256.67f - 80 && mouseX < 256.67f + 80 &&
       mouseY > 480 && mouseY < 560) {
@@ -798,6 +804,11 @@ if (earnclicked == true && jobpopupshown &&
     servicesclicked = false;
   }
 
+  // =========================
+  // Vet Care: 3-Star (Low Quality) — $5
+  // 25% chance of failing on sick pets (first use always succeeds).
+  // If sick and untreated, prescribes a medicine course the player must fulfill.
+  // =========================
 if (money >= 5 && vetclicked &&
     mouseX > 380 && mouseX < 500 &&
     mouseY > 405 && mouseY < 465) {
@@ -852,20 +863,28 @@ if (money >= 5 && vetclicked &&
     vetclicked = false;
   }
 
+  // =========================
+  // Store Button (bottom action circle)
+  // Unlocked after the treatment popup is shown. Blocked on day % 7 == 0 (store closed).
+  // =========================
   if (dist(mouseX, mouseY, 337, 602) < 50 &&
-      !bankclicked && treatmentpopupshown && !storeclicked &&
+      !bankclicked && treatmentpopupshown && !storeclicked && !storemainscreenfading &&
       !showcantsell && !showplaypopup && !showearnpopup && !showjobpopup && !welcomepopupvisible &&
       !showfirsthelppopup && !showtreatmentpopup && !showbankpopup && (day%7!=0) && !showstoreclosedpopup  && !nextdayclicked  && !showquit) {
-    storeclicked = true;
-    onmainscreen = false;
+    storemainscreenfading = true;  // begin fade-to-black before entering the store
     return;
   } else if (dist(mouseX, mouseY, 337, 602) < 50 &&
       !bankclicked && treatmentpopupshown && !storeclicked &&
       !showcantsell && !showplaypopup && !showearnpopup && !showjobpopup && !welcomepopupvisible &&
       !showfirsthelppopup && !showtreatmentpopup && !showbankpopup && !showstoreclosedpopup  && !nextdayclicked  && !showquit) {
-        showstoreclosedpopup=true;
+    // Store is closed today — show a message instead of opening the store
+    showstoreclosedpopup=true;
   }
 
+  // =========================
+  // Store Tab Navigation
+  // Three tabs at the top of the store: Snacks, Medicine, Meat
+  // =========================
   if (mouseX > 627 && mouseX < 1070 && mouseY > 39 && mouseY < 88 && storeclicked && !buysnacks && !buymeat) {
     buymedicine = true;
   }
@@ -874,6 +893,11 @@ if (money >= 5 && vetclicked &&
     buysnacks = true;
   }
 
+  // =========================
+  // Store: Purchase Medicine
+  // Prescribed medicines are free (presc[] flag set by vet); non-prescribed cost $5 each.
+  // Adds to inventory slot matching the item name (or any EMPTY slot).
+  // =========================
   if (buymedicine == true &&
       mouseX > 682.5625f && mouseX < 857.4375f &&
       mouseY > 474.875f && mouseY < 546 &&
@@ -918,6 +942,9 @@ if (money >= 5 && vetclicked &&
   }
   }
 
+  // =========================
+  // Store: Purchase Snack
+  // =========================
   if (buysnacks == true &&
       mouseX > 682.5625f && mouseX < 857.4375f &&
       mouseY > 474.875f && mouseY < 546 &&
@@ -950,6 +977,9 @@ if (money >= 5 && vetclicked &&
     }
   }
 
+  // =========================
+  // Store: Purchase Meat
+  // =========================
   if (buymeat == true &&
       mouseX > 682.5625f && mouseX < 857.4375f &&
       mouseY > 474.875f && mouseY < 546 &&
@@ -994,12 +1024,16 @@ if (money >= 5 && vetclicked &&
     buymeat = false;
   }
 
-  if (mouseX > 1000 && mouseX < 1100 && mouseY > 631 && mouseY < 684 && storeclicked && !buymedicine && !buysnacks && !buymeat) {
-    storeclicked = false;
-    onmainscreen = true;
+  // Trigger fade-out instead of closing immediately; store() closes itself when black
+  if (mouseX > 1000 && mouseX < 1100 && mouseY > 631 && mouseY < 684 && storeclicked && !buymedicine && !buysnacks && !buymeat && !storefadingout) {
+    storefadingout = true;
     firstexitclick = true;
   }
 
+  // =========================
+  // Vet Care: 5-Star (High Quality) — $20
+  // Always succeeds; prescribes medicine or restores 30 health if already treated
+  // =========================
   if (money >= 20 && mouseX > 599 && mouseY > 418 && mouseX < 720 && mouseY < 452 && vetclicked) {
     neverboughthighqualitycare = false;
     money -= 20;
@@ -1030,6 +1064,10 @@ if (money >= 5 && vetclicked &&
     }
   }
 
+  // =========================
+  // Bank Screen: Scrollbar Drag Start
+  // Separate from the main-screen scrollbar check above; handles when bankclicked is active
+  // =========================
   if (bankclicked) {
     float bankMaxScroll2 = max(0, bankContentHeight - bankViewH);
 
@@ -1053,6 +1091,11 @@ if (money >= 5 && vetclicked &&
     }
   }
 
+  // =========================
+  // Rest Screen: Stop Bar Action
+  // Player stops an oscillating marker; position determines energy gain or loss.
+  // Perfect zone: +30 energy. Near zone: +10. Miss: -10.
+  // =========================
   if (restclicked && restattnum > 0 &&
       mouseX > 398 && mouseX < 479 && mouseY > 511 && mouseY < 530) {
     restattnum--;
@@ -1075,6 +1118,10 @@ if (money >= 5 && vetclicked &&
     restclicked = false;
   }
 
+  // =========================
+  // Achievements Button (top-right, star icon)
+  // Opens the scrollable achievement progress and reward claim panel
+  // =========================
   if (dist(mouseX, mouseY, 1045, 232) <= 43 &&
       !showrestpopup && !restclicked && welcomepopupvisible == false &&
       !servicesclicked && !earnclicked && !bankclicked && onmainscreen &&
@@ -1085,15 +1132,19 @@ if (money >= 5 && vetclicked &&
     firstachievementsclick = true;
   }
   
+  // =========================
+  // Next Day Button (center bottom circle)
+  // Advances the in-game day, applies salary, and decays pet stats
+  // =========================
   if (dist(mouseX, mouseY, width/2, 602) <= 50  &&
       !showrestpopup && !restclicked && welcomepopupvisible == false &&
       !servicesclicked && !earnclicked && !achievementsclicked && !bankclicked && onmainscreen &&
       !showcantsell && !showplaypopup && !showearnpopup && !showjobpopup &&
       !showfirsthelppopup && !showtreatmentpopup && !showbankpopup &&
       !inventoryvisible && !storeclicked && !showstoreclosedpopup  && !nextdayclicked  && !showquit) {
-   nextdayclicked=true;
-   firstnextdayclick=true;
-   dayedited=false;
+    nextdayclicked=true;
+    firstnextdayclick=true;
+    dayedited=false;
   }
 
   if (achievementsclicked) {
@@ -1146,10 +1197,16 @@ if (money >= 5 && vetclicked &&
     }
   }
   
+  // Store: Meat tab button (at the bottom of the store screen)
   if (storeclicked && !buymedicine && !buysnacks && mouseX>304 && mouseY>591 && mouseX<777 && mouseY<654) {
     buymeat=true;
   }
-  
+
+  // =========================
+  // Services: Walker and Cleaner
+  // Walker costs $10: drains energy, boosts happiness/health (takes alligator on a walk)
+  // Cleaner costs $10: reduces sick risk, boosts happiness/health (cleans the habitat)
+  // =========================
   if (servicesclicked && money>=10 && mouseX>468 && mouseY>499 && mouseX<631 && mouseY<543) {
     servicesclicked=false;
     alligator.energy-=25;
@@ -1159,7 +1216,7 @@ if (money >= 5 && vetclicked &&
     money-=10;
     totalMoneySpent+=10;
   }
-  
+
   if (servicesclicked && money>=10 && mouseX>762 && mouseY>499 && mouseX<925 && mouseY<544) {
     servicesclicked=false;
     alligator.sickrisk-=15;
@@ -1168,21 +1225,25 @@ if (money >= 5 && vetclicked &&
     cleanersHiredCount++;
     money-=10;
     totalMoneySpent+=10;
-    // changes stats + builds text after
   }
-  
+
+  // =========================
+  // Job Finder: Apply for Locked Jobs
+  // Barista unlocks on day 10, Manager on day 25 (progression gates)
+  // =========================
   if (job.equals("unemployed") && day >= 10 && earnJobFinderOpen &&
       mouseX>510 && mouseX<590 && mouseY>477 && mouseY<497) {
-        job = "barista";
-        salary = 35;
-    }
-    
+    job = "barista";
+    salary = 35;
+  }
+
   if (job.equals("unemployed") && day >= 25 && earnJobFinderOpen &&
-  mouseX>760 && mouseX<840 && mouseY>477 && mouseY<497) {
+      mouseX>760 && mouseX<840 && mouseY>477 && mouseY<497) {
     job = "manager";
     salary = 75;
-}
+  }
 
+  // Close services panel (X button)
   if (mouseX>931 && mouseX<979 && mouseY>132 && mouseY<174 && servicesclicked) {
     servicesclicked=false;
   }
@@ -1192,12 +1253,18 @@ if (money >= 5 && vetclicked &&
 boolean moveLeft = false;
 boolean moveRight = false;
 
- void keyPressed() {
+// =========================
+// Key Press Handler
+// Handles minigame controls and developer test keys
+// =========================
+void keyPressed() {
+  // Swamp Hop: SPACE to jump (only when alligator is on the ground)
   if (key == ' ' && isOnGround) {
     velocityY = -jumpStrength;
     isOnGround = false;
   }
 
+  // Snack Snatch: A/D or arrow keys to move left/right
   if ((key == 'a' || key == 'A' || keyCode == LEFT) && entersnacksnatch) {
     moveLeft = true;
   }
@@ -1206,6 +1273,7 @@ boolean moveRight = false;
     moveRight = true;
   }
 
+  // Fetch Frenzy: WASD or arrow keys to set movement direction
   if ((key == 'a' || key == 'A' || keyCode == LEFT) && enterfetchfrenzy) {
     lastturn = "LEFT";
   }
@@ -1222,26 +1290,17 @@ boolean moveRight = false;
     lastturn = "DOWN";
   }
 
-  if (key == 'y') {
-    money += 1000;
-  }
-
-  if (key == 'z') {
-    alligator.energy -= 50;
-  }
-
-  if (key == 'x') {
-    println("selectedSlot = " + selectedSlot);
-println("presc length = " + presc.length);
-
-if (selectedSlot >= 0 && selectedSlot < presc.length) {
-  println("medicinestock[selectedSlot] = " + medicinestock[selectedSlot]);
-  println("presc[selectedSlot] = " + presc[selectedSlot]);
-}
-  }
+  // --- Developer Test Keys ---
+  // These shortcuts exist for rapid testing during development.
+  if (key == 'y') money += 1000;           // Add $1000 for testing economy features
+  if (key == 'z') alligator.energy -= 50;  // Drain energy to test rest/minigame logic
 }
 
- void keyReleased() {
+// =========================
+// Key Release Handler
+// Stops continuous movement in Snack Snatch when A/D or arrow keys are released
+// =========================
+void keyReleased() {
   if ((key == 'a' || key == 'A' || keyCode == LEFT) && entersnacksnatch) {
     moveLeft = false;
   }
@@ -1251,7 +1310,11 @@ if (selectedSlot >= 0 && selectedSlot < presc.length) {
   }
 }
 
- void mouseDragged() {
+// =========================
+// Mouse Drag Handler
+// Handles dragging the bank and achievements scrollbar thumbs
+// =========================
+void mouseDragged() {
   if (cp5.isMouseOver()) return;
 
   if (draggingBankScrollbar) {
@@ -1279,7 +1342,11 @@ if (selectedSlot >= 0 && selectedSlot < presc.length) {
   }
 }
 
- void mouseWheel(MouseEvent event) {
+// =========================
+// Mouse Wheel Handler
+// Scrolls the bank transaction list or achievements panel when the cursor is over them
+// =========================
+void mouseWheel(MouseEvent event) {
   float e = event.getCount();
 
   if (mouseX >= bankViewX && mouseX <= bankViewX + bankViewW &&
@@ -1301,7 +1368,11 @@ if (selectedSlot >= 0 && selectedSlot < presc.length) {
   }
 }
 
- void mouseReleased() {
+// =========================
+// Mouse Release Handler
+// Ends any active scrollbar drag when the mouse button is released
+// =========================
+void mouseReleased() {
   draggingBankScrollbar = false;
   draggingAchvScrollbar = false;
 }

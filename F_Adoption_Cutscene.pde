@@ -3,9 +3,6 @@
 // Controls fades, scene transitions, and adoption/naming progression
 // =========================
 
-boolean fadein              = false;
-boolean fade2in             = false;
-boolean fade3in             = false;
 boolean inNaming            = false;
 boolean cutscenestart       = false;
 boolean enteradoptioncenter = false;
@@ -15,13 +12,17 @@ boolean catadopted          = false;
 boolean startrealgame       = false;
 
 // =========================
-// Fade Opacity Values (0–255)
+// Cutscene Fade Instances
+// Each covers one transition in the cutscene/naming flow.
 // =========================
-
-int fadeOutOpacity  = 0;
-int fadeOutOpacity2 = 0;
-int fadeOutOpacity3 = 0;
-int fadeOutOpacity4 = 0;
+// cutFade1: phases 1+2 — fades to black, then from black to reveal city street
+Fade cutFade1  = new Fade(0);
+// cutFade2: phase 3 — fades to black entering adoption center, then from black to reveal interior
+Fade cutFade2  = new Fade(0);
+// cutFade3: phase 4 — fades to black for naming transition; reused as the naming screen entry fade
+Fade cutFade3  = new Fade(0);
+// namingFade: naming screen exit — fades to black before starting the main game
+Fade namingFade = new Fade(0);
 
 
 // =========================
@@ -57,23 +58,15 @@ void cutscene() {
   noStroke();
 
   // ---------------------------------------------------
-  // Phase 1: Initial fade-in (screen starts black -> reveals city scene)
+  // Phase 1: Fade to black (0→255) — screen goes dark before city is revealed
   // ---------------------------------------------------
-  if (!fadein) {
-
-    fill(0, fadeOutOpacity);
-    rect(0, 0, width, height);
-
-    fadeOutOpacity += 3;
-
-    if (fadeOutOpacity >= 255) {
-      fadeOutOpacity = 255;
-      fadein = true;
-    }
+  if (!cutFade1.outComplete) {
+    cutFade1.stepOut(3);
+    cutFade1.draw();
   }
 
   // ---------------------------------------------------
-  // Phase 2: City pan + fade-out overlay
+  // Phase 2: City pan — fade from black (255→0) to reveal the street scene
   // ---------------------------------------------------
   else {
 
@@ -92,32 +85,21 @@ void cutscene() {
 
     image(outsideofadoptioncenter, 0 - cityblockmoving, -190, width * 1.75, height * 1.75);
 
-    // Overlay fades away to reveal the scene
-    fill(0, fadeOutOpacity);
-    rect(0, 0, width, height);
-
-    if (fadeOutOpacity > 0) {
-      fadeOutOpacity -= 2;
-    }
+    // Overlay fades away to reveal the street
+    cutFade1.stepIn(2);
+    cutFade1.draw();
   }
 
   // ---------------------------------------------------
-  // Phase 3: Transition inside adoption center (fade to black, then reveal interior)
+  // Phase 3: Transition inside the adoption center
+  //   — fade to black (cutFade2 outComplete), then reveal the interior
   // ---------------------------------------------------
   if (enteradoptioncenter) {
 
-    // Fade to black before showing the new interior scene
-    if (!fade2in) {
-
-      fill(0, fadeOutOpacity2);
-      rect(0, 0, width, height);
-
-      fadeOutOpacity2 += 8;
-
-      if (fadeOutOpacity2 >= 255) {
-        fadeOutOpacity2 = 255;
-        fade2in = true;
-      }
+    // Fade to black before showing the interior
+    if (!cutFade2.outComplete) {
+      cutFade2.stepOut(8);
+      cutFade2.draw();
     }
 
     // Interior scene
@@ -128,13 +110,8 @@ void cutscene() {
       image(adoptioncenterinterior, 0, 0, width, height);
 
       // Fade from black into the interior
-      if (fadeOutOpacity2 > 0) {
-        fill(0, fadeOutOpacity2);
-        rect(0, 0, width, height);
-
-        fadeOutOpacity2 -= 3;
-        if (fadeOutOpacity2 < 0) fadeOutOpacity2 = 0;
-      }
+      cutFade2.stepIn(3);
+      cutFade2.draw();
 
       // Show the pet sign animation based on selection
       if (dogadopted) signanimation(pickingdog);
@@ -147,29 +124,19 @@ void cutscene() {
 
         if (signreadingtimer > 220) {
 
-          // Fade to black before switching to naming screen
-          if (!fade3in) {
-
-            fill(0, fadeOutOpacity3);
-            rect(0, 0, width, height);
-
-            fadeOutOpacity3 += 4;
-
-            if (fadeOutOpacity3 >= 255) {
-              fadeOutOpacity3 = 255;
-              fade3in = true;
-            }
+          // Fade to black (cutFade3) before switching to naming screen
+          if (!cutFade3.outComplete) {
+            cutFade3.stepOut(4);
+            cutFade3.draw();
           }
 
-          // Naming segment begins once fade is complete
+          // Naming segment begins once cutFade3 is fully black
           else {
             inNaming = true;
           }
 
-          // Extra fade decrement (kept as-is)
-          if (fadeOutOpacity2 > 0) {
-            fadeOutOpacity2 -= 3;
-          }
+          // Extra fade step to accelerate cutFade2 completion (preserves original timing)
+          cutFade2.stepIn(3);
         }
       }
     }
@@ -294,26 +261,32 @@ void namingalligatorsegment() {
   text("Name: ", 320, 320);
   cp5.draw();
 
+  // Display validation error message in red if the last confirm attempt was invalid.
+  // nameValidationError is set by isValidName() in D_General_Functions.pde and cleared
+  // as soon as the user submits a valid name.
+  if (nameValidationError != null && nameValidationError.length() > 0) {
+    fill(255, 80, 80);
+    textFont(times30);
+    textSize(15);
+    textAlign(LEFT, CENTER);
+    text(nameValidationError, width * 0.35, 355);
+  }
+
   noStroke();
   rectMode(CORNER);
-  fill(0, fadeOutOpacity3);
-  rect(0, 0, width, height);
 
-  fadeOutOpacity3 -= 4;
-  if (fadeOutOpacity3 <= 0) fadeOutOpacity3 = 0;
+  // Entry fade: cutFade3 arrives at 255 from the cutscene transition; step to clear
+  cutFade3.stepIn(4);
+  cutFade3.draw();
 
+  // Exit fade: once name is confirmed, fade to black then switch to the main game
   if (namechosen) {
-    fadeOutOpacity4 += 4;
-
-    if (fadeOutOpacity4 >= 255) {
-      fadeOutOpacity4 = 255;
+    if (namingFade.stepOut(4)) {
       startrealgame = true;
       onmainscreen = true;
       cutscenestart = false;
       inNaming = false;
     }
-    noStroke();
-    fill(0, fadeOutOpacity4);
-    rect(0, 0, width, height);
+    namingFade.draw();
   }
 }

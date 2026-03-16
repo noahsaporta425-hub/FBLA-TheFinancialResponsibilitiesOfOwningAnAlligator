@@ -2,7 +2,7 @@
 // Home Screen State & Assets
 // =========================
 
-int fadeInOpacity = 255;
+Fade homeFade = new Fade(255);  // home screen entry: starts black, fades to clear
 
 PImage homescreen;
 PImage instructions;
@@ -29,17 +29,14 @@ void homescreen() {
   imageMode(CORNER);
   rectMode(CORNER);
 
-  // Fade-in effect on initial load
-  if (fadeInOpacity >= 0) {
-    fadeInOpacity -= 2;
-  }
+  // Fade in from black on initial load
+  homeFade.stepIn(2);
 
   // Draw background slightly oversized to avoid edge gaps
   image(homescreen, -25, 0, width + 25, height + 100);
 
-  // Fade overlay
-  fill(0, 0, 0, fadeInOpacity);
-  rect(0, 0, width, height);
+  // Draw fade overlay on top of the background
+  homeFade.draw();
 
   // -------------------------
   // Instructions Overlay

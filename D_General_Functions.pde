@@ -1,4 +1,59 @@
 // =========================
+// Fade
+// A reusable screen-transition overlay that fades the display to/from black.
+// Each distinct transition owns one Fade instance with its own opacity.
+//
+// opacity: 0 = fully transparent (screen visible), 255 = fully black
+// outComplete: one-way latch — stays true once opacity first reaches 255.
+//   Use this to detect "done fading to black" in multi-phase sequences
+//   without re-checking opacity (which would flip back as we fade in again).
+//
+// Usage:
+//   Fade myFade = new Fade(255);          // start black (e.g. screen entry)
+//   myFade.stepIn(speed);                 // move toward clear each frame
+//   myFade.stepOut(speed);                // move toward black each frame
+//   myFade.draw();                        // draw the overlay on top of everything
+//   myFade.isBlack() / myFade.isClear()  // check completion states
+// =========================
+class Fade {
+  float opacity;
+  boolean outComplete;   // latches true the first time opacity reaches 255
+
+  Fade(float startOpacity) {
+    opacity = startOpacity;
+    outComplete = (startOpacity >= 255);
+  }
+
+  // Step opacity toward 255 (to black); sets outComplete when fully black
+  boolean stepOut(float speed) {
+    opacity = min(255, opacity + speed);
+    if (opacity >= 255) outComplete = true;
+    return outComplete;
+  }
+
+  // Step opacity toward 0 (to clear); returns true when fully transparent
+  boolean stepIn(float speed) {
+    opacity = max(0, opacity - speed);
+    return opacity <= 0;
+  }
+
+  // Draw a full-screen black rectangle at the current opacity level.
+  // Call after all other draw calls so the overlay sits on top.
+  void draw() {
+    noStroke();
+    fill(0, opacity);
+    rectMode(CORNER);
+    rect(0, 0, width, height);
+  }
+
+  boolean isBlack() { return opacity >= 255; }
+  boolean isClear()  { return opacity <= 0;  }
+  void setBlack() { opacity = 255; outComplete = true; }
+  void setClear()  { opacity = 0; }
+}
+
+
+// =========================
 // Naming UI + File Loading / Initialization
 // Loads assets (images/fonts/audio) and builds ControlP5 UI (music + naming)
 // =========================
@@ -260,19 +315,80 @@ void nameinput() {
 
 
 // =========================
+// Input Validation
+// Validates the pet name on two levels before accepting it:
+//   - Syntactical: checks format rules (non-empty, max length, allowed characters)
+//   - Semantic:    checks that the value makes sense as a name (at least one letter)
+// Sets nameValidationError to a human-readable message on failure.
+// Returns true if the name is acceptable, false otherwise.
+// =========================
+
+// Holds the current validation error message shown on the naming screen
+// Empty string means no error (input is valid or not yet submitted)
+String nameValidationError = "";
+
+boolean isValidName(String raw) {
+
+  // Syntactical check: cannot be null or entirely whitespace
+  if (raw == null || raw.trim().length() == 0) {
+    nameValidationError = "Name cannot be empty. Please enter a name.";
+    return false;
+  }
+
+  String trimmed = raw.trim();
+
+  // Syntactical check: enforce a maximum of 20 characters for display fit
+  if (trimmed.length() > 20) {
+    nameValidationError = "Name is too long (max 20 characters).";
+    return false;
+  }
+
+  // Semantic check: name must include at least one actual letter — not just symbols/spaces
+  boolean hasLetter = false;
+  for (int i = 0; i < trimmed.length(); i++) {
+    if (Character.isLetter(trimmed.charAt(i))) {
+      hasLetter = true;
+      break;
+    }
+  }
+  if (!hasLetter) {
+    nameValidationError = "Name must contain at least one letter.";
+    return false;
+  }
+
+  // Syntactical check: only letters, spaces, hyphens, and apostrophes are valid
+  // (covers names like "Al" or "Snap-jaw" or "O'Scales" but blocks digits/symbols)
+  for (int i = 0; i < trimmed.length(); i++) {
+    char c = trimmed.charAt(i);
+    if (!Character.isLetter(c) && c != ' ' && c != '-' && c != '\'') {
+      nameValidationError = "Only letters, spaces, hyphens, and apostrophes are allowed.";
+      return false;
+    }
+  }
+
+  // All checks passed — clear any leftover error message
+  nameValidationError = "";
+  return true;
+}
+
+
+// =========================
 // Naming Confirmation
 // Triggered by the ControlP5 button named "confirm"
-// Creates the Pet using a cleaned-up, nicely formatted name
+// Validates the name first; only proceeds if it passes both syntactical and semantic checks.
 // =========================
 boolean namechosen = false;
 
 void confirm() {
 
-  // Mark name selection complete
+  String rawInput = nameField.getText();
+
+  // Validate before accepting — if invalid, show error and block the transition
+  if (!isValidName(rawInput)) return;
+
+  // Mark name selection complete and assign the formatted name to the pet
   namechosen = true;
-  
-  // Create the pet with formatted name pulled from textfield
-  alligator.petName = formatName(nameField.getText());
+  alligator.petName = formatName(rawInput);
 }
 
 
@@ -298,6 +414,15 @@ String formatName(String raw) {
 }
 
 
+// =========================
+// saveGame / loadGame
+// Persist and restore the entire game state to/from "save.json" in the sketch's data folder.
+// Every global variable that affects gameplay is saved so the player can quit and resume.
+// Arrays (inventory, prescriptions, achievements) are serialized via helper functions below.
+// Transient UI flags (popup visibility, selected slot, etc.) are reset on load so the
+// resume experience starts from a clean visual state even if the player quit mid-popup.
+// =========================
+
 void saveGame() {
   JSONObject save = new JSONObject();
 
@@ -319,6 +444,7 @@ void saveGame() {
   save.setFloat("money", money);
   save.setString("job", job == null ? "" : job);
   save.setFloat("salary", salary);
+  save.setFloat("totalJobEarnings", totalJobEarnings);
   save.setFloat("taskmoney", taskmoney);
   save.setFloat("moneyperpt", moneyperpt);
   save.setFloat("ptupgcost", ptupgcost);
@@ -364,6 +490,15 @@ void saveGame() {
   save.setBoolean("lowqualitycaregiven", lowqualitycaregiven);
   save.setBoolean("bankpopupshown", bankpopupshown);
   save.setBoolean("showplayarrow", showplayarrow);
+
+  // tutorial popup "already shown" flags — saved so they don't replay on resume
+  save.setBoolean("earnpopupshown", earnpopupshown);
+  save.setBoolean("playpopupShown", playpopupShown);
+  save.setBoolean("jobpopupshown", jobpopupshown);
+  save.setBoolean("treatmentpopupshown", treatmentpopupshown);
+  save.setBoolean("restpopupshown", restpopupshown);
+  save.setBoolean("firstbankview", firstbankview);
+  save.setBoolean("firstenergystabalized", firstenergystabalized);
 
   // prescriptions — save both named fields (for backward compat) and array
   String[] prescNames = {"enrofloxacinPresc","doxycyclinePresc","oseltamivirPresc","vitaminBComplexPresc",
@@ -448,6 +583,7 @@ void loadGame() {
   money = save.getFloat("money", money);
   job = save.getString("job", job);
   salary = save.getFloat("salary", salary);
+  totalJobEarnings = save.getFloat("totalJobEarnings", totalJobEarnings);
   taskmoney = save.getFloat("taskmoney", taskmoney);
   moneyperpt = save.getFloat("moneyperpt", moneyperpt);
   ptupgcost = save.getFloat("ptupgcost", ptupgcost);
@@ -493,6 +629,15 @@ void loadGame() {
   lowqualitycaregiven = save.getBoolean("lowqualitycaregiven", lowqualitycaregiven);
   bankpopupshown = save.getBoolean("bankpopupshown", bankpopupshown);
   showplayarrow = save.getBoolean("showplayarrow", showplayarrow);
+
+  // tutorial popup "already shown" flags
+  earnpopupshown = save.getBoolean("earnpopupshown", earnpopupshown);
+  playpopupShown = save.getBoolean("playpopupShown", playpopupShown);
+  jobpopupshown = save.getBoolean("jobpopupshown", jobpopupshown);
+  treatmentpopupshown = save.getBoolean("treatmentpopupshown", treatmentpopupshown);
+  restpopupshown = save.getBoolean("restpopupshown", restpopupshown);
+  firstbankview = save.getBoolean("firstbankview", firstbankview);
+  firstenergystabalized = save.getBoolean("firstenergystabalized", firstenergystabalized);
 
   // prescriptions — load from named fields first, then override with presc[] array if present
   String[] prescNames = {"enrofloxacinPresc","doxycyclinePresc","oseltamivirPresc","vitaminBComplexPresc",
@@ -594,24 +739,20 @@ void loadGame() {
   showplaypopup = false;
   showplayarrow = false;
   showearnpopup = false;
-  earnpopupshown = false;
   earnclicked = false;
   helpclicked = false;
   showfirsthelppopup = false;
   servicesclicked = false;
   vetclicked = false;
   showtreatmentpopup = false;
-  treatmentpopupshown = false;
   lowQualityVetFailedPopup = false;
   storeclicked = false;
   buymedicine = false;
   buysnacks = false;
   buymeat = false;
   bankclicked = false;
-  bankpopupshown = false;
   showbankpopup = false;
   showrestpopup = false;
-  restpopupshown = false;
   restclicked = false;
   achievementsclicked = false;
   showstoreclosedpopup = false;
@@ -630,6 +771,14 @@ void loadGame() {
   refreshAchievementData();
 }
 
+// =========================
+// JSON Serialization Helpers
+// Convert native arrays to JSONArray objects for use in saveGame().
+// Processing's saveJSONObject() only accepts JSONArray/JSONObject children,
+// so primitive arrays must be converted before they can be written to disk.
+// =========================
+
+// Converts a boolean[] to a JSONArray of boolean values
 JSONArray booleanArrayToJson(boolean[] arr) {
   JSONArray j = new JSONArray();
   for (int i = 0; i < arr.length; i++) {
@@ -638,6 +787,7 @@ JSONArray booleanArrayToJson(boolean[] arr) {
   return j;
 }
 
+// Converts a String[] to a JSONArray; null entries become empty strings to avoid JSON errors
 JSONArray stringArrayToJson(String[] arr) {
   JSONArray j = new JSONArray();
   for (int i = 0; i < arr.length; i++) {
@@ -646,6 +796,7 @@ JSONArray stringArrayToJson(String[] arr) {
   return j;
 }
 
+// Converts an int[] to a JSONArray of integer values
 JSONArray intArrayToJson(int[] arr) {
   JSONArray j = new JSONArray();
   for (int i = 0; i < arr.length; i++) {

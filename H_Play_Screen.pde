@@ -1,4 +1,11 @@
-int fadeOpacity = 255;
+// =========================
+// H_Play_Screen.pde
+// Three minigames: Swamp Hop, Snack Snatch, and Fetch Frenzy.
+// Each minigame awards money based on moneyperpt (upgradeable in the Earn panel).
+// All three share earnMinigameMoney(), tickMinigameStats(), and drawMinigameModal().
+// =========================
+
+Fade minigameFade = new Fade(255);  // starts black on minigame entry; fades to clear as game begins
 
 // =========================
 // Minigame helper functions
@@ -10,6 +17,43 @@ void earnMinigameMoney(float amount) {
   currentPlaySessionMoneyEarned += amount;
   totalMoneyEarned += amount;
   moneyEarnedFromMinigames += amount;
+}
+
+// Drains energy, boosts happiness each frame during active gameplay
+void tickMinigameStats() {
+  alligator.energy    -= 0.01;
+  alligator.happiness += 0.01;
+  totalHappinessRestored += 0.01;
+}
+
+// Draws the lose/welcome modal shared by all three minigames.
+// title/sub1/sub2/sub3 are the header and instruction lines (empty string = skip).
+// leftBtn / rightBtn are the button labels.
+void drawMinigameModal(String title, String sub1, String sub2, String sub3,
+                       String leftBtn, String rightBtn) {
+  stroke(255);
+  strokeWeight(5);
+  fill(80, 150);
+  rectMode(CENTER);
+  rect(width/2, height*0.4, 300, 400);
+  fill(255);
+  textAlign(CENTER, CENTER);
+  textFont(arcade);
+  text(title, width/2, 131);
+  textSize(sub2.isEmpty() ? 30 : 18);
+  if (!sub1.isEmpty()) text(sub1, width/2, 160);
+  if (!sub2.isEmpty()) text(sub2, width/2, 180);
+  if (!sub3.isEmpty()) text(sub3, width/2, 200);
+  textSize(30);
+  applyAlligatorTint();
+  image(alligator.energeticalligator, width/2, 300,
+        alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
+  noTint();
+  text(leftBtn,  width/2 - 70, 436);
+  text(rightBtn, width/2 + 70, 436);
+  noFill();
+  rect(width/2 - 70, 436, 105, 50);
+  rect(width/2 + 70, 436, 105, 50);
 }
 
 // Draws the stat bars overlay shown during all three minigames
@@ -30,76 +74,121 @@ void drawMinigameStats() {
   happinessbar.drawpositive();
 }
 
-boolean onchoicescreen = false;
-boolean enterswamphop = false;
-PImage minigamechoice;
+// =========================
+// Minigame Choice Screen State
+// =========================
+boolean onchoicescreen = false;   // true while the player is on the minigame selection screen
+boolean enterswamphop = false;    // set true when player picks Swamp Hop
+PImage minigamechoice;            // background image for the minigame selection screen
 
-PImage swamphopbackground;
 
+// =========================
+// Swamp Hop — Assets
+// =========================
+PImage swamphopbackground;  // Scrolling background image (drawn twice for seamless loop)
+
+// Four-frame walk cycle sprites for the side-scrolling alligator character
 PImage alligatorf1;
 PImage alligatorf2;
 PImage alligatorf3;
 PImage alligatorf4;
+
+// Obstacle sprites (randomly spawned, each with unique hitbox tuning)
 PImage log;
 PImage rock;
 PImage vine;
 PImage mud;
 
-int frameIndex = 1;
-int frameDelay = 6;
-int frameCounter = 0;
 
-float x = 224;
-float y = 500;
+// =========================
+// Swamp Hop — Animation State
+// =========================
+int frameIndex = 1;    // current walk-cycle frame (1–4)
+int frameDelay = 6;    // frames to hold each sprite before advancing
+int frameCounter = 0;  // counts up each draw() call; resets at frameDelay
 
-float velocityY = 0;
-float gravity = 1.2;
-float jumpStrength = 20;
-float groundY;
 
-boolean isOnGround = true;
-boolean swamphoplost = true;
-boolean retry        = false;
-boolean exit = false;
-boolean swamphopinstructions = true;
-boolean enterfetchfrenzy=false;
-int retryGraceFrames = 0;
-int retrySpawnDelayFrames = 0;
-boolean entersnacksnatch = false;
+// =========================
+// Swamp Hop — Physics
+// =========================
+float x = 224;          // Alligator's fixed horizontal position on screen
+float y = 500;          // Vertical position; changes during jumps
+float velocityY = 0;    // Current downward velocity (increases each frame by gravity)
+float gravity = 1.2;    // Acceleration applied to velocityY each frame
+float jumpStrength = 20; // Upward impulse applied when SPACE is pressed
+float groundY;          // Calculated ground threshold (set each frame based on sprite height)
 
-ArrayList<Obstacle> obstacles = new ArrayList<Obstacle>();
-float obstacleGap = 900;
-float nextSpawnX = 0;
 
-float gatorHBW = 0.70;
-float gatorHBH = 0.45;
-float gatorHBY = -8;
+// =========================
+// Swamp Hop — Game State
+// =========================
+boolean isOnGround = true;           // Prevents double-jumping
+boolean swamphoplost = true;         // True = showing lose/welcome modal (not actively playing)
+boolean retry        = false;        // Set true when player clicks RETRY
+boolean exit = false;                // Set true when player clicks EXIT to return to main screen
+boolean swamphopinstructions = true; // True on first entry — shows "WELCOME!" modal instead of "YOU LOST!"
+boolean enterfetchfrenzy = false;    // Set true when player picks Fetch Frenzy
+int retryGraceFrames = 0;            // Prevents immediate collision detection on retry
+int retrySpawnDelayFrames = 0;       // Delays first obstacle spawn after a retry
+boolean entersnacksnatch = false;    // Set true when player picks Snack Snatch
 
+
+// =========================
+// Swamp Hop — Obstacle Spawning
+// =========================
+ArrayList<Obstacle> obstacles = new ArrayList<Obstacle>(); // Active obstacle list
+float obstacleGap = 900;    // Minimum pixel gap between consecutive obstacles
+float nextSpawnX = 0;       // X position at which the next obstacle will be spawned
+
+
+// =========================
+// Swamp Hop — Hitbox Multipliers
+// Each obstacle type has its own width/height/Y-offset tuning so collision feels fair.
+// Values are fractions of the sprite's actual drawn size (1.0 = full size).
+// =========================
+
+// Alligator hitbox (slightly inset so near-misses feel forgiving)
+float gatorHBW = 0.70;   // 70% of sprite width
+float gatorHBH = 0.45;   // 45% of sprite height
+float gatorHBY = -8;     // shift upward from sprite center (pixels)
+
+// Vine hitbox (tall but narrow — hangs from above)
 float vineHBW = 0.45;
 float vineHBH = 0.85;
 float vineHBY = -10;
 
+// Rock hitbox (wide and low — sits on ground)
 float rockHBW = 0.75;
 float rockHBH = 0.55;
 float rockHBY = 0;
 
+// Mud hitbox (same as rock — ground obstacle)
 float mudHBW = 0.75;
 float mudHBH = 0.55;
 float mudHBY = 0;
 
+// Log hitbox (full width, slightly reduced height)
 float logHBW = 1.0;
 float logHBH = 0.7;
 float logHBY = 0;
 
-int hopscore = 0;
-int besthopscore = 0;
-float hopscoreframecounter = 0;
-float moneyperpt = 0;
+// =========================
+// Swamp Hop — Scoring
+// =========================
+int hopscore = 0;                  // Current run score (increments once per second survived)
+int besthopscore = 0;              // All-time best score across all runs (persisted to save)
+float hopscoreframecounter = 0;    // Counts frames; every 60 frames = 1 point + moneyperpt earned
+float moneyperpt = 0;              // Dollars earned per minigame point (upgradeable in Earn panel)
 
-int snatchscore = 0;
+// =========================
+// Snack Snatch — Scoring
+// =========================
+int snatchscore = 0;               // Current run score for Snack Snatch
 
-
-float alligatorx = 550;
+// =========================
+// Fetch Frenzy — Player Position
+// =========================
+float alligatorx = 550;            // Horizontal position of the alligator in Fetch Frenzy (top-down)
 
 void resetSwampHop() {
   swamphoplost = false;
@@ -132,33 +221,33 @@ void play() {
         (minigamechoice.width/1.4)*1.01, minigamechoice.height/1.4);
   
   if (enterswamphop) {
-  
+
     onchoicescreen = false;
     swamphop();
-    fadeOpacity = max(0, fadeOpacity - 6);  // fade from black to clear
-  
+    minigameFade.stepIn(6);  // fade from black to clear as game starts
+
   } else if (entersnacksnatch) {
-  
+
     onchoicescreen = false;
     snacksnatch();
-    fadeOpacity = max(0, fadeOpacity - 6);  // fade from black to clear
-  
+    minigameFade.stepIn(6);
+
   } else if (enterfetchfrenzy) {
-  
+
     onchoicescreen = false;
     fetchfrenzy();
-    fadeOpacity = max(0, fadeOpacity - 6);  // fade from black to clear
-  
+    minigameFade.stepIn(6);
+
   } else {
-  
+
     onchoicescreen = true;
-    fadeOpacity = max(0, fadeOpacity - 3);
-  
+    minigameFade.stepIn(3);  // choice screen fades in slightly slower
+
   }
 
+  // Draw the fade overlay on top of everything
   rectMode(CORNER);
-  fill(0, fadeOpacity);
-  rect(0, 0, width, height);
+  minigameFade.draw();
 }
 
 
@@ -199,49 +288,11 @@ void swamphop() {
     applyAlligatorTint();
     image(alligatorf1, x, y, alligatorf1.width/1.5, alligatorf1.height/1.5);
     noTint();
+    if (hopscore > besthopscore) besthopscore = hopscore;
     if (!swamphopinstructions) {
-    stroke(255);
-    strokeWeight(5);
-    fill(80,150);
-    rectMode(CENTER);
-    rect(width/2,height*0.4,300,400);
-    fill(255);
-    textAlign(CENTER,CENTER);
-    textFont(arcade);
-    text("YOU LOST!", width/2, 136);
-    textSize(30);
-    if (hopscore>besthopscore) besthopscore=hopscore;
-    text("High Score: " + besthopscore, width/2, 180);
-    applyAlligatorTint();
-    image(alligator.energeticalligator, width/2, 300, alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
-    noTint();
-    text("RETRY", width/2-70,436);
-    text("EXIT", width/2+70,436);
-    noFill();
-    rect(width/2-70,436,105,50);
-    rect(width/2+70,436,105,50);
+      drawMinigameModal("YOU LOST!", "High Score: " + besthopscore, "", "", "RETRY", "EXIT");
     } else {
-    stroke(255);
-    strokeWeight(5);
-    fill(80,150);
-    rectMode(CENTER);
-    rect(width/2,height*0.4,300,400);
-    fill(255);
-    textAlign(CENTER,CENTER);
-    textFont(arcade);
-    text("WELCOME!", width/2, 136);
-    textSize(25);
-    if (hopscore>besthopscore) besthopscore=hopscore;
-    text("Click space to hop!", width/2, 180);
-    applyAlligatorTint();
-    image(alligator.energeticalligator, width/2, 300, alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
-    noTint();
-    textSize(30);
-    text("PLAY", width/2-70,436);
-    text("EXIT", width/2+70,436);
-    noFill();
-    rect(width/2-70,436,105,50);
-    rect(width/2+70,436,105,50);
+      drawMinigameModal("WELCOME!", "Click space to hop!", "", "", "PLAY", "EXIT");
     }
 
     strokeWeight(1);
@@ -263,11 +314,7 @@ void swamphop() {
   }
 
   imageMode(CORNER);
-  if (!swamphoplost) {
-    alligator.energy-=0.01;
-    alligator.happiness+=0.01;
-    totalHappinessRestored+=0.01;
-}
+  if (!swamphoplost) tickMinigameStats();
   
   swamphopBgX -= swamphopSpeed;
   if (swamphopBgX <= -bgW) swamphopBgX = 0;
@@ -474,11 +521,7 @@ void snacksnatch() {
   if (alligatorx < 140) alligatorx = 140;
   if (alligatorx > 960) alligatorx = 960;
   
-  if (!snacksnatchlost) {
-    alligator.energy-=0.01;
-    alligator.happiness+=0.01;
-    totalHappinessRestored+=0.01;
-}
+  if (!snacksnatchlost) tickMinigameStats();
   
   imageMode(CORNER);
   image(mainscreen, 0, 0, width, height);
@@ -501,54 +544,14 @@ void snacksnatch() {
   drawMinigameStats();
   
   if (snacksnatchlost) {
-  if (!snacksnatchinstructions) {
-    stroke(255);
-    strokeWeight(5);
-    fill(80,150);
-    rectMode(CENTER);
-    rect(width/2,height*0.4,300,400);
-    fill(255);
-    textAlign(CENTER,CENTER);
-    textFont(arcade);
-    text("YOU LOST!", width/2, 136);
-    textSize(30);
-    if (snatchscore>bestsnatchscore) bestsnatchscore=snatchscore;
-    text("High Score: " + bestsnatchscore, width/2, 180);
-    applyAlligatorTint();
-    image(alligator.energeticalligator, width/2, 300, alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
-    noTint();
-    text("RETRY", width/2-70,436);
-    text("EXIT", width/2+70,436);
-    noFill();
-    rect(width/2-70,436,105,50);
-    rect(width/2+70,436,105,50);
-  } else {
-    stroke(255);
-    strokeWeight(5);
-    fill(80,150);
-    rectMode(CENTER);
-    rect(width/2,height*0.4,300,400);
-    fill(255);
-    textAlign(CENTER,CENTER);
-    textFont(arcade);
-    text("WELCOME", width/2, 126);
-    if (snatchscore>bestsnatchscore) bestsnatchscore=snatchscore;
-    textSize(18);
-    text("Catch food, dodge veggies!", width/2, 160);
-    text("Use A/D or the right and", width/2, 180);
-    text("left arrow keys to move.", width/2, 200);
-    textSize(30);
-    applyAlligatorTint();
-    image(alligator.energeticalligator, width/2, 300, alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
-    noTint();
-    text("PLAY", width/2-70,436);
-    text("EXIT", width/2+70,436);
-    noFill();
-    rect(width/2-70,436,105,50);
-    rect(width/2+70,436,105,50);      
+    if (snatchscore > bestsnatchscore) bestsnatchscore = snatchscore;
+    if (!snacksnatchinstructions) {
+      drawMinigameModal("YOU LOST!", "High Score: " + bestsnatchscore, "", "", "RETRY", "EXIT");
+    } else {
+      drawMinigameModal("WELCOME", "Catch food, dodge veggies!", "Use A/D or the right and", "left arrow keys to move.", "PLAY", "EXIT");
+    }
+    stroke(0);
   }
-  stroke(0);
-}
 }
 
 void updateSnackSnatchFalling() {
@@ -685,11 +688,20 @@ class FallingFood {
 boolean snacksnatchlost = true;
 int bestsnatchscore = 0;
 
-float gatorWMult = 0.600;
-float gatorHMult = 0.240;
-float gatorOX = -4.0;
-float gatorOY = -20.0;
+// =========================
+// Snack Snatch Hitbox Tuning
+// Each variable pair (W/H) scales the hitbox relative to the sprite size.
+// Each pair (OX/OY) offsets the hitbox center from the sprite center.
+// Values were hand-tuned to match each sprite's visual footprint.
+// =========================
 
+// Alligator catcher hitbox (applied to the player character)
+float gatorWMult = 0.600; // fraction of sprite width used for collision
+float gatorHMult = 0.240; // fraction of sprite height used for collision
+float gatorOX = -4.0;     // horizontal center offset in pixels
+float gatorOY = -20.0;    // vertical center offset in pixels (shifted up toward mouth)
+
+// Per-food hitbox tuning (W/H = size fraction, OX/OY = center offset)
 float bluegillW=0.520, bluegillH=0.380, bluegillOX=-2, bluegillOY=-4;
 float bassW=0.560, bassH=0.400, bassOX=4, bassOY=-8;
 float perchW=0.580, perchH=0.360, perchOX=0, perchOY=-2;
@@ -697,6 +709,7 @@ float goldfishW=0.520, goldfishH=0.380, goldfishOX=-2, goldfishOY=-4;
 float crabW=0.600, crabH=0.360, crabOX=0, crabOY=-4;
 float lambchopW=0.420, lambchopH=0.340, lambchopOX=-8, lambchopOY=8;
 float porkchopW=0.500, porkchopH=0.420, porkchopOX=0, porkchopOY=0;
+// Vegetables (touching these causes a loss)
 float broccoliW=0.540, broccoliH=0.620, broccoliOX=2, broccoliOY=-4;
 float carrotW=0.380, carrotH=0.540, carrotOX=-6, carrotOY=8;
 float tomatoW=0.380, tomatoH=0.480, tomatoOX=2, tomatoOY=-2;
@@ -799,11 +812,7 @@ void fetchfrenzy() {
     firstlaunch = true;
   }
   
-  if (!fetchfrenzylost) {
-    alligator.energy-=0.01;
-    alligator.happiness+=0.01;
-    totalHappinessRestored+=0.01;
-}
+  if (!fetchfrenzylost) tickMinigameStats();
   
   walkanimation();
 
@@ -850,53 +859,14 @@ if (waitingToLaunch) {
   }
   if (fetchfrenzylost) {
     if (!fetchfrenzyinstructions) {
-    stroke(255);
-    strokeWeight(5);
-    fill(80,150);
-    rectMode(CENTER);
-    rect(width/2,height*0.4,300,400);
-    fill(255);
-    textAlign(CENTER,CENTER);
-    textFont(arcade);
-    text("YOU LOST!", width/2, 136);
-    textSize(30);
-    if (hopscore>besthopscore) besthopscore=hopscore;
-    text("High Score: " + bestfetchscore, width/2, 180);
-    applyAlligatorTint();
-    image(alligator.energeticalligator, width/2, 300, alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
-    noTint();
-    text("RETRY", width/2-70,436);
-    text("EXIT", width/2+70,436);
-    noFill();
-    rect(width/2-70,436,105,50);
-    rect(width/2+70,436,105,50);
+      if (hopscore > besthopscore) besthopscore = hopscore;
+      drawMinigameModal("YOU LOST!", "High Score: " + bestfetchscore, "", "", "RETRY", "EXIT");
     } else {
-    stroke(255);
-    strokeWeight(5);
-    fill(80,150);
-    rectMode(CENTER);
-    rect(width/2,height*0.4,300,400);
-    fill(255);
-    textAlign(CENTER,CENTER);
-    textFont(arcade);
-    text("WELCOME", width/2, 126);
-    if (snatchscore>bestsnatchscore) bestsnatchscore=snatchscore;
-    textSize(18);
-    text("Fetch the ball in the", width/2, 160);
-    text("alotted time using WASD", width/2, 180);
-    text("or the arrow keys!", width/2, 200);
-    textSize(30);
-    applyAlligatorTint();
-    image(alligator.energeticalligator, width/2, 300, alligator.energeticalligator.width/4, alligator.energeticalligator.height/4);
-    noTint();
-    text("PLAY", width/2-70,436);
-    text("EXIT", width/2+70,436);
-    noFill();
-    rect(width/2-70,436,105,50);
-    rect(width/2+70,436,105,50);    
-}
-stroke(0);
-}
+      if (snatchscore > bestsnatchscore) bestsnatchscore = snatchscore;
+      drawMinigameModal("WELCOME", "Fetch the ball in the", "allotted time using WASD", "or the arrow keys!", "PLAY", "EXIT");
+    }
+    stroke(0);
+  }
 }
 
 void walkanimation() {
