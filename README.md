@@ -37,14 +37,14 @@ The main screen is your daily hub. Each day you can take the following actions b
 
 | Button | Action |
 |--------|--------|
-| Bag (Inventory) | Feed or sell items from your inventory |
+| Inventory | Feed or sell items from your inventory |
 | Rest | Play a timing mini-game to restore energy |
 | Store | Buy snacks, medicine, or meat |
 | Play | Choose and play a minigame to earn money |
 | Services | Hire a vet, dog walker, or cleaner |
-| Earn (💰) | Get a job, do tasks, or upgrade your income |
+| Earn | Get a job, do tasks, or upgrade your income |
 | Bank | View your full transaction history |
-| Achievements (🏆) | Track progress and collect reward money |
+| Achievements | Track progress and collect reward money |
 | **+** | Advance to the next day |
 | **X** | Quit the game |
 
