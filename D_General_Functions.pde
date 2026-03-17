@@ -73,10 +73,6 @@ String defaultPetName = "Moss";
 // Naming / Input-Related Variables
 // =========================
 
-String typedInput = "";  // Placeholder string for typed input
-
-PFont fontTimesReference;        // Font reference
-
 // Holds the current validation error message shown on the naming screen
 // Empty string means no error (input is valid or not yet submitted)
 String petNameValidationError = "";
@@ -443,7 +439,6 @@ void saveGame() {
   save.setInt("selectedAlligator", selectedAlligatorSkin);
   save.setBoolean("namechosen", isNameChosen);
   save.setString("alligatorname", defaultPetName == null ? "" : defaultPetName);
-  save.setString("userInput", typedInput == null ? "" : typedInput);
 
   // main progression
   save.setBoolean("onmainscreen", isOnMainScreen);
@@ -588,7 +583,6 @@ void loadGame() {
   selectedAlligatorSkin = save.getInt("selectedAlligator", selectedAlligatorSkin);
   isNameChosen = save.getBoolean("namechosen", isNameChosen);
   defaultPetName = save.getString("alligatorname", defaultPetName);
-  typedInput = save.getString("userInput", typedInput);
 
   // main progression
   isOnMainScreen = save.getBoolean("onmainscreen", isOnMainScreen);

@@ -61,16 +61,8 @@ void setup() {
 // Draw Function
 // Main game loop called every frame. Routes rendering to the correct screen based on global state flags (homescreen, cutscene, naming, main game, minigames).
 // Runs every frame — routes rendering to the active screen.
-//
-// Screen transition order:
-//   Home Screen → Cutscene → [Home/Cutscene flags turn off]
-//   → Naming (isNamingActive) → Main Game (isGameStarted)
-//
-// NOTE: isNamingActive and isGameStarted use separate `if` (not `else if`)
-// because they are set in sequence by F_Adoption_Cutscene.pde — the naming
-// screen activates before isGameStarted is true, but they can briefly overlap
-// during the transition frame. Keeping them independent ensures neither is skipped.
 // =========================
+
 void draw() {
   // Home screen (main menu)
   if (isHomeScreenVisible == true) {

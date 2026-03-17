@@ -555,6 +555,14 @@ void daychanges() {
     sicknessStatusText = alligator.petName + " is not currently sick.";
   }
 
+  // Red-zone health penalty: each stat in the danger range costs 7 extra health per day
+  if (alligator.health    <  40)                                        alligator.health -= 7;
+  if (alligator.happiness <  40)                                        alligator.health -= 7;
+  if (alligator.hunger    >= 90)                                        alligator.health -= 7;
+  if (alligator.sickrisk  >= 90)                                        alligator.health -= 7;
+  if (alligator.energy    >= 80 || alligator.energy < 20)               alligator.health -= 7;
+  alligator.health = clampStat(alligator.health, 0, 100);
+
   if (!job.equals("unemployed")) {
     salaryInfoText = " You have earned $" + nf(salary, 0, 2) + " (salary).";
     money                 += salary;

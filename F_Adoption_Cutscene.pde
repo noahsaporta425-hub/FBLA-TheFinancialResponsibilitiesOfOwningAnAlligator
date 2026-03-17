@@ -152,8 +152,6 @@ void cutscene() {
 float signRevealProgress = 0;
 float signRevealSpeed    = 0.015;  // slow reveal (1.5% per frame) makes the sign dramatically slide down into view
 
-float signBaseX          = width / 2 - 240;  // center the 480px-wide sign on the canvas
-
 float signMaskLineY      = 191;  // top edge of the sign reveal; aligns with the panel header in the background image
 float signFinalY         = height / 2 - 200;
 
@@ -215,11 +213,9 @@ void signanimation(PImage img) {
 // Shows naming background, pet sprite, and input UI
 // =========================
 
-boolean isNamingScreenShown = false;
 int selectedAlligatorSkin = 0;
 
 void namingalligatorsegment() {
-  isNamingScreenShown = true;
   isInsideAdoptionCenter = false;
 
   imageMode(CORNER);

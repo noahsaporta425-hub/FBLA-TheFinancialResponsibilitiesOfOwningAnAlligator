@@ -4,10 +4,8 @@
 // mouseWheel, mouseReleased, plus shared input utility helpers.
 //
 // Convention: all hit-detection uses raw coordinate comparisons.
-// Popup guard booleans prevent multiple screens from activating simultaneously.
+// Booleans prevent multiple screens from activating simultaneously.
 // =========================
-
-boolean isMouseInSwampHopArea; // true when the mouse is inside the Swamp Hop minigame panel
 
 // Temporary item category flags used during inventory/store sell logic
 boolean isMedicine = false;
@@ -17,7 +15,7 @@ boolean isMoveRight = false;
 
 
 // =========================
-// Utility: findItemIndex
+// Function: findItemIndex
 // Linear search through an item name array.
 // Returns the matching index, or -1 if the item is not in the array.
 // Used to categorize inventory items into medicine / snack / meat buckets.
@@ -31,7 +29,7 @@ int findItemIndex(String item, String[] arr) {
 
 
 // =========================
-// Utility: removeInventorySlot
+// Function: removeInventorySlot
 // Marks a slot as EMPTY and left-shifts all remaining items to compact the list.
 // Ensures the selected slot index stays within valid bounds after removal.
 // =========================
@@ -46,10 +44,11 @@ void removeInventorySlot(int slotIndex) {
 
 
 // =========================
-// Utility: logSellTransaction
-// Canonical way to add sell income — updates money, lifetime earnings,
+// Function: logSellTransaction
+// Way to add sell income — updates money, lifetime earnings,
 // transaction count, and the bank log in one call.
 // =========================
+
 void logSellTransaction(String itemName, float sellPrice) {
   money += sellPrice;
   totalMoneyEarned += sellPrice;
@@ -59,7 +58,7 @@ void logSellTransaction(String itemName, float sellPrice) {
 
 
 // =========================
-// Utility: setMinigameEntry
+// Function: setMinigameEntry
 // Ensures exactly one minigame active flag is true at a time.
 // Centralizes the logic so callers never accidentally set conflicting flags.
 // =========================
@@ -71,18 +70,14 @@ void setMinigameEntry(boolean swamp, boolean snatch, boolean fetch) {
 }
 
 // Handles all mouse click interactions. Organized by screen state (homescreen → cutscene →
-// main game panels). Raw coordinate comparisons are used throughout because Processing's
-// event model doesn't support component-based hit testing without a UI framework.
+// main game panels). Raw coordinate comparisons are used throughout.
+
 void mousePressed() {
-  // Capture current screen states at the moment of click to avoid mid-handler transitions
-  // causing incorrect branching (e.g., a click that changes isOnChoiceScreen mid-frame)
+  // Capture current screen states at the moment of click to ensure proper mouse input is on the proper screen
   boolean wasOnChoiceScreen = isOnChoiceScreen;
   boolean wasEnteringSwamp = isEnterSwampHop;
   boolean wasEnteringSnack = isEnterSnackSnatch;
   boolean wasEnteringFetch = isEnterFetchFrenzy;
-
-  // Pre-compute whether the click is inside the Swamp Hop panel area
-  isMouseInSwampHopArea = (mouseX > 88 && mouseX < 373 && mouseY > 258 && mouseY < 658);
 
   // Pre-compute the "no popup blocking" guard shared by all main-screen buttons.
   // All interactive buttons are disabled while any popup or dialog is covering the screen.
@@ -751,26 +746,26 @@ if (isTasksPanelOpen && hasShownJobPopup &&
       taskRewardAmount = taskRewardAmount * 1.12f;
       taskUpgradeCount++;
     }
-  }
 
-  // $ Per Point upgrade — increases minigame money earned per score point
-  if (isTasksPanelOpen &&
-      mouseX > 575 && mouseX < 656 &&
-      mouseY > 411 && mouseY < 431 && money>=pointUpgradeCost) {
-  
-      money -= pointUpgradeCost;
-      totalMoneySpent += pointUpgradeCost;
-      bankTransactionsLoggedCount++;
-      bankTransactionLog.add("Transaction: Bought $ Per Point Upgrade (-$" + nf(pointUpgradeCost, 0, 2) + ")");
-      playPointUpgradeCount++;
-  
-      if (moneyPerMinigamePoint == 0) {
-        moneyPerMinigamePoint = 0.10f;
-      } else {
-        moneyPerMinigamePoint *= 1.2f;
-      }
-  
-      pointUpgradeCost *= 1.2f;
+    // $ Per Point upgrade — increases minigame money earned per score point
+    if (isTasksPanelOpen &&
+        mouseX > 575 && mouseX < 656 &&
+        mouseY > 411 && mouseY < 431 && money>=pointUpgradeCost) {
+
+        money -= pointUpgradeCost;
+        totalMoneySpent += pointUpgradeCost;
+        bankTransactionsLoggedCount++;
+        bankTransactionLog.add("Transaction: Bought $ Per Point Upgrade (-$" + nf(pointUpgradeCost, 0, 2) + ")");
+        playPointUpgradeCount++;
+
+        if (moneyPerMinigamePoint == 0) {
+          moneyPerMinigamePoint = 0.10f;
+        } else {
+          moneyPerMinigamePoint *= 1.2f;
+        }
+
+        pointUpgradeCost *= 1.2f;
+    }
   }
 
 if (isEarnPanelOpen == true && hasShownJobPopup &&
@@ -892,7 +887,8 @@ if (money >= 5 && isVetOpen &&
     isStoreMainScreenFading = true;  // begin fade-to-black before entering the store
     return;
   } else if (dist(mouseX, mouseY, 337, 602) < 50 &&
-      noPopupOpen && hasShownTreatmentPopup && !isBankOpen && !isStoreOpen) {
+      noPopupOpen && hasShownTreatmentPopup && !isBankOpen && !isStoreOpen &&
+      day % 7 == 0) {
     // Store is closed today — show a message instead of opening the store
     isShowingStoreClosedPopup = true;
   }
@@ -1261,6 +1257,7 @@ if (money >= 5 && isVetOpen &&
     alligator.happiness+=10;
     alligator.health+=5;
     cleanersHiredCount++;
+    hasCleanerVisited = true;
     money-=10;
     totalMoneySpent+=10;
     bankTransactionsLoggedCount++;

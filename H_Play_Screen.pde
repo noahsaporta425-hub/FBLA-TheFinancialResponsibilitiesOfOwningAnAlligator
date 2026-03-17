@@ -883,8 +883,6 @@ if (isBallWaitingToLaunch) {
   }
 }
 
-  wasBallHittingPlayer = ballHitsPlayer;
-  
   strokeWeight(1);
   stroke(0);
   rectMode(CORNER);
@@ -911,6 +909,18 @@ if (isBallWaitingToLaunch) {
 }
 
 void walkanimation() {
+  if (!isFetchLost) {
+    if (fetchFacingDirection.equals("LEFT")) {
+      fetchPlayerX -= 5;
+    } else if (fetchFacingDirection.equals("RIGHT")) {
+      fetchPlayerX += 5;
+    } else if (fetchFacingDirection.equals("UP")) {
+      fetchPlayerY -= 5;
+    } else if (fetchFacingDirection.equals("DOWN")) {
+      fetchPlayerY += 5;
+    }
+  }
+
   if (fetchFacingDirection.equals("DOWN")  && fetchPlayerY > 395 && fetchPlayerX > 456 && fetchPlayerX < 631) fetchPlayerY = 394;
   if (fetchFacingDirection.equals("RIGHT") && fetchPlayerY > 504 && fetchPlayerX > 371 && fetchPlayerX < 500) fetchPlayerX = 371;
   if (fetchFacingDirection.equals("LEFT")  && fetchPlayerY > 504 && fetchPlayerX > 600 && fetchPlayerX < 746) fetchPlayerX = 747;
@@ -920,18 +930,6 @@ void walkanimation() {
   if (fetchPlayerX < 100) fetchPlayerX = 101;
   if (fetchPlayerX > 1000) fetchPlayerX = 999;
   if (fetchPlayerY > (height - 96)) fetchPlayerY = height - 97;
-  
-  if (!isFetchLost) {
-  if (fetchFacingDirection.equals("LEFT")) {
-    fetchPlayerX -= 5;
-  } else if (fetchFacingDirection.equals("RIGHT")) {
-    fetchPlayerX += 5;
-  } else if (fetchFacingDirection.equals("UP")) {
-    fetchPlayerY -= 5;
-  } else if (fetchFacingDirection.equals("DOWN")) {
-    fetchPlayerY += 5;
-  }
-  }
 
   pushMatrix();
   translate(fetchPlayerX, fetchPlayerY);
