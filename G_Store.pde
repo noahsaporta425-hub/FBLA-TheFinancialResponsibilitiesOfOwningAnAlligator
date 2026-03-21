@@ -320,5 +320,5 @@ void storeclosedpopup() {
   fill(0);
   textFont(times50);
   textSize(20);
-  drawWrappedTextInBox("The store is closed on Sundays (days that are multiples of 7). Come back tomorrow!", 338, 271, 761, 400, 6);
+  drawWrappedTextInBox("The store is closed on Sundays. Come back tomorrow.", 338, 271, 761, 400, 6);
 }

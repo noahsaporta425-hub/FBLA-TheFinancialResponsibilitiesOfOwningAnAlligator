@@ -470,5 +470,5 @@ void cantsell() {
   fill(0);
   textFont(times50);
   textSize(20);
-  drawWrappedTextInBox("Careful! Selling your steak could leave " + alligator.petName + " starving, and that can be deadly. From here on out, financial decisions are yours. Choose wisely!", 338, 271, 761, 400, 6);
+  drawWrappedTextInBox("Selling your steak could leave " + alligator.petName + " starving. Financial decisions are now yours — choose wisely.", 338, 271, 761, 400, 6);
 }

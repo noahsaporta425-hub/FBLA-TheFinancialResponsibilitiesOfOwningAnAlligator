@@ -2,7 +2,9 @@
 // G_Main_Screen.pde
 // Core main gameplay screen: state flags, HUD rendering, mainscreen() orchestrator,
 // stat bars, day progression, tutorial popups, quit/game-over overlays.
-//
+// =========================
+
+// =========================
 // Sub-systems live in their own files:
 //   G_Inventory.pde   — inventory panel + item data
 //   G_Store.pde       — store panel + fade logic
@@ -175,7 +177,7 @@ void mainscreen() {
     fill(0);
     textFont(times50);
     textSize(20);
-    drawWrappedTextInBox("Welcome to your first day of alligator pet care! It seems like " + alligator.petName + " is already hungry! Head to your inventory after closing this window to feed him the food you were given at the adoption center!", 338, 271, 761, 400, 6);
+    drawWrappedTextInBox(alligator.petName + " is hungry! Close this window and open your inventory to feed them the food from the adoption center.", 338, 271, 761, 400, 6);
   }
 
   // Tutorial guide arrows
@@ -448,7 +450,7 @@ void playpopup() {
   fill(0);
   textFont(times50);
   textSize(20);
-  drawWrappedTextInBox("Uh oh! Feeding the steak to " + alligator.petName + " gave them too much energy. An alligator with too much energy is very dangerous! Let " + alligator.petName + " play after closing this window to stabilize their energy!", 338, 271, 761, 400, 6);
+  drawWrappedTextInBox("The steak gave " + alligator.petName + " too much energy — that's dangerous! Close this window and let them play to burn it off.", 338, 271, 761, 400, 6);
 }
 
 
@@ -642,11 +644,8 @@ void gameOverScreen() {
   float innerLeft  = cx - 290;
   float innerRight = cx + 290;
   drawWrappedTextInBox(
-    "Without enough food, medicine, or care, " + petName +
-    "'s health slowly fell to zero. Alligators need consistent " +
-    "nutrition and regular checkups to stay strong. " + petName +
-    " lived for " + (day - 1) + " day" + (day - 1 == 1 ? "" : "s") +
-    " under your care.",
+    petName + " went without enough food, medicine, and care until their health hit zero. They lived for " +
+    (day - 1) + " day" + (day - 1 == 1 ? "" : "s") + ".",
     innerLeft, y, innerRight, y + 115, 5
   );
 
@@ -661,7 +660,7 @@ void gameOverScreen() {
   textSize(13);
   fill(160, 140, 130);
   textAlign(CENTER, CENTER);
-  text("Tip: Visit the vet and feed " + petName + " nutritious meat to keep his health up.", cx, y);
+  text("Tip: Feed meat and visit the vet regularly.", cx, y);
 
   y += 52;
   fill(180, 40, 40);

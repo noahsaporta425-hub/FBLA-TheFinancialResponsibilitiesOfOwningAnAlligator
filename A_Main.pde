@@ -1,5 +1,3 @@
-
-
 // =========================
 // Imports & Libraries
 // =========================
@@ -68,14 +66,16 @@ void draw() {
   if (isHomeScreenVisible == true) {
     homescreen();
     cp5.draw();
+    if (isFadingToNaming) {
+      if (transitionFade.stepOut(4)) {
+        isHomeScreenVisible = false;
+        isNamingActive = true;
+      }
+      transitionFade.draw();
+    }
   }
 
-  // Intro cutscene (mutually exclusive with home screen)
-  else if (isCutsceneActive == true) {
-    cutscene();
-  }
-
-  // Pet naming screen — active during and just after the adoption cutscene
+  // Pet naming screen — active after Begin is clicked
   if (isNamingActive == true) {
     namingalligatorsegment();
   }

@@ -45,7 +45,7 @@ void bankpopup() {
   fill(0);
   textFont(times50);
   textSize(20);
-  drawWrappedTextInBox("Don't forget to give " + alligator.petName + " another dose tomorrow (see prescription description). Click Bank after closing this window to view your transactions and get personalized financial advice.", 338, 271, 761, 400, 6);
+  drawWrappedTextInBox("Give " + alligator.petName + " another dose tomorrow (see prescription). Close this window and click Bank to view your transactions and financial advice.", 338, 271, 761, 400, 6);
 }
 
 
@@ -120,52 +120,52 @@ void bank() {
   // advice panel shows the most relevant tip based on current state; conditions checked in priority order (problems first, encouragement last)
   if (hasNeverBoughtHighQualityCare) {
     drawWrappedTextInBox(
-      "You have only purchased low quality care. While it's cheaper, the vet can prescribe an incorrect medication or refuse to help even after you pay.",
+      "You've only used low-quality care. It's cheaper but riskier — the vet may prescribe the wrong medicine.",
       bankViewportX + 10, bankViewportY + 38 - bankScrollOffset,
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else if (!hasCleanerVisited) {
     drawWrappedTextInBox(
-      "Hiring a cleaner daily will ensure that " + alligator.petName + "'s risk of sickness won't increase daily.",
+      "Hire a cleaner daily to prevent " + alligator.petName + "'s sickness risk from rising.",
       bankViewportX + 10, bankViewportY + 38 - bankScrollOffset,
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else if (timesFedPet < 5) {
     drawWrappedTextInBox(
-      "Keep an eye on hunger and energy. Feeding " + alligator.petName + " regularly will help keep hunger from getting to high and energy from getting too low.",
+      "Feed " + alligator.petName + " regularly to keep hunger down and energy up.",
       bankViewportX + 10, bankViewportY + 38 - bankScrollOffset,
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else if (timesRestedSuccessfully < 3) {
     drawWrappedTextInBox(
-      "Resting is a good way to restore energy, but make sure these rests are successful and the line lands in the COLOR_GREEN zone.",
+      "Rest restores energy — aim for the green zone each time.",
       bankViewportX + 10, bankViewportY + 38 - bankScrollOffset,
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else if (helpTaskCount < 3) {
     drawWrappedTextInBox(
-      "Helping around town is a good way to earn money, but leaving " + alligator.petName + " alone can have consequences.",
+      "Town tasks earn money, but " + alligator.petName + " may suffer while you're away.",
       bankViewportX + 10, bankViewportY + 38 - bankScrollOffset,
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else if (money < 15) {
     drawWrappedTextInBox(
-      "Your money is getting low. Consider working, helping around town, or playing minigames to earn more.",
+      "Money is low. Work, run tasks, or play minigames to earn more.",
       bankViewportX + 10, bankViewportY + 38 - bankScrollOffset,
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else if (alligator.sickrisk >= 60) {
     drawWrappedTextInBox(
-      alligator.petName + "'s sickness risk is pretty high. Cleaning and careful care can help prevent future problems.",
+      alligator.petName + "'s sickness risk is high. Clean regularly to prevent illness.",
       bankViewportX + 10, bankViewportY + 38 - bankScrollOffset,
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else if (alligator.health <= 40) {
     drawWrappedTextInBox(
-      alligator.petName + "'s health is getting low. You should focus on recovery before it becomes dangerous.",
+      alligator.petName + "'s health is low — focus on recovery now.",
       bankViewportX + 10, bankViewportY + 38 - bankScrollOffset,
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else if (alligator.hunger >= 50) {
     drawWrappedTextInBox(
-      alligator.petName + " is getting hungry. Make sure to keep food stocked in your inventory.",
+      alligator.petName + " is hungry. Stock up on food.",
       bankViewportX + 10, bankViewportY + 38 - bankScrollOffset,
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else {
     drawWrappedTextInBox(
-      "Keep balancing money and care to keep " + alligator.petName + " healthy, happy, and alive.",
+      "Balance money and care to keep " + alligator.petName + " healthy and alive.",
       bankViewportX + 10, bankViewportY + 38 - bankScrollOffset,
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   }

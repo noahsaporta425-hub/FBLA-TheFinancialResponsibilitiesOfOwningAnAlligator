@@ -104,8 +104,7 @@ void mousePressed() {
     if (mouseX > width * 0.38f && mouseX < width * 0.61f &&
         mouseY > height * 0.67f && mouseY < height * 0.8f &&
         isShowingMusicSettings == false && isShowingInstructions == false) {
-      isHomeScreenVisible = false;
-      isCutsceneActive = true;
+      isFadingToNaming = true;
     }
 
     // "Music Settings" button (right) — only when instructions overlay is closed
@@ -128,28 +127,6 @@ void mousePressed() {
     }
   }
 
-  // =========================
-  // Adoption Center: Pet Selection
-  // Clicking either the sign or the animal portrait chooses that pet type
-  // =========================
-  if (isInsideAdoptionCenter == true) {
-    // Dog sign (button label area) OR dog portrait (larger clickable sprite region)
-    if ((mouseX > 223 && mouseX < 350 &&
-         mouseY > 450 && mouseY < 484) ||
-        (mouseX > 229 && mouseX < 367 &&
-         mouseY > 189 && mouseY < 426)) {
-      isDogSelected = true;
-    }
-
-    // Cat sign OR cat portrait
-    if ((mouseX > 768 && mouseX < 891 &&
-         mouseY > 450 && mouseY < 482) ||
-        (mouseX > 757 && mouseX < 871 &&
-         mouseY > 227 && mouseY < 415)) {
-      isCatSelected = true;
-    }
-  }
-  
   // =========================
   // Naming Screen: Alligator Color Selection
   // Three "SELECT" buttons are evenly spaced 300px apart from the base X position.
@@ -301,6 +278,7 @@ void mousePressed() {
     // --- Bank Button (bottom-right action circle) ---
     if (dist(mouseX, mouseY, 861, 602) <= 50 &&
         noPopupOpen &&
+        (!hasGivenFirstMedicine || hasShownBankPopup) &&
         !isRestOpen && !isStoreOpen && !isServicesOpen && !isEarnPanelOpen && !isBankOpen &&
         isOnMainScreen) {
       isBankOpen = true;
@@ -685,7 +663,7 @@ if (isTasksPanelOpen && hasShownJobPopup &&
   if (!hasShownFirstHelpPopup) {
     isPetSick = true;
     currentSicknessName = sicknessNames[0];
-    helpPopupMessage = "Congrats on earning $" + nf(taskRewardAmount,0,2) + "! While helping around town, " + alligator.petName + " was left unattended and developed an infection. Close this window and click the services button to visit the vet.";
+    helpPopupMessage = "You earned $" + nf(taskRewardAmount,0,2) + "! " + alligator.petName + " developed an infection during the Help Around Town task. Close this window and click Services to visit the vet.";
     isShowingFirstHelpPopup = true;
   } else if (random(1) < 0.40f) { // 40% chance that leaving for a task stresses the pet enough to worsen a stat — risk/reward tradeoff
 
@@ -783,7 +761,7 @@ if (isEarnPanelOpen == true && hasShownJobPopup &&
     isPetSick = true;
     currentSicknessName = sicknessNames[0];
     alligator.health -= 30;
-    helpPopupMessage = "Congrats on earning $" + nf(taskRewardAmount,0,2) + "! While helping around town, " + alligator.petName + " was left unattended and developed an infection. Close this window and click the services button to visit the vet.";
+    helpPopupMessage = "You earned $" + nf(taskRewardAmount,0,2) + "! " + alligator.petName + " developed an infection during the Help Around Town task. Close this window and click Services to visit the vet.";
     isShowingFirstHelpPopup = true;
   } else if (!isPetSick && random(1) < 0.15f) { // 15% baseline daily sickness chance even for a healthy pet — models real-world unpredictability
     int randomSicknessIndex = int(random(sicknessNames.length));
@@ -841,7 +819,7 @@ if (money >= 5 && isVetOpen &&
 
   if (!isPetSick || alreadyPrescribed) {
     alligator.health = min(100, alligator.health + 30);
-    vetTreatmentMessage = "The vet treated " + alligator.petName + "'s health and restored 30 health.";
+    vetTreatmentMessage = "The vet restored 30 health for " + alligator.petName + ".";
     isShowingTreatmentPopup = true;
   } else {
     boolean lowQualityCareFails = false;
@@ -1061,7 +1039,7 @@ if (money >= 5 && isVetOpen &&
   
     if (!isPetSick || alreadyPrescribed) {
       alligator.health = min(100, alligator.health + 30);
-      vetTreatmentMessage = "The vet treated " + alligator.petName + "'s health and restored 30 health.";
+      vetTreatmentMessage = "The vet restored 30 health for " + alligator.petName + ".";
       isShowingTreatmentPopup = true;
     } else {
       for (int i = 0; i < sicknessNames.length; i++) {

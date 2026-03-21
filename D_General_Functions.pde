@@ -92,10 +92,6 @@ void fileWork() {
   homescreen                = loadImage("gametitlescreen.png");
   instructions              = loadImage("instructions.png");
   musicscreen               = loadImage("musicscreen.png");
-  outsideofadoptioncenter   = loadImage("outsideofadoptioncenter.png");
-  adoptioncenterinterior    = loadImage("adoptioncenterinterior.png");
-  pickingcat                = loadImage("pickingcat.png");
-  pickingdog                = loadImage("pickingdog.png");
   namingalligatorbackground = loadImage("namingalligatorbackground.png");
   alligator.neutralalligator= loadImage("neutralalligator.png");
   alligator.hungryalligator = loadImage("hungryalligator.png");
@@ -429,13 +425,10 @@ String formatName(String raw) {
 void saveGame() {
   JSONObject save = new JSONObject();
 
-  // cutscene / setup progress
+  // setup progress
   save.setBoolean("homescreenvisible", isHomeScreenVisible);
-  save.setBoolean("cutscenestart", isCutsceneActive);
   save.setBoolean("inNaming", isNamingActive);
   save.setBoolean("startrealgame", isGameStarted);
-  save.setBoolean("dogadopted", isDogSelected);
-  save.setBoolean("catadopted", isCatSelected);
   save.setInt("selectedAlligator", selectedAlligatorSkin);
   save.setBoolean("namechosen", isNameChosen);
   save.setString("alligatorname", defaultPetName == null ? "" : defaultPetName);
@@ -573,13 +566,10 @@ void loadGame() {
   JSONObject save = loadJSONObject("save.json");
   if (save == null) return;
 
-  // cutscene / setup progress
+  // setup progress
   isHomeScreenVisible = save.getBoolean("homescreenvisible", isHomeScreenVisible);
-  isCutsceneActive = save.getBoolean("cutscenestart", isCutsceneActive);
   isNamingActive = save.getBoolean("inNaming", isNamingActive);
   isGameStarted = save.getBoolean("startrealgame", isGameStarted);
-  isDogSelected = save.getBoolean("dogadopted", isDogSelected);
-  isCatSelected = save.getBoolean("catadopted", isCatSelected);
   selectedAlligatorSkin = save.getInt("selectedAlligator", selectedAlligatorSkin);
   isNameChosen = save.getBoolean("namechosen", isNameChosen);
   defaultPetName = save.getString("alligatorname", defaultPetName);

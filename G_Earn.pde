@@ -52,7 +52,7 @@ void earnpopup() {
   fill(0);
   textFont(times50);
   textSize(20);
-  drawWrappedTextInBox("Nice job stabilizing " + alligator.petName + "'s energy. As an owner, playing can get annoying, so you can use services to help with their needs! But services cost money. Click the earn button after closing this window!", 338, 271, 761, 400, 6);
+  drawWrappedTextInBox("Energy stabilized! Services can help manage " + alligator.petName + "'s needs, but they cost money. Click Earn to start making some.", 338, 271, 761, 400, 6);
 }
 
 void jobpopup() {
@@ -61,7 +61,7 @@ void jobpopup() {
   fill(0);
   textFont(times50);
   textSize(20);
-  drawWrappedTextInBox("Congrats on becoming a cashier! You now earn a daily salary. In this tab you can upgrade it, earn money when " + alligator.petName + " plays, or help around town for extra cash. Close this window and try helping out!", 338, 271, 761, 400, 6);
+  drawWrappedTextInBox("You're now a cashier! You earn a daily salary. Upgrade it, earn from play, or help around town for extra cash. Close this window and try helping out!", 338, 271, 761, 400, 6);
 }
 
 void help() {
@@ -348,10 +348,9 @@ void earnTasksUpgrades() {
   image(town, 380, 320, town.width/6, town.height/6);
 
   textSize(12);
-  text("Run community errands for", 380, 362);
-  text("quick cash with the risk", 380, 375);
-  text("of your alligator's stats", 380, 388);
-  text("changing due to your absence.", 380, 401);
+  text("Earn quick cash running", 380, 362);
+  text("errands. " + alligator.petName + "'s stats", 380, 375);
+  text("may change while away.", 380, 388);
 
   rectMode(CENTER);
   fill(255, 127, 0);

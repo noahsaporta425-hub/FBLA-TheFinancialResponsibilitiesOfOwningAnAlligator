@@ -76,25 +76,19 @@ void services() {
   text("HIRE - $10", 843.33f, 520);
   image(vet, 250, 330, vet.width/1.55f, vet.height/1.55f);
   textSize(15);
-  text("A veterinarian can prescribe", 256.7f, 418);
-  text("your pet medicine and/or", 256.7f, 433);
-  text("give advice to you on", 256.7f, 448);
-  text("pet care, getting rid of", 256.7f, 463);
-  text("injury, sickness, or infection", 256.7f, 478);
+  text("Prescribes medicine and", 256.7f, 418);
+  text("treats injury, sickness,", 256.7f, 433);
+  text("and infection.", 256.7f, 448);
 
   image(walker, 530, 330, walker.width/3.5f, walker.height/3.5f);
-  text("A walker will take", 604, 418);
-  text("your pet on a walk", 580, 433);
-  text("in order to stabilize", 575, 448);
-  text("energy while increasing", 575, 463);
-  text("health and happiness.", 575, 478);
+  text("Stabilizes energy while", 575, 418);
+  text("boosting health", 575, 433);
+  text("and happiness.", 575, 448);
 
   image(cleaner, 830, 310, cleaner.width/3.8f, cleaner.height/3.8f);
-  text("A cleaner will tidy", 843.33f, 418);
-  text("your pet's habitat,", 843.33f, 433);
-  text("reducing the daily", 843.33f, 448);
-  text("risk of your pet", 843.33f, 463);
-  text("getting sick.", 843.33f, 478);
+  text("Tidies the habitat,", 843.33f, 418);
+  text("reducing the daily", 843.33f, 433);
+  text("sickness risk.", 843.33f, 448);
 
   noFill();
   rectMode(CORNERS);

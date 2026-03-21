@@ -45,7 +45,7 @@ void restpopup() {
   fill(0);
   textFont(times50);
   textSize(20);
-  drawWrappedTextInBox("Seems like " + alligator.petName + " is tired. Click rest after closing this window to attempt to stabilize his energy.", 338, 271, 761, 400, 6);
+  drawWrappedTextInBox(alligator.petName + " is tired. Close this window and click Rest to stabilize their energy.", 338, 271, 761, 400, 6);
 }
 
 
