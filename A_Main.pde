@@ -28,7 +28,7 @@ SoundFile music;
 void setup() {
 
   // Set window size and use P2D renderer
-  size(1100, 700, P2D); // 1100×700 canvas with P2D (OpenGL) renderer for hardware-accelerated 2D graphics
+  size(1100, 700, P2D); // 1100x700 canvas with P2D (OpenGL) renderer for hardware-accelerated 2D graphics
 
   // Enable smoother edges
   smooth(4);
@@ -58,7 +58,7 @@ void setup() {
 // =========================
 // Draw Function
 // Main game loop called every frame. Routes rendering to the correct screen based on global state flags (homescreen, cutscene, naming, main game, minigames).
-// Runs every frame — routes rendering to the active screen.
+// Runs every frame -- routes rendering to the active screen.
 // =========================
 
 void draw() {
@@ -75,12 +75,12 @@ void draw() {
     }
   }
 
-  // Pet naming screen — active after Begin is clicked
+  // Pet naming screen -- active after Begin is clicked
   if (isNamingActive == true) {
     namingalligatorsegment();
   }
 
-  // Main gameplay screen — active for the rest of the game session
+  // Main gameplay screen -- active for the rest of the game session
   if (isGameStarted == true) {
     mainscreen();
   }

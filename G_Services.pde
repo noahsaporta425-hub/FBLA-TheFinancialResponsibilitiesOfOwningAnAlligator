@@ -8,7 +8,6 @@
 // Services State
 // =========================
 boolean isServicesOpen = false;
-boolean hasOpenedServices = false;
 boolean isVetOpen = false;
 boolean isShowingTreatmentPopup = false;
 boolean hasShownTreatmentPopup = false;
@@ -49,6 +48,8 @@ PImage vet, walker, cleaner;
 // Renders the services panel listing the dog walker and cleaner options with their costs and effects.
 // =========================
 void services() {
+  // Four equal columns across the panel (x: 110-990, width 880 -> 220 each)
+  // Column centers: 220, 440, 660, 880
   rectMode(CORNERS);
   stroke(169);
   strokeWeight(5);
@@ -58,37 +59,48 @@ void services() {
   fill(255);
   textSize(35);
   text("SERVICES:", width/2, height*0.235f);
-  textSize(25);
+  textSize(22);
   imageMode(CENTER);
-  text("Vet:", 256.67f, 200);
-  text("Walker:", 550, 200);
-  text("Cleaner:", 843.33f, 200);
+  text("Vet:", 220, 200);
+  text("Walker:", 440, 200);
+  text("Cleaner:", 660, 200);
+  text("PetAI:", 880, 200);
 
   rectMode(CENTER);
   fill(0, 255, 0, 80);
-  rect(256.67f, 520, 160, 40);
+  rect(220, 520, 130, 40);   // vet -- always available
   if (money < 10) fill(169, 80);
-  rect(550, 520, 160, 40);
-  rect(843.33f, 520, 160, 40);
+  rect(440, 520, 130, 40);   // walker -- greyed if broke
+  rect(660, 520, 130, 40);   // cleaner -- greyed if broke
+  fill(0, 255, 0, 80);
+  rect(880, 520, 130, 40);   // PetAI -- always available
   fill(255);
-  text("VISIT", 256.7f, 520);
-  text("HIRE - $10", 550, 520); // $10/day services are recurring costs that model real pet ownership expenses (grooming, hygiene)
-  text("HIRE - $10", 843.33f, 520);
-  image(vet, 250, 330, vet.width/1.55f, vet.height/1.55f);
-  textSize(15);
-  text("Prescribes medicine and", 256.7f, 418);
-  text("treats injury, sickness,", 256.7f, 433);
-  text("and infection.", 256.7f, 448);
+  textSize(18);
+  text("VISIT",      220, 520);
+  text("HIRE - $10", 440, 520); // $10/day services model real pet ownership expenses
+  text("HIRE - $10", 660, 520);
+  text("CHAT",       880, 520);
 
-  image(walker, 530, 330, walker.width/3.5f, walker.height/3.5f);
-  text("Stabilizes energy while", 575, 418);
-  text("boosting health", 575, 433);
-  text("and happiness.", 575, 448);
+  image(vet,        220, 325, vet.width/2.0f,        vet.height/2.0f);
+  textSize(13);
+  text("Prescribes medicine and", 220, 418);
+  text("treats injury, sickness,", 220, 433);
+  text("and infection.",           220, 448);
 
-  image(cleaner, 830, 310, cleaner.width/3.8f, cleaner.height/3.8f);
-  text("Tidies the habitat,", 843.33f, 418);
-  text("reducing the daily", 843.33f, 433);
-  text("sickness risk.", 843.33f, 448);
+  image(walker,     385, 325, walker.width/4.0f,     walker.height/4.0f);
+  text("Stabilizes energy while", 440, 418);
+  text("boosting health",         440, 433);
+  text("and happiness.",          440, 448);
+
+  image(cleaner,    660, 305, cleaner.width/4.5f,    cleaner.height/4.5f);
+  text("Tidies the habitat,",    660, 418);
+  text("reducing the daily",     660, 433);
+  text("sickness risk.",         660, 448);
+
+  image(unemployed, 880, 315, unemployed.width/3.5f, unemployed.height/3.5f);
+  text("Ask about your pet,",    880, 418);
+  text("finances, strategy,",    880, 433);
+  text("and tips.",              880, 448);
 
   noFill();
   rectMode(CORNERS);
@@ -100,7 +112,6 @@ void services() {
   rectMode(CORNER);
   stroke(0);
   strokeWeight(2);
-  if (!hasUsedLowQualityVet) redarrow(122, 520, "right");
 }
 
 
@@ -126,7 +137,7 @@ void vet() {
   image(vet, 660, 347, vet.width/3.75f, vet.height/3.75f);
   textSize(15);
   text("Treat " + alligator.petName + "'s " + currentSicknessName, 440, 389);
-  text("for $5.", 440, 402); // low-quality vet is cheaper but has a 25% fail rate; high-quality always succeeds — teaches cost vs reliability tradeoff
+  text("for $5.", 440, 402); // low-quality vet is cheaper but has a 25% fail rate; high-quality always succeeds -- teaches cost vs reliability tradeoff
   text("Treat " + alligator.petName + "'s " + currentSicknessName, 660, 389);
   text("for $20.", 660, 402);
 
@@ -151,7 +162,6 @@ void vet() {
   rectMode(CORNER);
   stroke(0);
   strokeWeight(2);
-  if (!hasUsedLowQualityVet) redarrow(330, 435, "right");
 }
 
 

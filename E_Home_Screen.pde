@@ -30,7 +30,7 @@ void homescreen() {
   rectMode(CORNER);
 
   // Fade in from black on initial load
-  homeFade.stepIn(2); // fade speed 2 gives a ~2s fade-in on first launch — slow enough to feel welcoming
+  homeFade.stepIn(2); // fade speed 2 gives a ~2s fade-in on first launch -- slow enough to feel welcoming
 
   // Draw background slightly oversized to avoid edge gaps
   image(homescreen, -25, 0, width + 25, height + 100); // slight overflow on right and bottom hides background image seams at the canvas edge
@@ -83,11 +83,11 @@ void instructionstext() {
   text("Your goal is to keep it healthy, safe, and financially supported over time.", 200, 175);
   text("Each day, you will make decisions about:", 200, 200);
 
-  text("• feeding", 200, 230);
-  text("• resting", 200, 270);
-  text("• playing", 200, 310);
-  text("• medical care", 200, 350);
-  text("• spending and earning money", 200, 390);
+  text("- feeding", 200, 230);
+  text("- resting", 200, 270);
+  text("- playing", 200, 310);
+  text("- medical care", 200, 350);
+  text("- spending and earning money", 200, 390);
 
   text("Press + to move forward one day in time", 200, 430);
   text("Your choices affect your alligator's health, mood, and future expenses.", 200, 470);

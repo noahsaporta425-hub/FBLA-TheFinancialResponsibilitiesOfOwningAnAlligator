@@ -8,10 +8,7 @@
 // Rest State
 // =========================
 boolean isRestOpen = false;
-boolean hasUsedRest = false;
 boolean hasAlligatorRestedOnce = false;
-boolean isShowingRestPopup = false;
-boolean hasShownRestPopup = false;
 
 int restAttemptsRemaining = 2; // two rest attempts per day prevents the player from spamming rest to max energy; resets each morning
 int restAttempts = 0;
@@ -34,19 +31,6 @@ int COLOR_GREEN  = color(0, 255, 0);
 float restMarkerProgress  = 0;
 float restMarkerDirection = 1;
 float restMarkerX         = restBarLeft;
-
-
-// =========================
-// Rest Popup
-// =========================
-void restpopup() {
-  imageMode(CENTER);
-  image(popupbackground, width/2, height*0.42f, popupbackground.width*0.6f, popupbackground.height*0.6f);
-  fill(0);
-  textFont(times50);
-  textSize(20);
-  drawWrappedTextInBox(alligator.petName + " is tired. Close this window and click Rest to stabilize their energy.", 338, 271, 761, 400, 6);
-}
 
 
 // =========================
@@ -86,7 +70,7 @@ void rest() {
     rect(restBarLeft + px, restBarTop, pixelSize, restBarHeight);
   }
 
-  float edgeSlowdown = abs(restMarkerProgress - 0.5f) * 2.0f; // marker slows toward the edges to make landing in the extremes harder — rewards aiming for center
+  float edgeSlowdown = abs(restMarkerProgress - 0.5f) * 2.0f; // marker slows toward the edges to make landing in the extremes harder -- rewards aiming for center
   float markerSpeed = map(edgeSlowdown, 0, 1, 0.03f, 0.008f); // maps slowdown value to actual speed: 0.03 at center (fast), 0.008 at edge (slow)
 
   restMarkerProgress += markerSpeed * restMarkerDirection;

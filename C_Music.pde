@@ -31,12 +31,12 @@ void volume(float v) {
 
 // =========================
 // Audio Application Helper
-// Converts slider percent (0–100) to amp value and updates the music volume
+// Converts slider percent (0-100) to amp value and updates the music volume
 // =========================
 void applyVolume(float v) {
 
-  // Map 0–100 slider range to a safe amp range
-  float ampValue = map(v, 0, 100, 0.0, 0.25); // map slider range 0–100 to amplitude 0.0–0.25; capped at 0.25 to prevent audio distortion
+  // Map 0-100 slider range to a safe amp range
+  float ampValue = map(v, 0, 100, 0.0, 0.25); // map slider range 0-100 to amplitude 0.0-0.25; capped at 0.25 to prevent audio distortion
   music.amp(ampValue);
 }
 

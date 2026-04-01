@@ -6,13 +6,13 @@
 
 // =========================
 // Sub-systems live in their own files:
-//   G_Inventory.pde   — inventory panel + item data
-//   G_Store.pde       — store panel + fade logic
-//   G_Bank.pde        — bank panel + transaction log
-//   G_Earn.pde        — earn panel, job finder, tasks/upgrades
-//   G_Services.pde    — vet, walker, cleaner, prescriptions
-//   G_Rest.pde        — rest bar mini-game
-//   G_Achievements.pde — achievement system + panel
+//   G_Inventory.pde   -- inventory panel + item data
+//   G_Store.pde       -- store panel + fade logic
+//   G_Bank.pde        -- bank panel + transaction log
+//   G_Earn.pde        -- earn panel, job finder, tasks/upgrades
+//   G_Services.pde    -- vet, walker, cleaner, prescriptions
+//   G_Rest.pde        -- rest bar mini-game
+//   G_Achievements.pde -- achievement system + panel
 // =========================
 
 
@@ -26,7 +26,6 @@ PImage settingsbutton;
 PImage earnbutton;
 PImage popupbackground;
 PImage steak;
-PImage redarrow;
 
 PFont arcade;
 PFont times30;
@@ -38,36 +37,26 @@ PFont times30;
 boolean isOnMainScreen = false;
 
 // Tutorial progression flags
-boolean isWelcomePopupVisible  = true;
 boolean isInventoryVisible     = false;
-boolean hasOpenedInventory     = false;
 boolean hasFedSteak            = false;
 boolean isShowingCantSell      = false;
-boolean isShowingPlayPopup     = false;
-boolean hasShownPlayPopup      = false;
-boolean isShowingPlayArrow     = false;
 boolean isPlayClicked          = false;
 boolean isFadingOut            = false;
-boolean hasEnergyStabilized    = false;
 boolean isNextDayPopupOpen     = false;
-boolean hasAdvancedDay         = false;
 boolean isShowingQuitDialog    = false;
 boolean isGameOver             = false;
-boolean hasFirstBoughtMedicine = false;
-boolean hasGivenFirstMedicine  = false;
 
 
 // =========================
 // UI Runtime State
 // =========================
 int selectedInventorySlot = -1;
-int playPopupDelayTimer   = 0;
 
 String selectedItemName;
 
 
 // =========================
-// HUD Stat Bars (minigame overlay — main screen creates them locally each frame)
+// HUD Stat Bars (minigame overlay -- main screen creates them locally each frame)
 // =========================
 StatBar healthbar       = new StatBar(99,      66.15f,   180, 14);
 StatBar happinessbar    = new StatBar(129.25f, 101.5f,   180, 14);
@@ -103,11 +92,6 @@ int cloudFrameTimer = 0;
 Pet alligator;
 
 
-// =========================
-// Guide Arrow Animation
-// =========================
-float guideArrowOffset    = 0;
-boolean isGuideArrowMovingUp = true;
 
 
 // =========================
@@ -122,7 +106,7 @@ String  salaryInfoText     = "";
 
 // =========================
 // mainscreen()
-// Central render function — draws background, pet, HUD, and delegates to sub-panels.
+// Central render function -- draws background, pet, HUD, and delegates to sub-panels.
 // =========================
 void mainscreen() {
   imageMode(CORNER);
@@ -161,91 +145,21 @@ void mainscreen() {
   statbars();
   imageMode(CORNER);
 
-  // Food thought bubble (Day 1 until fed)
-  if (!hasFedSteak) {
-    cloudFrameTimer++;
-    if (cloudFrameTimer >= 30) cloudFrameTimer = 0;  // cycle cloud sprite every 30 frames (~0.5s) for a gentle animated sky effect
-    if      (cloudFrameTimer < 10) image(cloudframe1, width*0.48f, height*0.35f);
-    else if (cloudFrameTimer < 20) image(cloudframe2, width*0.48f, height*0.35f);
-    else                           image(cloudframe3, width*0.48f, height*0.35f);
-    imageMode(CENTER);
-    image(steak, 632, 326, steak.width/8, steak.height/8);
-  }
-
-  if (isWelcomePopupVisible) {
-    image(popupbackground, width/2, height*0.42f, popupbackground.width*0.6f, popupbackground.height*0.6f);
-    fill(0);
-    textFont(times50);
-    textSize(20);
-    drawWrappedTextInBox(alligator.petName + " is hungry! Close this window and open your inventory to feed them the food from the adoption center.", 338, 271, 761, 400, 6);
-  }
-
-  // Tutorial guide arrows
-  if (hasOpenedInventory == false || (isStoreOpen == false && hasFirstBoughtMedicine && !isInventoryVisible && !hasGivenFirstMedicine)) {
-    redarrow(239.5f, 500, "down");
-  }
-  if (isShowingPlayArrow) redarrow(656, 500, "down");
-  if ((hasShownEarnPopup || isShowingEarnPopup) && isEarnPanelOpen == false && !hasOpenedEarnPanel) redarrow(940, 134, "right");
-  if (hasShownBankPopup && !hasViewedBank) redarrow(861, 500, "down");
-  if (hasShownTreatmentPopup && !isStoreOpen && !hasFirstBoughtMedicine) redarrow(337, 500, "down");
-
   if (isInventoryVisible) inventory();
 
-  // Play popup logic
-  if (hasFedSteak && !hasShownPlayPopup && !isShowingPlayPopup) {
-    playPopupDelayTimer++;
-    if (playPopupDelayTimer > 60 && alligator.energy > 80) {
-      isShowingPlayPopup = true;
-      isShowingPlayArrow = true;
-    }
-  }
-  if (alligator.energy < 80 && hasShownPlayPopup) hasEnergyStabilized = true;
-  if (alligator.energy < 80 && hasEnergyStabilized) isShowingPlayArrow = false;
-  if (isShowingPlayPopup) playpopup();
-
-  // Earn popup logic
-  if (hasEnergyStabilized && isExitingMinigame && !hasShownEarnPopup) {
-    earnPopupDelayTimer++;
-    if (earnPopupDelayTimer > 60) isShowingEarnPopup = true;
-  }
-  if (isShowingEarnPopup && !isInventoryVisible) earnpopup();
-
   if (isEarnPanelOpen) earn();
-
-  if (job.equals("cashier") && !hasShownJobPopup && !isShowingJobPopup && !isJobFinderOpen && !isTasksPanelOpen) {
-    isShowingJobPopup = true;
-  }
-  if (isEarnPanelOpen && !isJobFinderOpen && !isTasksPanelOpen && job.equals("unemployed")) redarrow(155, 455, "right");
   if (isShowingFirstHelpPopup) help();
-  if (hasShownFirstHelpPopup && !isServicesOpen && !hasOpenedServices) redarrow(760, 502, "down");
   if (isServicesOpen && !isVetOpen) services();
-  if (!isJobFinderOpen && job.equals("cashier") && !hasShownJobPopup) jobpopup();
-  if (hasShownJobPopup && !hasClickedTaskTab && !isJobFinderOpen && !job.equals("unemployed")) redarrow(529, 455, "right");
-
   if (isVetOpen) vet();
   if (isShowingTreatmentPopup) treatmentpopup();
   if (isStoreOpen) store();
-
-  if (hasGivenFirstMedicine && !hasShownBankPopup) {
-    bankpopup();
-    isShowingBankPopup = true;
-  }
   if (isBankOpen) bank();
-
-  if (hasViewedBankFirstTime && !hasShownRestPopup) {
-    isShowingRestPopup = true;
-    restpopup();
-  }
-  if (hasShownRestPopup && !isRestOpen && !hasAlligatorRestedOnce) redarrow(439, 500, "down");
   if (isRestOpen) rest();
-
-  if (hasAlligatorRestedOnce && !hasOpenedAchievements) redarrow(940, 231, "right");
   if (isAchievementsOpen) achievements();
-
+  if (isPetAIOpen) petAIPanel();
   if (money >= highestMoneyBalance) highestMoneyBalance = money;
 
   if (isShowingStoreClosedPopup) storeclosedpopup();
-  if (hasClosedAchievements && !hasAdvancedDay) redarrow(width/2, 500, "down");
   if (isNextDayPopupOpen) nextday();
   if (isShowingQuitDialog) quitpopup();
 
@@ -327,11 +241,11 @@ void statbars() {
 
 // =========================
 // StatBar Class
-// Renders a horizontal fill bar for a 0–100 stat value.
+// Renders a horizontal fill bar for a 0-100 stat value.
 // Three draw modes reflect different desired directions:
-//   drawpositive()    — high value = green (health, happiness)
-//   drawnegative()    — high value = red   (sickness risk, hunger)
-//   drawenergyscale() — mid-range = green, extremes = red (energy)
+//   drawpositive()    -- high value = green (health, happiness)
+//   drawnegative()    -- high value = red   (sickness risk, hunger)
+//   drawenergyscale() -- mid-range = green, extremes = red (energy)
 // =========================
 class StatBar {
   float x, y, w, h;
@@ -343,10 +257,10 @@ class StatBar {
 
   void setValue(float v) { value = constrain(v, 0, 100); }
 
-  // High is good: green → yellow → orange → red as value falls
+  // High is good: green -> yellow -> orange -> red as value falls
   void drawpositive() {
     fill(50); rect(x, y, w, h, 4);
-    // color shifts from green→yellow→orange→red as the stat deteriorates, giving clear visual urgency
+    // color shifts from green->yellow->orange->red as the stat deteriorates, giving clear visual urgency
     if      (value >= 90) fill(0, 200, 100);   // great
     else if (value >= 70) fill(182, 232, 35);  // good
     else if (value >= 50) fill(227, 220, 0);   // fair
@@ -355,10 +269,10 @@ class StatBar {
     rect(x, y, map(value, 0, 100, 0, w), h, 4);
   }
 
-  // High is bad: red → orange → yellow → green as value falls
+  // High is bad: red -> orange -> yellow -> green as value falls
   void drawnegative() {
     fill(50); rect(x, y, w, h, 4);
-    // color shifts from green→yellow→orange→red as the stat deteriorates, giving clear visual urgency
+    // color shifts from green->yellow->orange->red as the stat deteriorates, giving clear visual urgency
     if      (value >= 90) fill(201, 8, 8);     // critical
     else if (value >= 70) fill(227, 155, 0);   // high
     else if (value >= 50) fill(227, 220, 0);   // moderate
@@ -367,14 +281,14 @@ class StatBar {
     rect(x, y, map(value, 0, 100, 0, w), h, 4);
   }
 
-  // Mid-range (40–70) is ideal: both extremes turn red
+  // Mid-range (40-70) is ideal: both extremes turn red
   void drawenergyscale() {
     fill(50); rect(x, y, w, h, 4);
-    if      (value >= 80) fill(201, 8, 8);     // too hyper — dangerous
+    if      (value >= 80) fill(201, 8, 8);     // too hyper -- dangerous
     else if (value >= 70) fill(182, 232, 35);  // slightly high but ok
     else if (value >= 40) fill(0, 200, 100);   // ideal range
     else if (value >= 20) fill(182, 232, 35);  // slightly low
-    else                  fill(201, 8, 8);     // exhausted — dangerous
+    else                  fill(201, 8, 8);     // exhausted -- dangerous
     rect(x, y, map(value, 0, 100, 0, w), h, 4);
   }
 }
@@ -413,48 +327,6 @@ void drawWrappedTextInBox(String sentence, float leftX, float topY, float rightX
 
 
 // =========================
-// redarrow — animated bouncing guide arrow
-// =========================
-void redarrow(float arrowx, float arrowy, String direction) {
-  imageMode(CENTER);
-
-  float drawX = arrowx;
-  float drawY = arrowy;
-
-  if (direction.equals("right")) drawX = arrowx + guideArrowOffset;
-  else                           drawY = arrowy + guideArrowOffset;
-
-  pushMatrix();
-  translate(drawX, drawY);
-  if (direction.equals("right")) rotate(-HALF_PI);
-  image(redarrow, 0, 0, redarrow.width/3, redarrow.height/3);
-  popMatrix();
-
-  // arrow bobs 25px downward to draw the player's eye without being distracting
-  if (isGuideArrowMovingUp) {
-    guideArrowOffset--;
-    if (guideArrowOffset <= -25) isGuideArrowMovingUp = false;  // -25 to 0 bounce range
-  } else {
-    guideArrowOffset++;
-    if (guideArrowOffset >= 0) isGuideArrowMovingUp = true;
-  }
-}
-
-
-// =========================
-// Tutorial Popups (main-screen level)
-// =========================
-void playpopup() {
-  imageMode(CENTER);
-  image(popupbackground, width/2, height*0.42f, popupbackground.width*0.6f, popupbackground.height*0.6f);
-  fill(0);
-  textFont(times50);
-  textSize(20);
-  drawWrappedTextInBox("The steak gave " + alligator.petName + " too much energy — that's dangerous! Close this window and let them play to burn it off.", 338, 271, 761, 400, 6);
-}
-
-
-// =========================
 // Next Day Logic
 // =========================
 void nextday() {
@@ -482,7 +354,7 @@ void nextday() {
 // =========================
 // decideSicknessForNewDay()
 // Rolls against the pet's current sickrisk to determine if illness triggers.
-// The sickness type is chosen based on whichever stat is most critically out of range —
+// The sickness type is chosen based on whichever stat is most critically out of range --
 // giving the player a meaningful signal that their stat neglect caused the illness.
 // sicknessNames[] indices (defined in D_General_Functions.pde):
 //   0=default, 1=cold, 2=flu, 3=fatigue, 4=dehydration,
@@ -496,13 +368,13 @@ void decideSicknessForNewDay() {
 
     // Priority order: most severe stat violations assigned first
     int sicknessIndex = 0;
-    if      (alligator.hunger >= 85)                              sicknessIndex = 4;  // dehydration sets in above 85% hunger — the body can't maintain health when severely underfed
-    else if (alligator.energy <= 10)                              sicknessIndex = 6;  // no energy → weakness
-    else if (alligator.happiness <= 15 || alligator.energy >= 90) sicknessIndex = 8;  // miserable/over-excited → anxiety
-    else if (alligator.hunger >= 70)                              sicknessIndex = 3;  // moderately hungry → fatigue
-    else if (alligator.energy <= 20)                              sicknessIndex = 5;  // low energy → exhaustion
-    else if (alligator.happiness <= 25)                           sicknessIndex = 7;  // unhappy → depression
-    // No dominant stat culprit — random chance for minor illnesses
+    if      (alligator.hunger >= 85)                              sicknessIndex = 4;  // dehydration sets in above 85% hunger -- the body can't maintain health when severely underfed
+    else if (alligator.energy <= 10)                              sicknessIndex = 6;  // no energy -> weakness
+    else if (alligator.happiness <= 15 || alligator.energy >= 90) sicknessIndex = 8;  // miserable/over-excited -> anxiety
+    else if (alligator.hunger >= 70)                              sicknessIndex = 3;  // moderately hungry -> fatigue
+    else if (alligator.energy <= 20)                              sicknessIndex = 5;  // low energy -> exhaustion
+    else if (alligator.happiness <= 25)                           sicknessIndex = 7;  // unhappy -> depression
+    // No dominant stat culprit -- random chance for minor illnesses
     // probability weights tuned so the player usually has one day of warning before getting sick
     else if (random(1) < 0.20)                                    sicknessIndex = 9;  // infection
     else if (random(1) < 0.20)                                    sicknessIndex = 11; // parasite
@@ -529,13 +401,16 @@ void daychanges() {
   alligator.happiness -= 10;  // overnight: pet gets hungry and restless (hunger/energy rise) and loses a little happiness from being alone
   alligator.hunger    += 40;
   alligator.energy    += 40;
+  alligator.energy    = clampStat(alligator.energy,    0, 100);
+  alligator.hunger    = clampStat(alligator.hunger,    0, 100);
+  alligator.happiness = clampStat(alligator.happiness, 0, 100);
 
   // Skipping the cleaner raises sickness risk (dirty habitat spreads bacteria)
-  if (!hasCleanerVisited) alligator.sickrisk += 15;  // uncleaned environment raises sickness risk 15 points per day — hire a cleaner to prevent this
+  if (!hasCleanerVisited) alligator.sickrisk += 15;  // uncleaned environment raises sickness risk 15 points per day -- hire a cleaner to prevent this
   hasCleanerVisited = false;
 
   if (isPetSick && currentSicknessName != null && !currentSicknessName.equals("")) {
-    alligator.health -= 20;  // sickness costs 20 HP per day — serious but survivable if treated promptly
+    alligator.health -= 20;  // sickness costs 20 HP per day -- serious but survivable if treated promptly
 
     if (currentSicknessName.equals(sicknessNames[2])) {
       sicknessStatusText = alligator.petName + " currently has the flu.";
@@ -608,7 +483,7 @@ void quit() {
 // =========================
 void gameOverScreen() {
   float cx     = width  / 2.0;
-  float panelW = 700;  // panel sized to fit all end-of-game stats without crowding on the 1100×700 canvas
+  float panelW = 700;  // panel sized to fit all end-of-game stats without crowding on the 1100x700 canvas
   float panelH = 430;
   float panelTop = height / 2.0 - panelH / 2.0;
 

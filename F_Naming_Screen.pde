@@ -5,11 +5,11 @@
 boolean isNamingActive = false;
 boolean isGameStarted  = false;
 
-// transitionFade: home → naming transition (fade out then fade in)
+// transitionFade: home -> naming transition (fade out then fade in)
 Fade transitionFade = new Fade(0);
 boolean isFadingToNaming = false;
 
-// namingFade: exit fade — fades to black before starting the main game
+// namingFade: exit fade -- fades to black before starting the main game
 Fade namingFade = new Fade(0);
 
 // =========================
@@ -51,7 +51,7 @@ void namingalligatorsegment() {
     float btnX = (width * 0.27 + btnXOffsets[i]) + ((width / 2) * 0.9) / 2;
     if (selectedAlligatorSkin == i) fill(0, 255, 0, 120);
     else fill(80, 220);
-    rect(btnX, 659, 120, 35);  // 120×35 button near the bottom edge of the 700px canvas
+    rect(btnX, 659, 120, 35);  // 120x35 button near the bottom edge of the 700px canvas
     fill(255);
     if (selectedAlligatorSkin == i) text("SELECTED", btnX, 659);
     else text("SELECT", btnX, 659);

@@ -8,10 +8,6 @@
 // Bank State
 // =========================
 boolean isBankOpen = false;
-boolean hasViewedBank = false;
-boolean hasShownBankPopup = false;
-boolean isShowingBankPopup = false;
-boolean hasViewedBankFirstTime = false;
 
 ArrayList<String> bankTransactionLog = new ArrayList<String>();
 int bankTransactionsLoggedCount = 0;
@@ -34,19 +30,6 @@ float bankScrollbarWidth = 12;
 float bankScrollbarHeight = 370;
 boolean isDraggingBankScrollbar = false;
 float bankScrollThumbOffsetY = 0;
-
-
-// =========================
-// Bank Popup
-// =========================
-void bankpopup() {
-  imageMode(CENTER);
-  image(popupbackground, width/2, height*0.42f, popupbackground.width*0.6f, popupbackground.height*0.6f);
-  fill(0);
-  textFont(times50);
-  textSize(20);
-  drawWrappedTextInBox("Give " + alligator.petName + " another dose tomorrow (see prescription). Close this window and click Bank to view your transactions and financial advice.", 338, 271, 761, 400, 6);
-}
 
 
 // =========================
@@ -120,7 +103,7 @@ void bank() {
   // advice panel shows the most relevant tip based on current state; conditions checked in priority order (problems first, encouragement last)
   if (hasNeverBoughtHighQualityCare) {
     drawWrappedTextInBox(
-      "You've only used low-quality care. It's cheaper but riskier — the vet may prescribe the wrong medicine.",
+      "You've only used low-quality care. It's cheaper but riskier -- the vet may prescribe the wrong medicine.",
       bankViewportX + 10, bankViewportY + 38 - bankScrollOffset,
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else if (!hasCleanerVisited) {
@@ -135,7 +118,7 @@ void bank() {
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else if (timesRestedSuccessfully < 3) {
     drawWrappedTextInBox(
-      "Rest restores energy — aim for the green zone each time.",
+      "Rest restores energy -- aim for the green zone each time.",
       bankViewportX + 10, bankViewportY + 38 - bankScrollOffset,
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else if (helpTaskCount < 3) {
@@ -155,7 +138,7 @@ void bank() {
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else if (alligator.health <= 40) {
     drawWrappedTextInBox(
-      alligator.petName + "'s health is low — focus on recovery now.",
+      alligator.petName + "'s health is low -- focus on recovery now.",
       bankViewportX + 10, bankViewportY + 38 - bankScrollOffset,
       bankViewportX + bankViewportWidth - 10, bankViewportY + 86 - bankScrollOffset, 2);
   } else if (alligator.hunger >= 50) {

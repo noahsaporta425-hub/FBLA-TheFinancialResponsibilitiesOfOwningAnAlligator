@@ -17,18 +17,10 @@ float taskUpgradeCost = 3;
 boolean hasCashierMaxedSalary = false;
 
 boolean isEarnPanelOpen = false;
-boolean hasOpenedEarnPanel = false;
-boolean isShowingEarnPopup = false;
-boolean hasShownEarnPopup = false;
-int earnPopupDelayTimer = 0;
 
 boolean isJobFinderOpen = false;
 boolean isTasksPanelOpen = false;
-boolean hasShownJobPopup = false;
-boolean isShowingJobPopup = false;
 boolean isHelpTaskPending = false;
-boolean hasUsedHelpTask = false;
-boolean hasClickedTaskTab = false;
 boolean hasShownFirstHelpPopup = false;
 boolean isShowingFirstHelpPopup = false;
 String helpPopupMessage = "";
@@ -43,27 +35,6 @@ PImage unemployed, cashier, barista, manager;
 PImage town, cash, house, lock;
 
 
-// =========================
-// Earn Popup
-// =========================
-void earnpopup() {
-  imageMode(CENTER);
-  image(popupbackground, width/2, height*0.42f, popupbackground.width*0.6f, popupbackground.height*0.6f);
-  fill(0);
-  textFont(times50);
-  textSize(20);
-  drawWrappedTextInBox("Energy stabilized! Services can help manage " + alligator.petName + "'s needs, but they cost money. Click Earn to start making some.", 338, 271, 761, 400, 6);
-}
-
-void jobpopup() {
-  imageMode(CENTER);
-  image(popupbackground, width/2, height*0.42f, popupbackground.width*0.6f, popupbackground.height*0.6f);
-  fill(0);
-  textFont(times50);
-  textSize(20);
-  drawWrappedTextInBox("You're now a cashier! You earn a daily salary. Upgrade it, earn from play, or help around town for extra cash. Close this window and try helping out!", 338, 271, 761, 400, 6);
-}
-
 void help() {
   imageMode(CENTER);
   image(popupbackground, width/2, height*0.42f, popupbackground.width*0.6f, popupbackground.height*0.6f);
@@ -72,7 +43,6 @@ void help() {
   textSize(20);
   drawWrappedTextInBox(helpPopupMessage, 338, 271, 761, 400, 6);
 }
-
 
 // =========================
 // Earn Panel (main view)
@@ -268,13 +238,13 @@ void earnJobFinder() {
   text("Base Salary:", 550, 397);
   text("$35/day", 550, 410);
   text("Status:", 550, 434);
-  text("Unlocks on day 10", 550, 447); // Barista unlocks Day 10 and Cafe Manager Day 25 — paced so the player must plan their income growth
+  text("Unlocks on day 10", 550, 447); // Barista unlocks Day 10 and Cafe Manager Day 25 -- paced so the player must plan their income growth
 
   text("Run the cafe,", 800, 347);
   text("manage staff,", 800, 360);
   text("ensure efficiency.", 800, 373);
   text("Base Salary:", 800, 397);
-  text("$75/day", 800, 410); // salaries roughly triple each tier: Cashier $15 → Barista $35 → Manager $75; balanced against store and service costs
+  text("$75/day", 800, 410); // salaries roughly triple each tier: Cashier $15 -> Barista $35 -> Manager $75; balanced against store and service costs
   text("Status:", 800, 434);
   text("Unlocks on day 25", 800, 447);
 
@@ -306,8 +276,6 @@ void earnJobFinder() {
   rect(800, 487, 80, 20);
   fill(255);
   text("APPLY", 800, 487);
-
-  if (job.equals("unemployed")) redarrow(216, 482, "right");
 
   rectMode(CORNER);
   stroke(0);
@@ -385,12 +353,12 @@ void earnTasksUpgrades() {
 
   text("Upgrade:", 615, 359);
   if (moneyPerMinigamePoint == 0) text("$0.10/pt", 615, 372);
-  else text("$" + nf(moneyPerMinigamePoint*1.2f, 0, 2) + "/pt", 615, 372); // tasks scale at 12% (same as salary) while minigame point value scales at 20% — play rewards grow faster to encourage engagement
+  else text("$" + nf(moneyPerMinigamePoint*1.2f, 0, 2) + "/pt", 615, 372); // tasks scale at 12% (same as salary) while minigame point value scales at 20% -- play rewards grow faster to encourage engagement
 
   text("Upgrade:", 720, 359);
   if (job.equals("cashier")) {
     if (salary >= 32 || salary * 1.12f >= 32) text("MAXED", 720, 372);
-    else text("$" + nf(salary * 1.12f, 0, 2) + "/day", 720, 372); // 12% salary increase per upgrade — meaningful but not game-breaking; encourages regular reinvestment
+    else text("$" + nf(salary * 1.12f, 0, 2) + "/day", 720, 372); // 12% salary increase per upgrade -- meaningful but not game-breaking; encourages regular reinvestment
   } else if (job.equals("barista")) {
     if (salary >= 70 || salary * 1.12f >= 70) text("MAXED", 720, 372);
     else text("$" + nf(salary * 1.12f, 0, 2) + "/day", 720, 372);
@@ -431,10 +399,6 @@ void earnTasksUpgrades() {
   rect(825, 420, 80, 20);
   fill(255);
   text("$" + nf(taskUpgradeCost, 0, 2), 825, 420);
-
-  if (hasShownJobPopup && !isHelpTaskPending && isTasksPanelOpen && !hasUsedHelpTask) {
-    redarrow(261, 429, "right");
-  }
 
   rectMode(CORNER);
   stroke(0);

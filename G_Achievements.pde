@@ -8,8 +8,6 @@
 // Achievement State
 // =========================
 boolean isAchievementsOpen = false;
-boolean hasOpenedAchievements = false;
-boolean hasClosedAchievements = false;
 
 String[] achievementNames        = new String[30];
 String[] achievementDescriptions = new String[30];
@@ -125,7 +123,7 @@ void setHopAchievement(int i, String baseName, float baseGoal, int baseReward) {
   achievementTiers[i] = tier;
   achievementType[i] = 0;
   achievementNames[i] = baseName + " - Tier " + tier;
-  achievementGoals[i] = max(1, round(baseGoal * pow(1.2f, tier - 1)));   // 20% harder each tier — keeps each achievement a meaningful challenge without becoming impossible
+  achievementGoals[i] = max(1, round(baseGoal * pow(1.2f, tier - 1)));   // 20% harder each tier -- keeps each achievement a meaningful challenge without becoming impossible
   achievementRewards[i] = max(1, round(baseReward * pow(1.18f, tier - 1))); // rewards grow slightly slower than goals (18% vs 20%) so upgrades remain the better income strategy
   achievementDescriptions[i] = "Highest score reached in Swamp Hop";
   achievementProgress[i] = swampHopBestScore;
@@ -161,7 +159,7 @@ void setMoneyEarnedAchievement(int i, String baseName, float baseGoal, int baseR
   achievementTiers[i] = tier;
   achievementType[i] = 3;
   achievementNames[i] = baseName + " - Tier " + tier;
-  // scaling rate varies by category — rarer actions (vet visits, upgrades) scale faster since they happen less often
+  // scaling rate varies by category -- rarer actions (vet visits, upgrades) scale faster since they happen less often
   achievementGoals[i] = max(1, round(baseGoal * pow(1.3f, tier - 1)));
   achievementRewards[i] = max(1, round(baseReward * pow(1.2f, tier - 1)));
   achievementDescriptions[i] = baseName;
@@ -174,7 +172,7 @@ void setMoneySpentAchievement(int i, String baseName, float baseGoal, int baseRe
   achievementTiers[i] = tier;
   achievementType[i] = 4;
   achievementNames[i] = baseName + " - Tier " + tier;
-  // scaling rate varies by category — rarer actions (vet visits, upgrades) scale faster since they happen less often
+  // scaling rate varies by category -- rarer actions (vet visits, upgrades) scale faster since they happen less often
   achievementGoals[i] = max(1, round(baseGoal * pow(1.3f, tier - 1)));
   achievementRewards[i] = max(1, round(baseReward * pow(1.2f, tier - 1)));
   achievementDescriptions[i] = baseName;
@@ -187,7 +185,7 @@ void setHighestMoneyAchievement(int i, String baseName, float baseGoal, int base
   achievementTiers[i] = tier;
   achievementType[i] = 5;
   achievementNames[i] = baseName + " - Tier " + tier;
-  // scaling rate varies by category — rarer actions (vet visits, upgrades) scale faster since they happen less often
+  // scaling rate varies by category -- rarer actions (vet visits, upgrades) scale faster since they happen less often
   achievementGoals[i] = max(1, round(baseGoal * pow(1.25f, tier - 1)));
   achievementRewards[i] = max(1, round(baseReward * pow(1.2f, tier - 1)));
   achievementDescriptions[i] = baseName;
@@ -200,7 +198,7 @@ void setCountAchievement(int i, String baseName, String actionText, float baseGo
   achievementTiers[i] = tier;
   achievementType[i] = 6;
   achievementNames[i] = baseName + " - Tier " + tier;
-  // scaling rate varies by category — rarer actions (vet visits, upgrades) scale faster since they happen less often
+  // scaling rate varies by category -- rarer actions (vet visits, upgrades) scale faster since they happen less often
   achievementGoals[i] = max(1, round(baseGoal * pow(1.5f, tier - 1)));
   achievementRewards[i] = max(1, round(baseReward * pow(1.18f, tier - 1)));
   if (PApplet.parseInt(achievementGoals[i]) == 1)
@@ -216,7 +214,7 @@ void setAmountAchievement(int i, String baseName, String actionText, float baseG
   achievementTiers[i] = tier;
   achievementType[i] = 7;
   achievementNames[i] = baseName + " - Tier " + tier;
-  // scaling rate varies by category — rarer actions (vet visits, upgrades) scale faster since they happen less often
+  // scaling rate varies by category -- rarer actions (vet visits, upgrades) scale faster since they happen less often
   achievementGoals[i] = max(1, round(baseGoal * pow(1.35f, tier - 1)));
   achievementRewards[i] = max(1, round(baseReward * pow(1.18f, tier - 1)));
   achievementDescriptions[i] = actionText + " by " + PApplet.parseInt(achievementGoals[i]) + " total points";
@@ -229,7 +227,7 @@ void setDayAchievement(int i, String baseName, float baseGoal, int baseReward, f
   achievementTiers[i] = tier;
   achievementType[i] = 8;
   achievementNames[i] = baseName + " - Tier " + tier;
-  // scaling rate varies by category — rarer actions (vet visits, upgrades) scale faster since they happen less often
+  // scaling rate varies by category -- rarer actions (vet visits, upgrades) scale faster since they happen less often
   achievementGoals[i] = max(1, round(baseGoal * pow(1.4f, tier - 1)));
   achievementRewards[i] = max(1, round(baseReward * pow(1.2f, tier - 1)));
   achievementDescriptions[i] = "Reach day " + PApplet.parseInt(achievementGoals[i]);

@@ -7,7 +7,7 @@
 // =========================
 // Inventory Data
 // =========================
-// 12 slots (3×4 grid) give enough space to hold several food types and medicines without overwhelming the UI
+// 12 slots (3x4 grid) give enough space to hold several food types and medicines without overwhelming the UI
 String[] inventorySlots = {
   "Steak", "EMPTY", "EMPTY", "EMPTY", // the tutorial steak is pre-placed so new players immediately see how inventory works
   "EMPTY", "EMPTY", "EMPTY", "EMPTY",
@@ -209,7 +209,7 @@ float[] snackDisplayOffsetY = {0, 5, 10, 0, -2, 2, 0, 10, 1.5f, 3, 0, 6};
 
 
 // =========================
-// indexOf(String[] arr, String val) — Returns the first index where val appears in arr,
+// indexOf(String[] arr, String val) -- Returns the first index where val appears in arr,
 // or -1 if not found. Used to locate items by name.
 // =========================
 int indexOf(String[] arr, String val) {
@@ -219,7 +219,7 @@ int indexOf(String[] arr, String val) {
 
 
 // =========================
-// inventoryHasRoomFor(String item) — Returns true if the item already exists in inventory
+// inventoryHasRoomFor(String item) -- Returns true if the item already exists in inventory
 // (stackable) or if there is an empty slot available.
 // =========================
 boolean inventoryHasRoomFor(String item) {
@@ -235,7 +235,7 @@ boolean inventoryHasRoomFor(String item) {
 // =========================
 // Item Detail Display Helpers
 // =========================
-// drawItemDetail(...) — Renders the item detail side panel when a slot is selected, showing
+// drawItemDetail(...) -- Renders the item detail side panel when a slot is selected, showing
 // the item image, description, stat effects, and use/sell buttons.
 void drawItemDetail(String name, String desc1, String desc2, String statLine, PImage img, float scale) {
   textAlign(CENTER);
@@ -277,7 +277,7 @@ void drawMeatDetail(int idx) {
 // =========================
 // Inventory Panel
 // =========================
-// inventory() — Renders the full inventory panel: 3×4 slot grid on the left, item detail panel on the right.
+// inventory() -- Renders the full inventory panel: 3x4 slot grid on the left, item detail panel on the right.
 void inventory() {
   rectMode(CORNERS);
   stroke(169);
@@ -326,7 +326,7 @@ void inventory() {
       fill(255, 0, 0, 65);
       rect(780, 474.875f, 954.875f, 546);
       fill(255);
-      text("SELL", 867.4375f, 522.5f); // items resell at 75% of their buy price — same as the sell logic in B_Interaction.pde
+      text("SELL", 867.4375f, 522.5f); // items resell at 75% of their buy price -- same as the sell logic in B_Interaction.pde
     } else {
       textAlign(CENTER);
       fill(255);
@@ -462,7 +462,7 @@ void inventory() {
   stroke(0);
 }
 
-// cantsell() — Shows the popup that blocks selling the tutorial steak (Day 1 starting item),
+// cantsell() -- Shows the popup that blocks selling the tutorial steak (Day 1 starting item),
 // so beginners always have a first meal.
 void cantsell() {
   imageMode(CENTER);
@@ -470,5 +470,5 @@ void cantsell() {
   fill(0);
   textFont(times50);
   textSize(20);
-  drawWrappedTextInBox("Selling your steak could leave " + alligator.petName + " starving. Financial decisions are now yours — choose wisely.", 338, 271, 761, 400, 6);
+  drawWrappedTextInBox("Selling your steak could leave " + alligator.petName + " starving. Financial decisions are now yours -- choose wisely.", 338, 271, 761, 400, 6);
 }

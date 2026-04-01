@@ -4,7 +4,7 @@
 // Each distinct transition owns one Fade instance with its own opacity.
 //
 // opacity: 0 = fully transparent (screen visible), 255 = fully black
-// outComplete: one-way latch — stays true once opacity first reaches 255.
+// outComplete: one-way latch -- stays true once opacity first reaches 255.
 //   Use this to detect "done fading to black" in multi-phase sequences
 //   without re-checking opacity (which would flip back as we fade in again).
 //
@@ -107,7 +107,6 @@ void fileWork() {
   cloudframe2               = loadImage("cloudframe2.png");
   cloudframe3               = loadImage("cloudframe3.png");
   steak                     = loadImage("steak.png");
-  redarrow                  = loadImage("redarrow.png");
   minigamechoice            = loadImage("minigamechoice.png");
   swamphopbackground        = loadImage("swamphopbackground.png");
   alligatorf1               = loadImage("alligatorf1.png");
@@ -168,6 +167,9 @@ void fileWork() {
                               energydrink, granolabar, popcorn, pretzels, soda, trailmix};
   meatImages  = new PImage[]{bluegill, bass, perch, goldfish, crab, lambchop,
                               porkchop, steak, chicken, catfish, frog, shrimp};
+
+  // --- PetAI API Key ---
+  loadPetAIKey();
 
   // --- Background Music ---
   music = new SoundFile(this, "music.mp3");
@@ -341,7 +343,7 @@ boolean isValidName(String raw) {
     return false;
   }
 
-  // Semantic check: name must include at least one actual letter — not just symbols/spaces
+  // Semantic check: name must include at least one actual letter -- not just symbols/spaces
   boolean hasLetter = false;
   for (int i = 0; i < trimmed.length(); i++) {
     if (Character.isLetter(trimmed.charAt(i))) {
@@ -365,7 +367,7 @@ boolean isValidName(String raw) {
     }
   }
 
-  // All checks passed — clear any leftover error message
+  // All checks passed -- clear any leftover error message
   petNameValidationError = "";
   return true;
 }
@@ -381,7 +383,7 @@ void confirm() {
 
   String rawInput = nameField.getText();
 
-  // Validate before accepting — if invalid, show error and block the transition
+  // Validate before accepting -- if invalid, show error and block the transition
   if (!isValidName(rawInput)) return;
 
   // Mark name selection complete and assign the formatted name to the pet
@@ -464,38 +466,17 @@ void saveGame() {
   save.setInt("lastTreatmentDay", lastDoseTakenDay);
 
   // tutorial / important progression flags
-  save.setBoolean("welcomepopupvisible", isWelcomePopupVisible);
-  save.setBoolean("firstinventoryclick", hasOpenedInventory);
   save.setBoolean("fedsteak", hasFedSteak);
-  save.setBoolean("firstearnclick", hasOpenedEarnPanel);
-  save.setBoolean("firsthelpclick", hasUsedHelpTask);
-  save.setBoolean("firsttasktabclick", hasClickedTaskTab);
-  save.setBoolean("firstservicesclick", hasOpenedServices);
-  save.setBoolean("firstbuymedicine", hasFirstBoughtMedicine);
-  save.setBoolean("firstmedicinegiven", hasGivenFirstMedicine);
-  save.setBoolean("firstbankclick", hasViewedBank);
-  save.setBoolean("firstrestclick", hasUsedRest);
   save.setBoolean("firstalligatorrest", hasAlligatorRestedOnce);
-  save.setBoolean("firstachievementsclick", hasOpenedAchievements);
-  save.setBoolean("firstachievementsclosed", hasClosedAchievements);
-  save.setBoolean("firstnextdayclick", hasAdvancedDay);
   save.setBoolean("firsthelppopupshown", hasShownFirstHelpPopup);
   save.setBoolean("firstLowQualityCareAlwaysSucceeds", isFirstLowQualityVetAttempt);
   save.setBoolean("neverboughthighqualitycare", hasNeverBoughtHighQualityCare);
   save.setBoolean("lowqualitycaregiven", hasUsedLowQualityVet);
-  save.setBoolean("bankpopupshown", hasShownBankPopup);
-  save.setBoolean("showplayarrow", isShowingPlayArrow);
 
-  // tutorial popup "already shown" flags — saved so they don't replay on resume
-  save.setBoolean("earnpopupshown", hasShownEarnPopup);
-  save.setBoolean("playpopupShown", hasShownPlayPopup);
-  save.setBoolean("jobpopupshown", hasShownJobPopup);
+  // popup "already shown" flags -- saved so they don't replay on resume
   save.setBoolean("treatmentpopupshown", hasShownTreatmentPopup);
-  save.setBoolean("restpopupshown", hasShownRestPopup);
-  save.setBoolean("firstbankview", hasViewedBankFirstTime);
-  save.setBoolean("firstenergystabalized", hasEnergyStabilized);
 
-  // prescriptions — save both named fields (for backward compat) and array
+  // prescriptions -- save both named fields (for backward compat) and array
   String[] prescNames = {"enrofloxacinPresc","doxycyclinePresc","oseltamivirPresc","vitaminBComplexPresc",
     "cyproheptadinePresc","potassiumChloridePresc","coenzymeQ10Presc","fluoxetinePresc",
     "trazodonePresc","meloxicamPresc","calciumCarbonatePresc","activatedCharcoalPresc"};
@@ -552,7 +533,27 @@ void saveGame() {
 
   save.setJSONArray("achievementtiers", intArrayToJson(achievementTiers));
 
-  saveJSONObject(save, "save.json");
+  // PetAI chat history -- saved sessions (closed chats)
+  JSONArray sessionsArr = new JSONArray();
+  for (int i = 0; i < savedSessions.size(); i++) {
+    String[] sess = savedSessions.get(i);
+    JSONArray sessArr = new JSONArray();
+    for (int j = 0; j < sess.length; j++) sessArr.setString(j, sess[j]);
+    sessionsArr.setJSONArray(i, sessArr);
+  }
+  save.setJSONArray("petAISessions", sessionsArr);
+
+  // PetAI current (open) chat
+  JSONArray currentChatArr = new JSONArray();
+  for (int i = 0; i < currentChat.size(); i++) {
+    JSONArray msgArr = new JSONArray();
+    msgArr.setString(0, currentChat.get(i)[0]);
+    msgArr.setString(1, currentChat.get(i)[1]);
+    currentChatArr.setJSONArray(i, msgArr);
+  }
+  save.setJSONArray("petAICurrentChat", currentChatArr);
+
+  saveJSONObject(save, "data/save.json");
 }
 
 
@@ -605,38 +606,17 @@ void loadGame() {
   lastDoseTakenDay = save.getInt("lastTreatmentDay", lastDoseTakenDay);
 
   // tutorial / progression flags
-  isWelcomePopupVisible = save.getBoolean("welcomepopupvisible", isWelcomePopupVisible);
-  hasOpenedInventory = save.getBoolean("firstinventoryclick", hasOpenedInventory);
   hasFedSteak = save.getBoolean("fedsteak", hasFedSteak);
-  hasOpenedEarnPanel = save.getBoolean("firstearnclick", hasOpenedEarnPanel);
-  hasUsedHelpTask = save.getBoolean("firsthelpclick", hasUsedHelpTask);
-  hasClickedTaskTab = save.getBoolean("firsttasktabclick", hasClickedTaskTab);
-  hasOpenedServices = save.getBoolean("firstservicesclick", hasOpenedServices);
-  hasFirstBoughtMedicine = save.getBoolean("firstbuymedicine", hasFirstBoughtMedicine);
-  hasGivenFirstMedicine = save.getBoolean("firstmedicinegiven", hasGivenFirstMedicine);
-  hasViewedBank = save.getBoolean("firstbankclick", hasViewedBank);
-  hasUsedRest = save.getBoolean("firstrestclick", hasUsedRest);
   hasAlligatorRestedOnce = save.getBoolean("firstalligatorrest", hasAlligatorRestedOnce);
-  hasOpenedAchievements = save.getBoolean("firstachievementsclick", hasOpenedAchievements);
-  hasClosedAchievements = save.getBoolean("firstachievementsclosed", hasClosedAchievements);
-  hasAdvancedDay = save.getBoolean("firstnextdayclick", hasAdvancedDay);
   hasShownFirstHelpPopup = save.getBoolean("firsthelppopupshown", hasShownFirstHelpPopup);
   isFirstLowQualityVetAttempt = save.getBoolean("firstLowQualityCareAlwaysSucceeds", isFirstLowQualityVetAttempt);
   hasNeverBoughtHighQualityCare = save.getBoolean("neverboughthighqualitycare", hasNeverBoughtHighQualityCare);
   hasUsedLowQualityVet = save.getBoolean("lowqualitycaregiven", hasUsedLowQualityVet);
-  hasShownBankPopup = save.getBoolean("bankpopupshown", hasShownBankPopup);
-  isShowingPlayArrow = save.getBoolean("showplayarrow", isShowingPlayArrow);
 
-  // tutorial popup "already shown" flags
-  hasShownEarnPopup = save.getBoolean("earnpopupshown", hasShownEarnPopup);
-  hasShownPlayPopup = save.getBoolean("playpopupShown", hasShownPlayPopup);
-  hasShownJobPopup = save.getBoolean("jobpopupshown", hasShownJobPopup);
+  // popup "already shown" flags
   hasShownTreatmentPopup = save.getBoolean("treatmentpopupshown", hasShownTreatmentPopup);
-  hasShownRestPopup = save.getBoolean("restpopupshown", hasShownRestPopup);
-  hasViewedBankFirstTime = save.getBoolean("firstbankview", hasViewedBankFirstTime);
-  hasEnergyStabilized = save.getBoolean("firstenergystabalized", hasEnergyStabilized);
 
-  // prescriptions — load from named fields first, then override with medicineIsPrescribed[] array if present
+  // prescriptions -- load from named fields first, then override with medicineIsPrescribed[] array if present
   String[] prescNames = {"enrofloxacinPresc","doxycyclinePresc","oseltamivirPresc","vitaminBComplexPresc",
     "cyproheptadinePresc","potassiumChloridePresc","coenzymeQ10Presc","fluoxetinePresc",
     "trazodonePresc","meloxicamPresc","calciumCarbonatePresc","activatedCharcoalPresc"};
@@ -728,14 +708,36 @@ void loadGame() {
     }
   }
 
+  // PetAI chat history
+  savedSessions.clear();
+  JSONArray loadedSessions = save.getJSONArray("petAISessions");
+  if (loadedSessions != null) {
+    for (int i = 0; i < loadedSessions.size(); i++) {
+      JSONArray sessArr = loadedSessions.getJSONArray(i);
+      if (sessArr != null) {
+        String[] sess = new String[sessArr.size()];
+        for (int j = 0; j < sessArr.size(); j++) sess[j] = sessArr.getString(j);
+        savedSessions.add(sess);
+      }
+    }
+  }
+
+  currentChat.clear();
+  JSONArray loadedChat = save.getJSONArray("petAICurrentChat");
+  if (loadedChat != null) {
+    for (int i = 0; i < loadedChat.size(); i++) {
+      JSONArray msgArr = loadedChat.getJSONArray(i);
+      if (msgArr != null && msgArr.size() >= 2) {
+        currentChat.add(new String[]{msgArr.getString(0), msgArr.getString(1)});
+      }
+    }
+  }
+
   // reset temporary UI/runtime stuff so resume is clean
   isShowingInstructions = false;
   isShowingMusicSettings = false;
   isInventoryVisible = false;
   isShowingCantSell = false;
-  isShowingPlayPopup = false;
-  isShowingPlayArrow = false;
-  isShowingEarnPopup = false;
   isEarnPanelOpen = false;
   isHelpTaskPending = false;
   isShowingFirstHelpPopup = false;
@@ -748,8 +750,6 @@ void loadGame() {
   isViewingSnacksTab = false;
   isViewingMeatTab = false;
   isBankOpen = false;
-  isShowingBankPopup = false;
-  isShowingRestPopup = false;
   isRestOpen = false;
   isAchievementsOpen = false;
   isShowingStoreClosedPopup = false;
