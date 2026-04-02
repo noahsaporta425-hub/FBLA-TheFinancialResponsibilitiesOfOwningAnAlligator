@@ -29,7 +29,6 @@ An educational pet simulation game built in Processing for FBLA. You adopt a bab
 - **Music** — adjust volume or toggle background music on/off.
 
 ### Adoption & Setup
-- Watch the adoption cutscene as your alligator is rescued.
 - **Name your alligator** and choose one of three skin colors.
 
 ### Main Screen

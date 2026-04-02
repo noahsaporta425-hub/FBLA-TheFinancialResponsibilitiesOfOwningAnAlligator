@@ -87,12 +87,12 @@ void services() {
   text("treats injury, sickness,", 220, 433);
   text("and infection.",           220, 448);
 
-  image(walker,     385, 325, walker.width/4.0f,     walker.height/4.0f);
+  image(walker,     440, 325, walker.width/4.0f,     walker.height/4.0f);
   text("Stabilizes energy while", 440, 418);
   text("boosting health",         440, 433);
   text("and happiness.",          440, 448);
 
-  image(cleaner,    730, 305, cleaner.width/4.5f,    cleaner.height/4.5f);
+  image(cleaner,    660, 305, cleaner.width/4.5f,    cleaner.height/4.5f);
   text("Tidies the habitat,",    660, 418);
   text("reducing the daily",     660, 433);
   text("sickness risk.",         660, 448);
