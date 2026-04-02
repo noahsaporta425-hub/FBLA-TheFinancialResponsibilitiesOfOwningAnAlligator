@@ -118,7 +118,8 @@ void store() {
     fill(169);
     line(width/2, 182, width/2, 572.5f);
     line(110, 182, 990, 182);
-    canAffordMedicine = inventoryHasRoomFor(medicineItemList[selectedInventorySlot]) &&
+    canAffordMedicine = selectedInventorySlot >= 0 && selectedInventorySlot < medicineItemList.length &&
+      inventoryHasRoomFor(medicineItemList[selectedInventorySlot]) &&
       (((!medicineIsPrescribed[selectedInventorySlot] && money >= 5) || medicineIsPrescribed[selectedInventorySlot]));
     rectMode(CORNERS);
 
@@ -169,6 +170,22 @@ void store() {
         float x1 = xs[col], x2 = xs[col + 1];
         float y1 = ys[row], y2 = ys[row + 1];
         image(medicine, (x1+x2)/2, (y1+y2)/2, medicine.width/14, medicine.height/14);
+        int slotIdx = row * 3 + col;
+        if (slotIdx < medicineIsPrescribed.length && medicineIsPrescribed[slotIdx]) {
+          float dotX = x2 - 14;
+          float dotY = y1 + 14;
+          noStroke();
+          fill(40, 180, 60);
+          ellipseMode(CENTER);
+          ellipse(dotX, dotY, 16, 16);
+          fill(255);
+          textAlign(CENTER, CENTER);
+          textFont(arcade);
+          textSize(9);
+          text("P", dotX, dotY);
+          strokeWeight(1);
+          stroke(0);
+        }
       }
     }
 

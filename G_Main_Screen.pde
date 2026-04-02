@@ -133,6 +133,23 @@ void mainscreen() {
 
   image(mainscreenbuttons, 0, height * 0.52f, 1000, 600);
   image(achievementsbutton, width * 0.806f, height * 0.21f, 320, 190);
+  int collectableCount = 0;
+  for (int _ai = 0; _ai < 30; _ai++) { if (isAchievementCollectable[_ai]) collectableCount++; }
+  if (collectableCount > 0) {
+    float _badgeX = 1075;
+    float _badgeY = 202;
+    noStroke();
+    fill(200, 30, 30);
+    ellipseMode(CENTER);
+    ellipse(_badgeX, _badgeY, 28, 28);
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textFont(arcade);
+    textSize(14);
+    text(collectableCount, _badgeX, _badgeY);
+    strokeWeight(1);
+    stroke(0);
+  }
   image(settingsbutton, width * 0.83655f, -35, 248, 168);
   image(earnbutton, width * 0.845f, height * 0.075f, 231, 177);
 

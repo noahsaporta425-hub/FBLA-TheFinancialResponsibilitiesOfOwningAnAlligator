@@ -464,6 +464,30 @@ void mousePressed() {
   }
 
   // =========================
+  // Minigame: X exit button (top-right corner, always visible during active minigame)
+  // =========================
+  if ((isEnterSwampHop || isEnterSnackSnatch || isEnterFetchFrenzy) &&
+      mouseX >= 1042 && mouseX <= 1092 && mouseY >= 8 && mouseY <= 46) {
+    isExitingMinigame = true;
+    isOnMainScreen = true;
+    isPlayClicked = false;
+    isFadingOut = false;
+    mainFade.setClear();
+    isEnterSwampHop = false;
+    isEnterFetchFrenzy = false;
+    isEnterSnackSnatch = false;
+    isSwampHopFirstPlay = true;
+    isFetchFirstPlay = true;
+    isSnatchFirstPlay = true;
+    if (currentPlaySessionMoneyEarned > 0) {
+      bankTransactionsLoggedCount++;
+      bankTransactionLog.add("Transaction: Minigames (+$" + nf(currentPlaySessionMoneyEarned, 0, 2) + ")");
+      currentPlaySessionMoneyEarned = 0;
+    }
+    return;
+  }
+
+  // =========================
   // Minigame: "PLAY" / "RETRY" Button (left modal button)
   // Shared hit region used by all three games when the modal is showing
   // =========================
@@ -1179,8 +1203,8 @@ if (money >= 5 && isVetOpen &&
   // Walker costs $10: drains energy, boosts happiness/health (takes alligator on a walk)
   // Cleaner costs $10: reduces sick risk, boosts happiness/health (cleans the habitat)
   // =========================
-  // Walker column center 440; button rect(440,520,130,40) -> x:375-505, y:500-540
-  if (isServicesOpen && money>=10 && mouseX>375 && mouseY>500 && mouseX<505 && mouseY<540) {
+  // Walker column center 455; button rect(455,520,130,40) -> x:390-520, y:500-540
+  if (isServicesOpen && money>=10 && mouseX>390 && mouseY>500 && mouseX<520 && mouseY<540) {
     isServicesOpen=false;
     alligator.energy-=25;
     alligator.happiness+=15;

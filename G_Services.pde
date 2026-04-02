@@ -62,7 +62,7 @@ void services() {
   textSize(22);
   imageMode(CENTER);
   text("Vet:", 220, 200);
-  text("Walker:", 440, 200);
+  text("Walker:", 455, 200);
   text("Cleaner:", 660, 200);
   text("PetAI:", 880, 200);
 
@@ -70,14 +70,14 @@ void services() {
   fill(0, 255, 0, 80);
   rect(220, 520, 130, 40);   // vet -- always available
   if (money < 10) fill(169, 80);
-  rect(440, 520, 130, 40);   // walker -- greyed if broke
+  rect(455, 520, 130, 40);   // walker -- greyed if broke
   rect(660, 520, 130, 40);   // cleaner -- greyed if broke
   fill(0, 255, 0, 80);
   rect(880, 520, 130, 40);   // PetAI -- always available
   fill(255);
   textSize(18);
   text("VISIT",      220, 520);
-  text("HIRE - $10", 440, 520); // $10/day services model real pet ownership expenses
+  text("HIRE - $10", 455, 520); // $10/day services model real pet ownership expenses
   text("HIRE - $10", 660, 520);
   text("CHAT",       880, 520);
 
@@ -87,10 +87,10 @@ void services() {
   text("treats injury, sickness,", 220, 433);
   text("and infection.",           220, 448);
 
-  image(walker,     440, 325, walker.width/4.0f,     walker.height/4.0f);
-  text("Stabilizes energy while", 440, 418);
-  text("boosting health",         440, 433);
-  text("and happiness.",          440, 448);
+  image(walker,     415, 325, walker.width/4.0f,     walker.height/4.0f);
+  text("Stabilizes energy while", 455, 418);
+  text("boosting health",         455, 433);
+  text("and happiness.",          455, 448);
 
   image(cleaner,    660, 305, cleaner.width/4.5f,    cleaner.height/4.5f);
   text("Tidies the habitat,",    660, 418);

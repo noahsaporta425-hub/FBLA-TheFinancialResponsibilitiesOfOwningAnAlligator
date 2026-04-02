@@ -72,43 +72,43 @@ void initAchievements() {
 // Syncs live game counters into the achievement progress arrays. Called at the start of each draw cycle so progress bars are always current.
 void refreshAchievementData() {
   // 30 achievements across 8 categories (minigames, money, care, upgrades, tasks, store, rest, days)
-  setHopAchievement(0, "Swamp Hop High Score", 20, 2);
-  setSnackAchievement(1, "Snack Snatch High Score", 15, 2);
-  setFetchAchievement(2, "Fetch Frenzy High Score", 10, 2);
+  setHopAchievement(0, "Swamp Hop High Score", 30, 1);
+  setSnackAchievement(1, "Snack Snatch High Score", 25, 1);
+  setFetchAchievement(2, "Fetch Frenzy High Score", 15, 1);
 
-  setMoneyEarnedAchievement(3, "Total Money Earned", 160, 3, totalMoneyEarned);
-  setMoneySpentAchievement(4, "Total Money Spent", 55, 3, totalMoneySpent);
-  setHighestMoneyAchievement(5, "Highest Money Balance", 125, 3, highestMoneyBalance);
+  setMoneyEarnedAchievement(3, "Total Money Earned", 250, 2, totalMoneyEarned);
+  setMoneySpentAchievement(4, "Total Money Spent", 80, 2, totalMoneySpent);
+  setHighestMoneyAchievement(5, "Highest Money Balance", 200, 2, highestMoneyBalance);
 
-  setCountAchievement(6,  "Times Pet Fed",                    "Feed your pet",                  5,  6,  timesFedPet);
-  setCountAchievement(7,  "Times Medicine Given",             "Give medicine",                  3,  6,  medicineGivenCount);
-  setCountAchievement(8,  "Total Vet Visits",                 "Visit the vet",                  3,  8,  timesUsedVetCare);
-  setCountAchievement(9,  "Perfect Rests Completed",          "Complete perfect rests",         3,  6,  timesRestedSuccessfully);
-  setCountAchievement(10, "Salary Upgrades Purchased",        "Buy salary upgrades",            1,  6,  salaryUpgradeCount);
-  setCountAchievement(11, "Task Income Upgrades Purchased",   "Buy task income upgrades",       1,  7,  taskUpgradeCount);
-  setCountAchievement(12, "Play Point Upgrades Purchased",    "Buy play point upgrades",        5,  7,  playPointUpgradeCount);
-  setCountAchievement(13, "Help Tasks Completed",             "Complete help tasks",            1,  5,  helpTaskCount);
+  setCountAchievement(6,  "Times Pet Fed",                    "Feed your pet",                  8,  4,  timesFedPet);
+  setCountAchievement(7,  "Times Medicine Given",             "Give medicine",                  5,  4,  medicineGivenCount);
+  setCountAchievement(8,  "Total Vet Visits",                 "Visit the vet",                  5,  5,  timesUsedVetCare);
+  setCountAchievement(9,  "Perfect Rests Completed",          "Complete perfect rests",         5,  4,  timesRestedSuccessfully);
+  setCountAchievement(10, "Salary Upgrades Purchased",        "Buy salary upgrades",            2,  4,  salaryUpgradeCount);
+  setCountAchievement(11, "Task Income Upgrades Purchased",   "Buy task income upgrades",       2,  5,  taskUpgradeCount);
+  setCountAchievement(12, "Play Point Upgrades Purchased",    "Buy play point upgrades",        8,  5,  playPointUpgradeCount);
+  setCountAchievement(13, "Help Tasks Completed",             "Complete help tasks",            3,  3,  helpTaskCount);
 
-  setMoneyEarnedAchievement(14, "Money Earned From Salary", 30, 8, moneyEarnedFromSalary);
-  setMoneyEarnedAchievement(15, "Money Earned From Tasks",  20, 8, moneyEarnedFromTasks);
+  setMoneyEarnedAchievement(14, "Money Earned From Salary", 60, 5, moneyEarnedFromSalary);
+  setMoneyEarnedAchievement(15, "Money Earned From Tasks",  40, 5, moneyEarnedFromTasks);
 
-  setCountAchievement(16, "Items Purchased From Store",  "Buy store items",       3,  7, itemsBoughtCount);
-  setCountAchievement(17, "Medicine Purchased",          "Buy medicine",          2,  7, timesBoughtMedicine);
-  setCountAchievement(18, "Inventory Items Used",        "Use inventory items",   3,  7, inventoryItemsUsedCount);
+  setCountAchievement(16, "Items Purchased From Store",  "Buy store items",       5,  5, itemsBoughtCount);
+  setCountAchievement(17, "Medicine Purchased",          "Buy medicine",          4,  5, timesBoughtMedicine);
+  setCountAchievement(18, "Inventory Items Used",        "Use inventory items",   5,  5, inventoryItemsUsedCount);
 
-  setMoneyEarnedAchievement(19, "Money Earned From Minigames", 25, 7, moneyEarnedFromMinigames);
+  setMoneyEarnedAchievement(19, "Money Earned From Minigames", 50, 5, moneyEarnedFromMinigames);
 
-  setCountAchievement(20, "Rest Attempts",  "Attempt rests",   1, 5, restAttempts);
-  setAmountAchievement(21, "Total Energy Restored From Resting", "Restore energy from resting", 70, 7, totalEnergyRestoredFromResting);
-  setAmountAchievement(22, "Total Health Restored",    "Restore health",     20, 7, totalHealthRestored);
-  setAmountAchievement(23, "Total Happiness Restored", "Restore happiness",  20, 7, totalHappinessRestored);
+  setCountAchievement(20, "Rest Attempts",  "Attempt rests",   3, 3, restAttempts);
+  setAmountAchievement(21, "Total Energy Restored From Resting", "Restore energy from resting", 100, 5, totalEnergyRestoredFromResting);
+  setAmountAchievement(22, "Total Health Restored",    "Restore health",     35, 5, totalHealthRestored);
+  setAmountAchievement(23, "Total Happiness Restored", "Restore happiness",  35, 5, totalHappinessRestored);
 
-  setDayAchievement(24, "Days Survived", 5, 10, currentDay);
-  setCountAchievement(25, "Cleaners Hired",           "Hire a cleaner",         1,  10, cleanersHiredCount);
-  setCountAchievement(26, "Low Quality Care Purchased",  "Buy low quality care",   2,  7,  lowQualityCareCount);
-  setCountAchievement(27, "High Quality Care Purchased", "Buy high quality care",  1,  10, highQualityCareCount);
-  setCountAchievement(28, "Bank Transactions Logged",  "Do a transaction (buy or earn)", 10, 15, bankTransactionsLoggedCount);
-  setCountAchievement(29, "Walkers Hired", "Hire a walker", 1, 10, walkersHiredCount);
+  setDayAchievement(24, "Days Survived", 8, 7, currentDay);
+  setCountAchievement(25, "Cleaners Hired",           "Hire a cleaner",         2,  7, cleanersHiredCount);
+  setCountAchievement(26, "Low Quality Care Purchased",  "Buy low quality care",   4,  5,  lowQualityCareCount);
+  setCountAchievement(27, "High Quality Care Purchased", "Buy high quality care",  2,  7, highQualityCareCount);
+  setCountAchievement(28, "Bank Transactions Logged",  "Do a transaction (buy or earn)", 20, 10, bankTransactionsLoggedCount);
+  setCountAchievement(29, "Walkers Hired", "Hire a walker", 2, 7, walkersHiredCount);
 
   updateAchievementOrder();
 }

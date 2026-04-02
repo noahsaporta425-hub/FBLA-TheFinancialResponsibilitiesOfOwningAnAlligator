@@ -94,5 +94,6 @@ void instructionstext() {
   text("Watch your money and stats carefully.", 200, 495);
   text("Cheap choices may save money now but can cause problems later.", 200, 520);
   text("Features and responsibilities will be taught as you play.", 200, 545);
+  textSize(16);
   text("There is no single \u201cright\u201d way to play. Learn from the consequences of your decisions.", 200, 570);
 }

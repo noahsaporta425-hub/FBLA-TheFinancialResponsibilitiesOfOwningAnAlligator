@@ -177,9 +177,9 @@ void fileWork() {
   music.amp(0.2);
 
   // --- Fonts ---
-  times15 = createFont("timesnewroman.ttf", 15);
-  times50 = createFont("timesnewroman.ttf", 50);
-  times30 = createFont("timesnewroman.ttf", 30);
+  times15 = createFont("nunito.ttf", 15);
+  times50 = createFont("nunito.ttf", 50);
+  times30 = createFont("nunito.ttf", 30);
   arcade  = createFont("arcade.otf", 40);
 }
 

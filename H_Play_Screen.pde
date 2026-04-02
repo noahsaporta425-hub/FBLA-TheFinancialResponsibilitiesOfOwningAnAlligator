@@ -216,6 +216,21 @@ void tickMinigameStats() {
   totalHappinessRestored += 0.01;
 }
 
+// Draws a small X exit button in the top-right corner of any active minigame.
+void drawMinigameExitButton() {
+  noStroke();
+  fill(180, 30, 30);
+  rectMode(CORNER);
+  rect(1042, 8, 50, 38, 6);
+  fill(255);
+  textAlign(CENTER, CENTER);
+  textFont(arcade);
+  textSize(18);
+  text("X", 1067, 27);
+  strokeWeight(1);
+  stroke(0);
+}
+
 // Draws the pre-game info popup with controls and description before a minigame starts,
 // and re-uses the same layout for the YOU LOST screen after a run ends.
 // title: large header text (e.g., "WELCOME!" or "YOU LOST!")
@@ -400,7 +415,8 @@ void swamphop() {
   fill(255);
   text("Score: " + swampHopScore, width*0.015, 54);
   drawMinigameStats();
-  
+  drawMinigameExitButton();
+
   if (isSwampHopLost) {
     
     swampHopObstacles.clear();
@@ -649,7 +665,8 @@ void snacksnatch() {
   fill(255);
   text("Score: " + snatchScore, width*0.015, 54);
   drawMinigameStats();
-  
+  drawMinigameExitButton();
+
   if (isSnatchLost) {
     if (snatchScore > snatchBestScore) snatchBestScore = snatchScore;
     if (!isSnatchFirstPlay) {
@@ -892,6 +909,7 @@ if (isBallWaitingToLaunch) {
   text("Score: " + fetchScore, width*0.015, 30);
   text("Time: " + nf(fetchTimer, 0, 2), width*0.015, 70);
   drawMinigameStats();
+  drawMinigameExitButton();
   
   if (fetchScore>fetchBestScore) fetchBestScore=fetchScore;
   if (fetchTimer<=0) {
