@@ -92,7 +92,7 @@ void services() {
   text("boosting health",         440, 433);
   text("and happiness.",          440, 448);
 
-  image(cleaner,    660, 305, cleaner.width/4.5f,    cleaner.height/4.5f);
+  image(cleaner,    730, 305, cleaner.width/4.5f,    cleaner.height/4.5f);
   text("Tidies the habitat,",    660, 418);
   text("reducing the daily",     660, 433);
   text("sickness risk.",         660, 448);
