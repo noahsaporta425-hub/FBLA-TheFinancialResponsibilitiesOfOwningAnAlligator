@@ -1273,16 +1273,16 @@ if (money >= 5 && isVetOpen &&
       for (int i = 0; i < 3; i++) {
         float cx = 385 + i * 165;
         float cy = 355;
-        // OPEN: center (cx, cy+52), 108x30
+        // OPEN: center (cx, cy+60), 108x30
         if (mouseX >= cx - 54 && mouseX <= cx + 54 &&
-            mouseY >= cy + 37 && mouseY <= cy + 67) {
+            mouseY >= cy + 45 && mouseY <= cy + 75) {
           socialsPlatform   = i;
           isSocialsPostView = false;
           isSocialsPastView = false;
         }
-        // COLLECT: center (cx, cy+88), 108x30
+        // COLLECT: center (cx, cy+96), 108x30
         if (mouseX >= cx - 54 && mouseX <= cx + 54 &&
-            mouseY >= cy + 73 && mouseY <= cy + 103 &&
+            mouseY >= cy + 81 && mouseY <= cy + 111 &&
             platformPendingEarnings[i] > 0) {
           collectPlatformEarnings(i);
         }
@@ -1291,7 +1291,7 @@ if (money >= 5 && isVetOpen &&
     } else if (isSocialsPostView) {
       // --- New Post View ---
       // Back button: center (345, 151), 56x28
-      if (mouseX >= 317 && mouseX <= 373 && mouseY >= 137 && mouseY <= 165) {
+      if (mouseX >= 312 && mouseX <= 384 && mouseY >= 136 && mouseY <= 166) {
         isSocialsPostView = false;
         isSocialsTyping   = false;
         selectedPostTrick = -1;
@@ -1336,7 +1336,7 @@ if (money >= 5 && isVetOpen &&
     } else if (isSocialsPastView) {
       // --- Past Posts View ---
       // Back button
-      if (mouseX >= 317 && mouseX <= 373 && mouseY >= 137 && mouseY <= 165) {
+      if (mouseX >= 312 && mouseX <= 384 && mouseY >= 136 && mouseY <= 166) {
         isSocialsPastView = false;
       }
       // Scroll handled in mouseWheel
@@ -1344,7 +1344,7 @@ if (money >= 5 && isVetOpen &&
     } else {
       // --- Platform Home ---
       // Back button: center (345, 151), 56x28
-      if (mouseX >= 317 && mouseX <= 373 && mouseY >= 137 && mouseY <= 165) {
+      if (mouseX >= 312 && mouseX <= 384 && mouseY >= 136 && mouseY <= 166) {
         socialsPlatform = -1;
       }
 
@@ -1712,7 +1712,14 @@ void mouseWheel(MouseEvent event) {
   if (isSocialsOpen && isSocialsPastView && socialsPlatform >= 0) {
     int p = socialsPlatform;
     ArrayList<String[]> log = getPlatformPostLog(p);
-    float contentH = log.size() * 96 + 10;
+    float contentH;
+    if (p == 0) {           // TikTok: cardH=168, gap=6
+      contentH = log.size() * (168 + 6) + 8;
+    } else if (p == 1) {    // Instagram: header(50)+square(452)+action(40)+footer(104)
+      contentH = log.size() * (50 + 452 + 40 + 104) + 4;
+    } else {                // YouTube: thumb(16:9 of 452=254)+info(76)+gap(10)
+      contentH = log.size() * (254 + 76 + 10) + 8;
+    }
     float maxScroll = max(0, contentH - 370);
     pastPostsScroll[p] = constrain(pastPostsScroll[p] + e * 20, 0, maxScroll);
   }

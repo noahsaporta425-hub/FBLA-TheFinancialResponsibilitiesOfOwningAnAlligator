@@ -170,16 +170,13 @@ void handlePost(int p) {
   thumb.imageMode(CORNER);
   thumb.image(mainscreen, 0, 0, thumbW, thumbH, bgSX, bgSY, bgEX, bgEY);
   if (trickImages[selectedPostTrick] != null) {
-    int[] cb = trickContentBounds[selectedPostTrick];
-    int sx = cb[0], sy = cb[1], ex = cb[2], ey = cb[3];
-    float sw = ex - sx, sh = ey - sy;
-    float scale = min(thumbW / sw, thumbH / sh);
-    float dw = sw * scale;
-    float dh = sh * scale;
+    PImage ti = trickImages[selectedPostTrick];
+    // Use full image so alligator appears at its natural in-world scale
+    float scale = min((float)thumbW / ti.width, (float)thumbH / ti.height);
+    float dw = ti.width * scale;
+    float dh = ti.height * scale;
     thumb.imageMode(CORNER);
-    thumb.image(trickImages[selectedPostTrick],
-                (thumbW - dw) * 0.5f, (thumbH - dh) * 0.5f, dw, dh,
-                sx, sy, ex, ey);
+    thumb.image(ti, (thumbW - dw) * 0.5f, (thumbH - dh) * 0.5f, dw, dh);
   }
   thumb.endDraw();
   getPlatformPostImages(p).add(0, thumb);
@@ -269,25 +266,22 @@ void drawSocialsHub() {
   textAlign(CENTER, CENTER);
   text("X", 754.5f, 151.75f);
 
-  // --- Fame bar ---
+  // --- Fame bar centered at top ---
   rectMode(CORNER);
   noStroke();
-  float fbX = 330;
-  float fbY = 192;
-  float fbW = 400;
-  float fbH = 22;
-  float fameLabelW = 65;
+  float fbY = 194;
+  float fbH = 20;
+  float barTrackW = 280;
+  float barStartX = 550 - barTrackW / 2;  // centered in panel
 
-  // FAME: label right-aligned immediately before the bar
+  // "FAME:" label right-aligned just before bar
   fill(255);
   textFont(arcade);
-  textSize(12);
+  textSize(11);
   textAlign(RIGHT, CENTER);
-  text("FAME:", fbX + fameLabelW, fbY + fbH / 2);
+  text("FAME:", barStartX - 6, fbY + fbH / 2);
 
   // Bar track
-  float barStartX = fbX + fameLabelW + 8;
-  float barTrackW = fbW - fameLabelW - 8;
   fill(40, 30, 55);
   rect(barStartX, fbY, barTrackW, fbH, 5);
   if (fame > 0) {
@@ -296,17 +290,9 @@ void drawSocialsHub() {
   }
   fill(255);
   textFont(times30);
-  textSize(11);
+  textSize(10);
   textAlign(CENTER, CENTER);
   text((int)fame + "%", barStartX + barTrackW / 2, fbY + fbH / 2);
-
-  // Total followers directly below bar, white, left-aligned at bar start
-  int totalFollowers = platformFollowers[0] + platformFollowers[1] + platformFollowers[2];
-  fill(255);
-  textFont(times30);
-  textSize(11);
-  textAlign(LEFT, CENTER);
-  text("Total followers: " + getFollowerLabel(totalFollowers), barStartX, fbY + fbH + 14);
 
   // --- Platform cards ---
   // Centered: 3 cards of width 130 with 35px gaps and 10px margins within the 480px panel
@@ -327,53 +313,58 @@ void drawSocialsHub() {
     rectMode(CENTER);
     rect(cx, cy, cw, ch, 12);
 
-    // Platform badge
+    // Platform badge — circle centered on cx
     fill(accentColors[i]);
     noStroke();
-    ellipse(cx, cy - 82, 52, 52);
+    ellipse(cx, cy - 85, 52, 52);
     fill(255);
     textFont(arcade);
     textSize(13);
     textAlign(CENTER, CENTER);
-    text(platformIcons[i], cx, cy - 82);
+    text(platformIcons[i], cx, cy - 85);
 
-    // Platform name
+    // Platform name — centered on same cx, explicit align
     fill(255);
     textFont(arcade);
     textSize(11);
-    text(platformNames[i].toUpperCase(), cx, cy - 50);
+    textAlign(CENTER, CENTER);
+    text(platformNames[i].toUpperCase(), cx, cy - 52);
 
     // Followers
     fill(180, 200, 220);
     textFont(times30);
     textSize(10);
+    textAlign(CENTER, CENTER);
     text("Followers", cx, cy - 30);
     fill(255);
     textFont(arcade);
     textSize(14);
-    text(getFollowerLabel(platformFollowers[i]), cx, cy - 12);
+    textAlign(CENTER, CENTER);
+    text(getFollowerLabel(platformFollowers[i]), cx, cy - 13);
 
     // Pending earnings
     fill(180, 220, 180);
     textFont(times30);
     textSize(10);
+    textAlign(CENTER, CENTER);
     text("Pending", cx, cy + 10);
     fill(platformPendingEarnings[i] > 0 ? color(100, 255, 140) : color(140));
     textFont(arcade);
     textSize(11);
-    text("$" + nf(platformPendingEarnings[i], 0, 2), cx, cy + 28);
+    textAlign(CENTER, CENTER);
+    text("$" + nf(platformPendingEarnings[i], 0, 2), cx, cy + 27);
 
     // OPEN button
     fill(accentColors[i]);
     stroke(255, 50);
     strokeWeight(1);
     rectMode(CENTER);
-    rect(cx, cy + 52, 108, 30, 6);
+    rect(cx, cy + 60, 108, 30, 6);
     fill(255);
     textFont(arcade);
     textSize(9);
     textAlign(CENTER, CENTER);
-    text("OPEN", cx, cy + 52);
+    text("OPEN", cx, cy + 60);
 
     // COLLECT button (spaced well below OPEN)
     if (platformPendingEarnings[i] > 0) {
@@ -383,11 +374,11 @@ void drawSocialsHub() {
       fill(50, 50, 55);
       stroke(70, 70, 75);
     }
-    rect(cx, cy + 88, 108, 30, 6);
+    rect(cx, cy + 96, 108, 30, 6);
     fill(255);  // always white text
     textFont(arcade);
     textSize(9);
-    text(platformPendingEarnings[i] > 0 ? "$ COLLECT" : "COLLECT", cx, cy + 88);
+    text(platformPendingEarnings[i] > 0 ? "$ COLLECT" : "COLLECT", cx, cy + 96);
     rectMode(CORNER);
   }
 
@@ -752,25 +743,27 @@ void drawTikTokFeed(ArrayList<String[]> log, ArrayList<PImage> imgs) {
     textSize(10);
     text(post[2], cx, ry + 28, cw, 46);
 
-    // Result badge
+    // Result badge + follower/earnings line with proper spacing
     color bc = getPostBadgeColor(post[3]);
     fill(bc);
     noStroke();
     rectMode(CORNER);
-    rect(cx, ry + cardH - 32, 54, 17, 4);
+    rect(cx, ry + cardH - 50, 54, 17, 4);
     fill(post[3].equals("Viral") ? color(20) : color(255));
     textFont(arcade);
     textSize(7);
     textAlign(CENTER, CENTER);
-    text(post[3].toUpperCase(), cx + 27, ry + cardH - 23);
+    text(post[3].toUpperCase(), cx + 27, ry + cardH - 41);
 
-    // Follower / earnings line
+    // Follower / earnings line (below badge with clear gap)
     boolean follDown = post[4].startsWith("-");
     fill(follDown ? color(220, 80, 80) : color(100, 220, 140));
     textFont(times30);
     textSize(9);
     textAlign(LEFT, TOP);
-    text(post[4] + " followers  " + post[5], cx, ry + cardH - 14);
+    text(post[4] + " followers", cx, ry + cardH - 28);
+    fill(100, 200, 255);
+    text(post[5] + " earned", cx, ry + cardH - 17);
 
     // TikTok right-side interaction column
     float bx = rx + rw - 26;
@@ -1064,13 +1057,13 @@ void drawYouTubeFeed(ArrayList<String[]> log, ArrayList<PImage> imgs) {
     textAlign(CENTER, CENTER);
     text("AL", iconCX, iconCY);
 
-    // Title (two lines available)
+    // Title (two lines available) — vertically centered with channel icon
     float tx = rx + 46, tw = cardW - 54;
     fill(235, 235, 240);
     textFont(arcade);
     textSize(10);
     textAlign(LEFT, TOP);
-    text(post[1] + " Tutorial  -  " + post[0], tx, infoY + 8, tw, 26);
+    text(post[1] + " Tutorial  -  " + post[0], tx, infoY + 16, tw, 22);
 
     // Metadata: channel · views · likes
     int views = getEngagement(post, i, 3);
@@ -1080,12 +1073,12 @@ void drawYouTubeFeed(ArrayList<String[]> log, ArrayList<PImage> imgs) {
     textSize(10);
     textAlign(LEFT, TOP);
     text("Gator TV  ·  " + getFollowerLabel(views) + " views  ·  "
-         + getFollowerLabel(likes) + " likes", tx, infoY + 40);
+         + getFollowerLabel(likes) + " likes", tx, infoY + 42);
 
     // Earnings
     boolean earned = !post[5].equals("$0.00");
     fill(earned ? color(80, 210, 120) : color(110, 110, 120));
-    text(post[5] + " earned", tx, infoY + 56);
+    text(post[5] + " earned", tx, infoY + 58);
 
     // Three-dot menu
     fill(180, 180, 190);
@@ -1320,12 +1313,15 @@ void drawBackButton() {
   stroke(140, 130, 180);
   strokeWeight(2);
   rectMode(CENTER);
-  rect(345, 151, 56, 28, 6);
+  rect(348, 151, 72, 30, 6);
   fill(220, 210, 255);
   textFont(arcade);
-  textSize(10);
   textAlign(CENTER, CENTER);
-  text("< BACK", 345, 151);
+  // Draw arrow and label separately so arrow is visually prominent
+  textSize(22);
+  text("<", 323, 151);
+  textSize(11);
+  text("BACK", 356, 151);
   rectMode(CORNER);
   noStroke();
 }

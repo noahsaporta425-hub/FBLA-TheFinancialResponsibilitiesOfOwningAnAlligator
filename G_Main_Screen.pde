@@ -264,7 +264,7 @@ void statbars() {
   computeFame();
   fill(255);
   text("Fame:", width * 0.015f, height * 0.35f);
-  StatBar famebar = new StatBar(width * 0.09f, height * 0.3445f, 180, 14);
+  StatBar famebar = new StatBar(width * 0.072f, height * 0.3445f, 180, 14);
   famebar.setValue(fame);
   famebar.drawfame();
 }
