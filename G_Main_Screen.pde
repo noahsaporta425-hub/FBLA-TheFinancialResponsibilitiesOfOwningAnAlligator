@@ -24,6 +24,8 @@ PImage mainscreenbuttons;
 PImage achievementsbutton;
 PImage settingsbutton;
 PImage earnbutton;
+PImage evolutionbutton;
+PImage socialsbutton;
 PImage popupbackground;
 PImage steak;
 
@@ -133,6 +135,8 @@ void mainscreen() {
 
   image(mainscreenbuttons, 0, height * 0.52f, 1000, 600);
   image(achievementsbutton, width * 0.806f, height * 0.21f, 320, 190);
+  image(evolutionbutton,   width * 0.845f, height * 0.354f, 231, 177);
+  image(socialsbutton,     width * 0.845f, height * 0.495f, 231, 177);
   int collectableCount = 0;
   for (int _ai = 0; _ai < 30; _ai++) { if (isAchievementCollectable[_ai]) collectableCount++; }
   if (collectableCount > 0) {
@@ -173,7 +177,10 @@ void mainscreen() {
   if (isBankOpen) bank();
   if (isRestOpen) rest();
   if (isAchievementsOpen) achievements();
-  if (isPetAIOpen) petAIPanel();
+  if (isEvolutionOpen)   evolutionPanel();
+  if (isSocialsOpen)     socialsPanel();
+  if (isPetAIOpen)       petAIPanel();
+  if (isTrainingMode)    trainingScreen();
   if (money >= highestMoneyBalance) highestMoneyBalance = money;
 
   if (isShowingStoreClosedPopup) storeclosedpopup();
@@ -253,6 +260,13 @@ void statbars() {
   StatBar hungerbar = new StatBar(width * 0.09f, height * 0.2945f, 180, 14);
   hungerbar.setValue(alligator.hunger);
   hungerbar.drawnegative();
+
+  computeFame();
+  fill(255);
+  text("Fame:", width * 0.015f, height * 0.35f);
+  StatBar famebar = new StatBar(width * 0.09f, height * 0.3445f, 180, 14);
+  famebar.setValue(fame);
+  famebar.drawfame();
 }
 
 
@@ -296,6 +310,15 @@ class StatBar {
     else if (value >= 40) fill(182, 232, 35);  // low
     else                  fill(0, 200, 100);   // safe
     rect(x, y, map(value, 0, 100, 0, w), h, 4);
+  }
+
+  // Fame: always yellow regardless of value
+  void drawfame() {
+    fill(50); rect(x, y, w, h, 4);
+    if (value > 0) {
+      fill(255, 220, 50);
+      rect(x, y, map(value, 0, 100, 0, w), h, 4);
+    }
   }
 
   // Mid-range (40-70) is ideal: both extremes turn red

@@ -52,6 +52,57 @@ void setup() {
 
   // Restore previous session if a save file exists
   loadGame();
+
+  // ===== TEMP DEBUG: populate 5 past posts of each trick on every platform =====
+  for (int i = 0; i < 5; i++) trickUnlocked[i] = true;
+  day = 25;
+  String[] results = {"Viral", "Great", "Okay", "Great", "Flop"};
+  String[] captions = {
+    "Watch this!! #alligator #viral",
+    "Training hard every day",
+    "He almost got it lol",
+    "So proud of my gator!!",
+    "Bad day at training :("
+  };
+  for (int p = 0; p < 3; p++) {
+    for (int t = 0; t < 5; t++) {
+      String res = results[t];
+      String caption = captions[t];
+      String tName = trickNames[t];
+      int fDelta = res.equals("Viral") ? 450 : res.equals("Great") ? 80 : res.equals("Okay") ? 12 : -5;
+      float earn = res.equals("Viral") ? 42.50f : res.equals("Great") ? 8.20f : res.equals("Okay") ? 2.10f : 0;
+      String follStr = (fDelta >= 0 ? "+" : "") + fDelta;
+      getPlatformPostLog(p).add(new String[]{
+        "Day " + (t + 1),
+        tName,
+        caption,
+        res,
+        follStr,
+        "$" + nf(earn, 0, 2)
+      });
+      // Thumbnail
+      int thumbW, thumbH, bgSX, bgSY, bgEX, bgEY;
+      if (p == 0)      { thumbW=90;  thumbH=160; bgSX=480; bgSY=0;  bgEX=1056; bgEY=1024; }
+      else if (p == 1) { thumbW=200; thumbH=200; bgSX=256; bgSY=0;  bgEX=1280; bgEY=1024; }
+      else             { thumbW=288; thumbH=162; bgSX=0;   bgSY=80; bgEX=1536; bgEY=944;  }
+      PGraphics thumb = createGraphics(thumbW, thumbH);
+      thumb.beginDraw();
+      thumb.imageMode(CORNER);
+      thumb.image(mainscreen, 0, 0, thumbW, thumbH, bgSX, bgSY, bgEX, bgEY);
+      if (trickImages[t] != null) {
+        int[] cb = trickContentBounds[t];
+        int sx=cb[0], sy=cb[1], ex=cb[2], ey=cb[3];
+        float sw=ex-sx, sh=ey-sy;
+        float sc = min(thumbW/sw, thumbH/sh);
+        float dw=sw*sc, dh=sh*sc;
+        thumb.imageMode(CORNER);
+        thumb.image(trickImages[t], (thumbW-dw)*0.5f, (thumbH-dh)*0.5f, dw, dh, sx, sy, ex, ey);
+      }
+      thumb.endDraw();
+      getPlatformPostImages(p).add(thumb);
+    }
+  }
+  // ===== END TEMP DEBUG =====
 }
 
 

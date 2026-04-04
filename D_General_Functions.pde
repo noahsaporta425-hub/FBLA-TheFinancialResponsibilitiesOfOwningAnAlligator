@@ -81,6 +81,20 @@ boolean isNameChosen = false;
 
 
 // =========================
+// drawImageFit(img, x, y, w, h)
+// Draws img inside the bounding box (x, y, w, h) preserving its aspect ratio,
+// centred within the box. Always uses imageMode(CORNER) internally.
+// =========================
+void drawImageFit(PImage img, float x, float y, float w, float h) {
+  float scale = min(w / img.width, h / img.height);
+  float dw    = img.width  * scale;
+  float dh    = img.height * scale;
+  imageMode(CORNER);
+  image(img, x + (w - dw) * 0.5f, y + (h - dh) * 0.5f, dw, dh);
+}
+
+
+// =========================
 // Asset Loading + Audio + Fonts
 // Loads all image and audio assets, and initializes ControlP5 UI elements. Called once from setup().
 // =========================
@@ -102,6 +116,13 @@ void fileWork() {
   achievementsbutton        = loadImage("achievementsbutton.png");
   settingsbutton            = loadImage("settingsbutton.png");
   earnbutton                = loadImage("earnbutton.png");
+  evolutionbutton           = loadImage("evolutionbutton.png");
+  socialsbutton             = loadImage("socialsbutton.png");
+  trickImages[0]            = loadImage("trick_wave.png");
+  trickImages[1]            = loadImage("trick_roar.png");
+  trickImages[2]            = loadImage("trick_rollover.png");
+  trickImages[3]            = loadImage("trick_jump.png");
+  trickImages[4]            = loadImage("trick_fetch.png");
   popupbackground           = loadImage("popupbackground.png");
   cloudframe1               = loadImage("cloudframe1.png");
   cloudframe2               = loadImage("cloudframe2.png");
@@ -533,6 +554,30 @@ void saveGame() {
 
   save.setJSONArray("achievementtiers", intArrayToJson(achievementTiers));
 
+  // Evolution / trick training
+  save.setJSONArray("trickProgress", floatArrayToJson(trickProgress));
+  save.setJSONArray("trickUnlocked", booleanArrayToJson(trickUnlocked));
+
+  // Socials
+  save.setFloat("fame", fame);
+  save.setJSONArray("platformFollowers", intArrayToJson(platformFollowers));
+  JSONArray pendArr = new JSONArray();
+  for (int i = 0; i < 3; i++) pendArr.setFloat(i, platformPendingEarnings[i]);
+  save.setJSONArray("platformPendingEarnings", pendArr);
+
+  ArrayList<String[]>[] allLogs = new ArrayList[]{tikTokPostLog, instaPostLog, ytPostLog};
+  String[] logKeys = {"tikTokPosts", "instaPosts", "ytPosts"};
+  for (int pl = 0; pl < 3; pl++) {
+    JSONArray plog = new JSONArray();
+    ArrayList<String[]> src = allLogs[pl];
+    for (int i = 0; i < src.size(); i++) {
+      JSONArray entry = new JSONArray();
+      for (int j = 0; j < src.get(i).length; j++) entry.setString(j, src.get(i)[j]);
+      plog.setJSONArray(i, entry);
+    }
+    save.setJSONArray(logKeys[pl], plog);
+  }
+
   // PetAI chat history -- saved sessions (closed chats)
   JSONArray sessionsArr = new JSONArray();
   for (int i = 0; i < savedSessions.size(); i++) {
@@ -708,6 +753,52 @@ void loadGame() {
     }
   }
 
+  // Evolution / trick training
+  JSONArray tpArr = save.getJSONArray("trickProgress");
+  if (tpArr != null) {
+    for (int i = 0; i < min(trickProgress.length, tpArr.size()); i++) {
+      trickProgress[i] = tpArr.getFloat(i);
+      trickUnlocked[i] = (trickProgress[i] >= 100);
+    }
+  }
+  JSONArray tuArr = save.getJSONArray("trickUnlocked");
+  if (tuArr != null) {
+    for (int i = 0; i < min(trickUnlocked.length, tuArr.size()); i++) {
+      trickUnlocked[i] = tuArr.getBoolean(i);
+    }
+  }
+
+  // Socials
+  fame = save.getFloat("fame", fame);
+  JSONArray pfArr = save.getJSONArray("platformFollowers");
+  if (pfArr != null) {
+    for (int i = 0; i < min(platformFollowers.length, pfArr.size()); i++) {
+      platformFollowers[i] = pfArr.getInt(i);
+    }
+  }
+  JSONArray peArr = save.getJSONArray("platformPendingEarnings");
+  if (peArr != null) {
+    for (int i = 0; i < min(platformPendingEarnings.length, peArr.size()); i++) {
+      platformPendingEarnings[i] = peArr.getFloat(i);
+    }
+  }
+  String[] logKeys2 = {"tikTokPosts", "instaPosts", "ytPosts"};
+  ArrayList[] allLogs2 = new ArrayList[]{tikTokPostLog, instaPostLog, ytPostLog};
+  for (int pl = 0; pl < 3; pl++) {
+    JSONArray plog = save.getJSONArray(logKeys2[pl]);
+    if (plog != null) {
+      ((ArrayList<String[]>)allLogs2[pl]).clear();
+      for (int i = 0; i < plog.size(); i++) {
+        JSONArray entry = plog.getJSONArray(i);
+        if (entry != null) {
+          String[] row = new String[entry.size()];
+          for (int j = 0; j < entry.size(); j++) row[j] = entry.getString(j);
+          ((ArrayList<String[]>)allLogs2[pl]).add(row);
+        }
+      }
+    }
+  }
+
   // PetAI chat history
   savedSessions.clear();
   JSONArray loadedSessions = save.getJSONArray("petAISessions");
@@ -801,6 +892,15 @@ JSONArray intArrayToJson(int[] arr) {
   JSONArray j = new JSONArray();
   for (int i = 0; i < arr.length; i++) {
     j.setInt(i, arr[i]);
+  }
+  return j;
+}
+
+// floatArrayToJson: Converts a float array to a JSONArray for save-file serialization.
+JSONArray floatArrayToJson(float[] arr) {
+  JSONArray j = new JSONArray();
+  for (int i = 0; i < arr.length; i++) {
+    j.setFloat(i, arr[i]);
   }
   return j;
 }

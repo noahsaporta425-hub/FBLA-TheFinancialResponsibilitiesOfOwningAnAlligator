@@ -88,6 +88,39 @@ void mousePressed() {
       && !isShowingStoreClosedPopup && !isNextDayPopupOpen && !isShowingQuitDialog;
 
   // =========================
+  // Training Screen -- CHECKED FIRST.
+  // Training is a full-screen overlay; handle only its own buttons and block everything else.
+  // =========================
+  if (isTrainingMode) {
+    // EXIT button: center (width-52, 33), 84x32
+    if (mouseX >= width - 94 && mouseX <= width - 10 &&
+        mouseY >= 17 && mouseY <= 49) {
+      isTrainingMode  = false;
+      isEvolutionOpen = true;
+    }
+    // ATTEMPT button (state 0): center (width/2, height*0.90), 170x46
+    if (trainingState == 0 &&
+        mouseX >= width / 2 - 85 && mouseX <= width / 2 + 85 &&
+        mouseY >= (int)(height * 0.90f) - 23 && mouseY <= (int)(height * 0.90f) + 23) {
+      attemptTrick();
+    }
+    // REWARD / TRY AGAIN buttons (state 2)
+    if (trainingState == 2) {
+      float py = height * 0.64f;
+      float cx2 = width / 2.0f;
+      if (mouseX >= cx2 - 175 && mouseX <= cx2 - 25 &&
+          mouseY >= py + 109 && mouseY <= py + 151) {
+        applyTrainingResult(true);
+      }
+      if (mouseX >= cx2 + 25 && mouseX <= cx2 + 175 &&
+          mouseY >= py + 109 && mouseY <= py + 151) {
+        applyTrainingResult(false);
+      }
+    }
+    return;  // block every other button in the entire mousePressed function
+  }
+
+  // =========================
   // Home Screen: Button Clicks
   // Handles Instructions, Play, and Music Settings buttons
   // =========================
@@ -1128,8 +1161,36 @@ if (money >= 5 && isVetOpen &&
   if (dist(mouseX, mouseY, 1045, 232) <= 43 &&
       noPopupOpen && !isPetAIOpen &&
       !isRestOpen && !isServicesOpen && !isEarnPanelOpen && !isBankOpen &&
-      !isInventoryVisible && !isStoreOpen && isOnMainScreen) {
+      !isInventoryVisible && !isStoreOpen && !isEvolutionOpen && !isSocialsOpen &&
+      isOnMainScreen) {
     isAchievementsOpen = true;
+  }
+
+  // =========================
+  // Evolution Button (below achievements)
+  // Opens the trick training / evolution panel
+  // =========================
+  if (dist(mouseX, mouseY, 1045, 330) <= 43 &&
+      noPopupOpen && !isPetAIOpen &&
+      !isRestOpen && !isServicesOpen && !isEarnPanelOpen && !isBankOpen &&
+      !isInventoryVisible && !isStoreOpen && !isAchievementsOpen && !isSocialsOpen &&
+      isOnMainScreen) {
+    isEvolutionOpen = true;
+  }
+
+  // =========================
+  // Socials Button (below evolution)
+  // Opens the social media panel
+  // =========================
+  if (dist(mouseX, mouseY, 1045, 428) <= 43 &&
+      noPopupOpen && !isPetAIOpen &&
+      !isRestOpen && !isServicesOpen && !isEarnPanelOpen && !isBankOpen &&
+      !isInventoryVisible && !isStoreOpen && !isAchievementsOpen && !isEvolutionOpen &&
+      isOnMainScreen) {
+    isSocialsOpen     = true;
+    socialsPlatform   = -1;
+    isSocialsPostView = false;
+    isSocialsPastView = false;
   }
   
   // =========================
@@ -1139,9 +1200,183 @@ if (money >= 5 && isVetOpen &&
   if (dist(mouseX, mouseY, width/2, 602) <= 50 &&
       noPopupOpen && !isPetAIOpen &&
       !isRestOpen && !isServicesOpen && !isEarnPanelOpen && !isAchievementsOpen && !isBankOpen &&
-      !isInventoryVisible && !isStoreOpen && isOnMainScreen) {
+      !isInventoryVisible && !isStoreOpen && !isEvolutionOpen && !isSocialsOpen &&
+      !isTrainingMode && isOnMainScreen) {
     isNextDayPopupOpen=true;
     isDayEdited=false;
+  }
+
+  // =========================
+  // Evolution Panel Clicks
+  // =========================
+  if (isEvolutionOpen) {
+    // X close button (same region as achievements close)
+    if (mouseX > 733 && mouseY > 132 && mouseX < 776 && mouseY < 172) {
+      isEvolutionOpen = false;
+    }
+
+    // Scrollbar drag start
+    float evContentH = 20 + 5 * evItemH;
+    float evMaxScroll = max(0, evContentH - evViewportH);
+    if (evContentH > evViewportH) {
+      float evThumbH = max(40, (evViewportH / evContentH) * evScrollbarH);
+      float evThumbY = map(evScrollOffset, 0, evMaxScroll, evScrollbarY, evScrollbarY + evScrollbarH - evThumbH);
+      if (mouseX >= evScrollbarX && mouseX <= evScrollbarX + evScrollbarW &&
+          mouseY >= evThumbY && mouseY <= evThumbY + evThumbH) {
+        isDraggingEvScrollbar = true;
+        evScrollThumbOffset = mouseY - evThumbY;
+      }
+    }
+
+    // TRAIN button hit detection (per-row)
+    for (int i = 0; i < 5; i++) {
+      float rowY = evViewportY + 20 + i * evItemH - evScrollOffset;
+      float bx   = evViewportX + 10;
+      float bw   = evViewportW - 28;
+      float btnCX = bx + bw - 52;
+      float btnCY = rowY + 56;   // aligned with progress bar (barY=rowY+50 + barH/2)
+      boolean canTrain = day >= trickUnlockDays[i] && !trickUnlocked[i];
+      if (canTrain &&
+          mouseX >= btnCX - 42 && mouseX <= btnCX + 42 &&
+          mouseY >= btnCY - 16 && mouseY <= btnCY + 16 &&
+          mouseX >= evViewportX && mouseX <= evViewportX + evViewportW &&
+          mouseY >= evViewportY && mouseY <= evViewportY + evViewportH) {
+        startTraining(i);
+        break;
+      }
+    }
+  }
+
+
+  // =========================
+  // Socials Panel Clicks
+  // =========================
+  if (isSocialsOpen && !isTrainingMode) {
+
+    // Post result dismiss
+    if (isShowingPostResult) {
+      float px = 380, py = 230, pw = 340, ph = 220;
+      if (mouseX >= px + pw / 2 - 60 && mouseX <= px + pw / 2 + 60 &&
+          mouseY >= py + 159 && mouseY <= py + 197) {
+        isShowingPostResult = false;
+      }
+      return;
+    }
+
+    if (socialsPlatform < 0) {
+      // --- Hub ---
+      // X close
+      if (mouseX > 733 && mouseY > 132 && mouseX < 776 && mouseY < 172) {
+        isSocialsOpen = false;
+      }
+      // Platform cards: OPEN and COLLECT buttons
+      for (int i = 0; i < 3; i++) {
+        float cx = 385 + i * 165;
+        float cy = 355;
+        // OPEN: center (cx, cy+52), 108x30
+        if (mouseX >= cx - 54 && mouseX <= cx + 54 &&
+            mouseY >= cy + 37 && mouseY <= cy + 67) {
+          socialsPlatform   = i;
+          isSocialsPostView = false;
+          isSocialsPastView = false;
+        }
+        // COLLECT: center (cx, cy+88), 108x30
+        if (mouseX >= cx - 54 && mouseX <= cx + 54 &&
+            mouseY >= cy + 73 && mouseY <= cy + 103 &&
+            platformPendingEarnings[i] > 0) {
+          collectPlatformEarnings(i);
+        }
+      }
+
+    } else if (isSocialsPostView) {
+      // --- New Post View ---
+      // Back button: center (345, 151), 56x28
+      if (mouseX >= 317 && mouseX <= 373 && mouseY >= 137 && mouseY <= 165) {
+        isSocialsPostView = false;
+        isSocialsTyping   = false;
+        selectedPostTrick = -1;
+        postCaptionText   = "";
+      }
+
+      // Trick tiles
+      float startY  = 200;
+      float tileW   = 120, tileH = 90, tileGap = 8;
+      float tilesX  = 330;
+      float tilesY  = startY + 20;
+      int col = 0;
+      for (int i = 0; i < 5; i++) {
+        if (!trickUnlocked[i]) continue;
+        float tx = tilesX + col * (tileW + tileGap);
+        float ty = tilesY;
+        if (mouseX >= tx && mouseX <= tx + tileW &&
+            mouseY >= ty && mouseY <= ty + tileH) {
+          selectedPostTrick = (selectedPostTrick == i) ? -1 : i;
+        }
+        col++;
+      }
+
+      // Caption input box click
+      float capY = startY + 130;
+      float boxX = 330, boxY = capY + 16, boxW = 440, boxH = 52;
+      if (mouseX >= boxX && mouseX <= boxX + boxW &&
+          mouseY >= boxY && mouseY <= boxY + boxH) {
+        isSocialsTyping = true;
+      } else {
+        isSocialsTyping = false;
+      }
+
+      // POST button: center (width/2, capY + 110), 180x46
+      float postBtnY = capY + 110;
+      if (selectedPostTrick >= 0 &&
+          mouseX >= width / 2 - 90 && mouseX <= width / 2 + 90 &&
+          mouseY >= postBtnY - 23 && mouseY <= postBtnY + 23) {
+        handlePost(socialsPlatform);
+      }
+
+    } else if (isSocialsPastView) {
+      // --- Past Posts View ---
+      // Back button
+      if (mouseX >= 317 && mouseX <= 373 && mouseY >= 137 && mouseY <= 165) {
+        isSocialsPastView = false;
+      }
+      // Scroll handled in mouseWheel
+
+    } else {
+      // --- Platform Home ---
+      // Back button: center (345, 151), 56x28
+      if (mouseX >= 317 && mouseX <= 373 && mouseY >= 137 && mouseY <= 165) {
+        socialsPlatform = -1;
+      }
+
+      // Guard: back button may have just set socialsPlatform to -1
+      if (socialsPlatform >= 0) {
+        int p = socialsPlatform;
+        float panelTop = 195;
+
+        // Collect button: center (width/2, panelTop+125), 160x34
+        if (platformPendingEarnings[p] > 0 &&
+            mouseX >= width / 2 - 80 && mouseX <= width / 2 + 80 &&
+            mouseY >= panelTop + 108 && mouseY <= panelTop + 142) {
+          collectPlatformEarnings(p);
+        }
+
+        // NEW POST button: center (width/2 - 90, panelTop+200), 155x48
+        if (mouseX >= width / 2 - 167 && mouseX <= width / 2 - 13 &&
+            mouseY >= panelTop + 176 && mouseY <= panelTop + 224) {
+          isSocialsPostView = true;
+          selectedPostTrick = -1;
+          postCaptionText   = "";
+          isSocialsTyping   = false;
+        }
+
+        // PAST POSTS button: center (width/2 + 90, panelTop+200), 155x48
+        if (mouseX >= width / 2 + 13 && mouseX <= width / 2 + 167 &&
+            mouseY >= panelTop + 176 && mouseY <= panelTop + 224) {
+          isSocialsPastView  = true;
+          pastPostsScroll[p] = 0;
+        }
+      }
+    }
   }
 
   if (isAchievementsOpen) {
@@ -1333,6 +1568,19 @@ if (money >= 5 && isVetOpen &&
 // once per key-check -- keeps the conditionals short and avoids repeated lookups.
 // =========================
 void keyPressed() {
+  // Socials caption typing
+  if (isSocialsTyping) {
+    if (key == ENTER || key == RETURN) {
+      isSocialsTyping = false;
+    } else if (key == BACKSPACE) {
+      if (postCaptionText.length() > 0)
+        postCaptionText = postCaptionText.substring(0, postCaptionText.length() - 1);
+    } else if (key != CODED && postCaptionText.length() < 120) {
+      postCaptionText += key;
+    }
+    return;
+  }
+
   // PetAI chat input -- intercept all keypresses when the panel is open and not viewing history
   if (isPetAIOpen && aiSelectedSession < 0) {
     if (key == ENTER || key == RETURN) {
@@ -1389,6 +1637,18 @@ void keyReleased() {
 void mouseDragged() {
   if (cp5.isMouseOver()) return;
 
+  if (isDraggingEvScrollbar) {
+    float evContentH  = 20 + 5 * evItemH;
+    float evMaxScroll = max(0, evContentH - evViewportH);
+    if (evMaxScroll > 0) {
+      float evThumbH   = max(40, (evViewportH / evContentH) * evScrollbarH);
+      float newThumbY  = constrain(mouseY - evScrollThumbOffset,
+                                   evScrollbarY, evScrollbarY + evScrollbarH - evThumbH);
+      evScrollOffset = map(newThumbY, evScrollbarY, evScrollbarY + evScrollbarH - evThumbH,
+                           0, evMaxScroll);
+    }
+  }
+
   if (isDraggingBankScrollbar) {
     float bankmaxScroll = max(0, bankScrollContentHeight - bankViewportHeight);
     if (bankmaxScroll > 0) {
@@ -1439,6 +1699,24 @@ void mouseWheel(MouseEvent event) {
     achievementScrollOffset = constrain(achievementScrollOffset, 0, achvMaxScroll);
   }
 
+  // Evolution panel scroll
+  if (isEvolutionOpen &&
+      mouseX >= evViewportX && mouseX <= evViewportX + evViewportW &&
+      mouseY >= evViewportY && mouseY <= evViewportY + evViewportH) {
+    float evContentH  = 20 + 5 * evItemH;
+    float evMaxScroll = max(0, evContentH - evViewportH);
+    evScrollOffset = constrain(evScrollOffset + e * 20, 0, evMaxScroll);
+  }
+
+  // Socials past posts scroll
+  if (isSocialsOpen && isSocialsPastView && socialsPlatform >= 0) {
+    int p = socialsPlatform;
+    ArrayList<String[]> log = getPlatformPostLog(p);
+    float contentH = log.size() * 96 + 10;
+    float maxScroll = max(0, contentH - 370);
+    pastPostsScroll[p] = constrain(pastPostsScroll[p] + e * 20, 0, maxScroll);
+  }
+
   // PetAI chat scroll (main chat area: x 260-1020, y 116-575)
   if (isPetAIOpen && mouseX > 260 && mouseX < 1020 && mouseY > 116 && mouseY < 575) {
     aiChatScroll += e * 25;
@@ -1457,6 +1735,7 @@ void mouseWheel(MouseEvent event) {
 // Ends any active scrollbar drag when the mouse button is released
 // =========================
 void mouseReleased() {
-  isDraggingBankScrollbar = false;
+  isDraggingBankScrollbar        = false;
   isDraggingAchievementScrollbar = false;
+  isDraggingEvScrollbar          = false;
 }

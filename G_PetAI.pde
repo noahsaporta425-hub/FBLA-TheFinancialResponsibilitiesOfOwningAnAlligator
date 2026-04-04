@@ -288,7 +288,8 @@ void drawAIChatMessages(ArrayList<String[]> chat) {
   if (aiChatScroll > maxScroll) aiChatScroll = maxScroll;
   aiChatScroll = constrain(aiChatScroll, 0, maxScroll);
 
-  // --- Draw bubbles ---
+  // --- Draw bubbles (clipped to chat area so nothing bleeds above/below) ---
+  clip(cx1, cy1, cx2 - cx1 + 30, cy2 - cy1);
   float y = cy1 + 18 - aiChatScroll;
   for (int i = 0; i < chat.size(); i++) {
     String[] msg     = chat.get(i);
@@ -328,6 +329,7 @@ void drawAIChatMessages(ArrayList<String[]> chat) {
     }
     y += bh + bubbleGap;
   }
+  noClip();
 
   // --- Empty state hint ---
   if (chat.size() == 0) {
@@ -335,10 +337,10 @@ void drawAIChatMessages(ArrayList<String[]> chat) {
     textAlign(CENTER, CENTER);
     textFont(times50);
     textSize(15);
-    text("Ask PetAI anything about your game!", cx1 + chatW / 2, (cy1 + cy2) / 2 - 10);
+    text("Ask PetAI anything!", cx1 + chatW / 2, (cy1 + cy2) / 2 - 10);
     textSize(13);
     fill(210);
-    text("Tips, vet advice, finances, strategy - it knows everything.", cx1 + chatW / 2, (cy1 + cy2) / 2 + 14);
+    text("Tips, vet advice, finances, strategy (it knows everything).", cx1 + chatW / 2, (cy1 + cy2) / 2 + 14);
   }
 
   // --- Scrollbar (pinned to right of outer panel, outside bubble area) ---

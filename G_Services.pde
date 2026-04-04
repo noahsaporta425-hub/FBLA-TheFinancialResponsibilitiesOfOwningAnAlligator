@@ -97,7 +97,7 @@ void services() {
   text("reducing the daily",     660, 433);
   text("sickness risk.",         660, 448);
 
-  image(unemployed, 880, 315, unemployed.width/3.5f, unemployed.height/3.5f);
+  image(unemployed, 880, 315, unemployed.width/2.8f, unemployed.height/2.8f);
   text("Ask about your pet,",    880, 418);
   text("finances, strategy,",    880, 433);
   text("and tips.",              880, 448);
